@@ -34,6 +34,8 @@ typedef NativeInfo = {
 
 @:native('::hx::asys::filesystem::File')
 extern class File {
+	final path : String;
+
     function write(pos : haxe.Int64, data : BytesData, offset : Int, length : Int, cbSuccess : Int->Void, cbFailure : AsysError->Void) : Void;
     function read(pos : haxe.Int64, buffer : BytesData, offset : Int, length : Int, cbSuccess : Int->Void, cbFailure : AsysError->Void) : Void;
     function info(cbSuccess : NativeInfo->Void, cbFailure : AsysError->Void) : Void;
@@ -46,4 +48,7 @@ extern class File {
 
     @:native('::hx::asys::filesystem::File_obj::open')
     static function open(ctx : Context, path : String, flags : Int, onSuccess : File->Void, onFailure : AsysError->Void) : Void;
+
+	@:native('::hx::asys::filesystem::File_obj::temp')
+    static function temp(ctx : Context, onSuccess : File->Void, onFailure : AsysError->Void) : Void;
 }

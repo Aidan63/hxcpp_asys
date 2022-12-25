@@ -23,6 +23,20 @@ class FileSystem {
     }
 
 	/**
+		Create and open a unique temporary file for writing and reading.
+		The file will be automatically deleted when it is closed.
+		Depending on a target platform the file may be automatically deleted upon
+		application shutdown, but in general deletion is not guaranteed if the `close`
+		method is not called.
+		Depending on a target platform the directory entry for the file may be deleted
+		immediately after the file is created or even not created at all.
+	**/
+	static public function tempFile(callback:Callback<File>):Void {
+		cpp.asys.File.temp(
+			@:privateAccess Thread.current().events.context,
+			file -> callback.success(cast @:privateAccess new File(file)),
+			msg -> callback.fail(new FsException(msg, '')));
+	}
 		Open directory for listing.
 		`maxBatchSize` sets maximum amount of entries returned by a call to `directory.next`.
 		In general bigger `maxBatchSize` allows to iterate faster, but requires more

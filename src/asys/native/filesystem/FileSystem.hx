@@ -151,4 +151,47 @@ class FileSystem {
             dir -> callback.success(@:privateAccess new Directory(dir, maxBatchSize)),
             msg -> callback.fail(new FsException(msg, path)));
 	}
+
+	/**
+		List directory contents.
+		Does not add `.` and `..` to the result.
+		Entries are provided as paths relative to the directory.
+	**/
+	static public function listDirectory(path:String, callback:Callback<Array<String>>):Void {
+		function read(dir:Directory, accumulated:Array<String>, callback:Callback<Array<String>>) {
+			dir.next((error, entries) -> {
+				switch error {
+					case null:
+						if (entries.length == 0) {
+							callback.success(accumulated);
+						} else {
+							read(dir, accumulated.concat(entries), callback);
+						}
+					case exn:
+						callback.fail(exn);
+				}
+			});
+		}
+
+		openDirectory(path, (error, dir) -> {
+			switch error {
+				case null:
+					read(dir, [], (error, entries) -> {
+						dir.close((_, _) -> {
+							// TODO : What should we do if closing fails?
+							// create a composite exception?
+
+							switch error {
+								case null:
+									callback.success(entries);
+								case exn:
+									callback.fail(exn);
+							}
+						});
+					});
+				case exn:
+					callback.fail(exn);
+			}
+		});
+	}
 }

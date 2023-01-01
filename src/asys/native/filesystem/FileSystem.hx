@@ -194,4 +194,22 @@ class FileSystem {
 			}
 		});
 	}
+
+	/**
+		Create a directory.
+		Default `permissions` equals to octal `0777`, which means read+write+execution
+		permissions for everyone.
+		If `recursive` is `true`: create missing directories tree all the way down to `path`.
+		If `recursive` is `false`: fail if any parent directory of `path` does not exist.
+		[cs] `permissions` parameter is ignored when targeting C#
+	**/
+	static public function createDirectory(path:String, ?permissions:FilePermissions, recursive:Bool = false, callback:Callback<NoData>):Void {
+		cpp.asys.Directory.create(
+            @:privateAccess Thread.current().events.context,
+			path,
+			if (permissions == null) FilePermissions.octal(0, 7, 7, 7) else permissions,
+			recursive,
+			() -> callback.success(null),
+			msg -> callback.fail(new FsException(msg, path)));
+	}
 }

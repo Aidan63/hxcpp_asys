@@ -29,51 +29,34 @@ class Main {
 	}
 
 	static function main() {
-		FileSystem.openDirectory('C:\\Users\\AidanLee\\Desktop\\hxcpp_asys\\bin', 8, (error, dir) -> {
-			switch error {
-				case null:
-					read(dir);
-				case exn:
-					trace(exn.message);
-			}
-		});
-
-		// FileSystem.openFile('test2.txt', Read, (error, result) -> {
+		// FileSystem.listDirectory('C:\\Users\\AidanLee\\Desktop\\hxcpp_asys', (error, entries) -> {
 		// 	if (error != null) {
 		// 		trace(error.message);
 		// 	} else {
-		// 		// result.resize(5, (error, info) -> {
-		// 		// 	if (error != null) {
-		// 		// 		trace(error.message);
-		// 		// 	} else {
-		// 		// 		trace(info);
-		// 		// 	}
-
-		// 		// 	result.flush((error, result) -> {
-		// 		// 		if (error != null) {
-		// 		// 			trace(error.message);
-		// 		// 		}
-		// 		// 	});
-		// 		// });
-
-		// 		// final buffer = Bytes.alloc(20);
-
-		// 		// result.read(0, buffer, 0, buffer.length, (error, count) -> {
-		// 		// 	if (error != null) {
-		// 		// 		trace(error.message);
-		// 		// 	}
-		// 		// 	else {
-		// 		// 		trace('"${ buffer.toString() }"');
-		// 		// 		trace('"${ buffer.sub(0, count).toString() }"');
-		// 		// 	}
-
-		// 		// 	result.close((error, result) -> {
-		// 		// 		if (error != null) {
-		// 		// 			trace(error.message);
-		// 		// 		}
-		// 		// 	});
-		// 		// });
+		// 		trace(entries);
 		// 	}
 		// });
+		FileSystem.createDirectory('some\\dir', null, true, (error, _) -> {
+			if (error != null) {
+				trace(error.message);
+			} else {
+				trace('created');
+			}
+		});
+		FileSystem.createDirectory('other', null, false, (error, _) -> {
+			if (error != null) {
+				trace(error.message);
+			} else {
+				trace('created');
+
+				FileSystem.createDirectory('other\\some\\dir', null, false, (error, _) -> {
+					if (error != null) {
+						trace(error.message);
+					} else {
+						trace('created');
+					}
+				});
+			}
+		});
 	}
 }

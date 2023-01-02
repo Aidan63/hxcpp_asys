@@ -1,5 +1,6 @@
 package asys.native.filesystem;
 
+import haxe.io.Path;
 import haxe.NoData;
 import haxe.io.Bytes;
 import sys.thread.Thread;
@@ -211,5 +212,30 @@ class FileSystem {
 			recursive,
 			() -> callback.success(null),
 			msg -> callback.fail(new FsException(msg, path)));
+	}
+
+	/**
+		Create a directory with auto-generated unique name.
+		`prefix` (if provided) is used as the beginning of a generated name.
+		The created directory path is passed to the `callback`.
+		Default `permissions` equals to octal `0777`, which means read+write+execution
+		permissions for everyone.
+		If `recursive` is `true`: create missing directories tree all the way down to the generated path.
+		If `recursive` is `false`: fail if any parent directory of the generated path does not exist.
+		[cs] `permissions` parameter is ignored when targeting C#
+	**/
+	static public function uniqueDirectory(parentDirectory:String, ?prefix:String, ?permissions:FilePermissions, recursive:Bool = false, callback:Callback<String>):Void {
+		final rndIntValue = Std.random(2147483647);
+		final finalPrefix = if (prefix == null) Std.string(rndIntValue) else '$prefix$rndIntValue';
+		final finalPath   = Path.join([ parentDirectory, finalPrefix ]);
+
+		createDirectory(finalPath, permissions, recursive, (error, _) -> {
+			if (error != null) {
+				callback.fail(error);
+			}
+			else {
+				callback.success(finalPath);
+			}
+		});
 	}
 }

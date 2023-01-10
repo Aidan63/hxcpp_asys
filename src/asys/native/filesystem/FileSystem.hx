@@ -238,4 +238,21 @@ class FileSystem {
 			}
 		});
 	}
+
+	/**
+		Check user's access for a path.
+		For example to check if a file is readable and writable:
+		```haxe
+		import asys.native.filesystem.FileAccessMode;
+		FileSystem.check(path, Readable | Writable, (error, result) -> trace(result));
+		```
+	**/
+	static public function check(path:String, mode:FileAccessMode, callback:Callback<Bool>):Void {
+		cpp.asys.Directory.check(
+			@:privateAccess Thread.current().events.context,
+			path,
+			cast mode,
+			callback.success,
+			msg -> callback.fail(new FsException(msg, path)));
+	}
 }

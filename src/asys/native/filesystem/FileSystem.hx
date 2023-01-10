@@ -240,6 +240,36 @@ class FileSystem {
 	}
 
 	/**
+		Move and/or rename the file or directory from `oldPath` to `newPath`.
+		If `newPath` already exists and `overwrite` is `true` (which is the default)
+		the destination is overwritten. However, operation fails if `newPath` is
+		a non-empty directory.
+		If `overwrite` is `false` the operation is not guaranteed to be atomic.
+		That means if a third-party process creates `newPath` right in between the
+		check for existance and the actual move operation then the data created
+		by that third-party process may be overwritten.
+	**/
+	static public function move(oldPath:String, newPath:String, overwrite:Bool = true, callback:Callback<NoData>):Void {
+		final ctx = @:privateAccess Thread.current().events.context;
+
+		if (overwrite) {
+			rename(ctx, oldPath, newPath, callback);
+		} else {
+			check(newPath, Exists, (error, ok) -> {
+				if (error != null) {
+					callback.fail(error);
+				} else {
+					if (ok) {
+						callback.fail(new FsException(FileExists, newPath));
+					} else {
+						rename(ctx, oldPath, newPath, callback);
+					}
+				}
+			});
+		}
+	}
+
+	/**
 		Check user's access for a path.
 		For example to check if a file is readable and writable:
 		```haxe
@@ -254,5 +284,14 @@ class FileSystem {
 			cast mode,
 			callback.success,
 			msg -> callback.fail(new FsException(msg, path)));
+	}
+
+	private static function rename(ctx:cpp.asys.Context, oldPath:String, newPath:String, callback:Callback<NoData>):Void {
+		cpp.asys.Directory.move(
+			ctx,
+			oldPath,
+			newPath,
+			() -> callback.success(null),
+			msg -> callback.fail(new FsException(msg, oldPath))); // TODO : Custom exception for both paths?
 	}
 }

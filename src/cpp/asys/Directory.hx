@@ -18,6 +18,9 @@ extern class Directory {
     @:native('::hx::asys::filesystem::Directory_obj::create')
     static function create(ctx : Context, path : String, permissions : Int, recursive : Bool, onSuccess : Void->Void, onFailure : AsysError->Void) : Void;
 
+    @:native('::hx::asys::filesystem::Directory_obj::move')
+    static function move(ctx : Context, oldPath : String, newPath : String, onSuccess : Void->Void, onFailure : AsysError->Void) : Void;
+
     @:native('::hx::asys::filesystem::Directory_obj::check')
     static function check(ctx : Context, path : String, accessMode : FileAccessMode, onSuccess : Bool->Void, onFailure : AsysError->Void) : Void;
 }

@@ -292,6 +292,36 @@ class FileSystem {
 	}
 
 	/**
+		Get file or directory information at the given path.
+		If `path` is a symbolic link then the link is followed.
+		@see `asys.native.filesystem.FileSystem.linkInfo` to get information of the
+		link itself.
+	**/
+	static public function info(path:String, callback:Callback<FileInfo>):Void {
+		openFile(path, Read, (error, file) -> {
+			switch error {
+				case null:
+					file.info((error, info) -> {
+						file.close((_, _) -> {
+							// TODO : What should we do if closing fails?
+							// create a composite exception?
+
+							switch error {
+								case null:
+									// Should we error if not all of the data was written?
+									callback.success(info);
+								case exn:
+									callback.fail(exn);
+							}
+						});
+					});
+				case exn:
+					callback.fail(exn);
+			}
+		});
+	}
+
+	/**
 		Check user's access for a path.
 		For example to check if a file is readable and writable:
 		```haxe

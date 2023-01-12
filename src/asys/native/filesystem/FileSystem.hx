@@ -338,6 +338,32 @@ class FileSystem {
 			msg -> callback.fail(new FsException(msg, path)));
 	}
 
+	/**
+		Check if the path is a directory.
+		If `path` is a symbolic links then it will be resolved and checked.
+		Returns `false` if `path` does not exist.
+	**/
+	static public function isDirectory(path:String, callback:Callback<Bool>):Void {
+		cpp.asys.Directory.isDirectory(
+			@:privateAccess Thread.current().events.context,
+			path,
+			callback.success,
+			msg -> callback.fail(new FsException(msg, path)));
+	}
+
+	/**
+		Check if the path is a regular file.
+		If `path` is a symbolic links then it will be resolved and checked.
+		Returns `false` if `path` does not exist.
+	**/
+	static public function isFile(path:String, callback:Callback<Bool>):Void {
+		cpp.asys.Directory.isFile(
+			@:privateAccess Thread.current().events.context,
+			path,
+			callback.success,
+			msg -> callback.fail(new FsException(msg, path)));
+	}
+
 	private static function rename(ctx:cpp.asys.Context, oldPath:String, newPath:String, callback:Callback<NoData>):Void {
 		cpp.asys.Directory.move(
 			ctx,

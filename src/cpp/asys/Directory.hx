@@ -29,4 +29,10 @@ extern class Directory {
 
     @:native('::hx::asys::filesystem::Directory_obj::deleteDirectory')
     static function deleteDirectory(ctx : Context, path : String, onSuccess : Void->Void, onFailure : AsysError->Void) : Void;
+
+    @:native('::hx::asys::filesystem::Directory_obj::isFile')
+    static function isFile(ctx : Context, path : String, onSuccess : Bool->Void, onFailure : AsysError->Void) : Void;
+
+    @:native('::hx::asys::filesystem::Directory_obj::isDirectory')
+    static function isDirectory(ctx : Context, path : String, onSuccess : Bool->Void, onFailure : AsysError->Void) : Void;
 }

@@ -270,6 +270,28 @@ class FileSystem {
 	}
 
 	/**
+		Remove a file or symbolic link.
+	**/
+	static public function deleteFile(path:String, callback:Callback<NoData>):Void {
+		cpp.asys.Directory.deleteFile(
+			@:privateAccess Thread.current().events.context,
+			path,
+			() -> callback.success(null),
+			msg -> callback.fail(new FsException(msg, path)));
+	}
+
+	/**
+		Remove an empty directory.
+	**/
+	static public function deleteDirectory(path:String, callback:Callback<NoData>):Void {
+		cpp.asys.Directory.deleteDirectory(
+			@:privateAccess Thread.current().events.context,
+			path,
+			() -> callback.success(null),
+			msg -> callback.fail(new FsException(msg, path)));
+	}
+
+	/**
 		Check user's access for a path.
 		For example to check if a file is readable and writable:
 		```haxe

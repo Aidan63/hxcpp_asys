@@ -1,9 +1,11 @@
 package asys.native.filesystem;
 
-import haxe.io.Path;
-import haxe.NoData;
-import haxe.io.Bytes;
 import sys.thread.Thread;
+import haxe.NoData;
+import haxe.io.Path;
+import haxe.io.Bytes;
+import asys.native.system.SystemUser;
+import asys.native.system.SystemGroup;
 
 class FileSystem {
     /**
@@ -358,6 +360,104 @@ class FileSystem {
 	**/
 	static public function isFile(path:String, callback:Callback<Bool>):Void {
 		cpp.asys.Directory.isFile(
+			@:privateAccess Thread.current().events.context,
+			path,
+			callback.success,
+			msg -> callback.fail(new FsException(msg, path)));
+	}
+
+	/**
+		Set path permissions.
+		If `path` is a symbolic link it is dereferenced.
+	**/
+	static public function setPermissions(path:String, permissions:FilePermissions, callback:Callback<NoData>):Void {
+		openFile(path, Read, (error, file) -> {
+			switch error {
+				case null:
+					file.setPermissions(permissions, (error, info) -> {
+						file.close((_, _) -> {
+							// TODO : What should we do if closing fails?
+							// create a composite exception?
+
+							switch error {
+								case null:
+									// Should we error if not all of the data was written?
+									callback.success(info);
+								case exn:
+									callback.fail(exn);
+							}
+						});
+					});
+				case exn:
+					callback.fail(exn);
+			}
+		});
+	}
+
+	/**
+		Set path owner and group.
+		If `path` is a symbolic link it is dereferenced.
+	**/
+	static public function setOwner(path:String, user:SystemUser, group:SystemGroup, callback:Callback<NoData>):Void {
+		openFile(path, Read, (error, file) -> {
+			switch error {
+				case null:
+					file.setOwner(user, group, (error, info) -> {
+						file.close((_, _) -> {
+							// TODO : What should we do if closing fails?
+							// create a composite exception?
+
+							switch error {
+								case null:
+									// Should we error if not all of the data was written?
+									callback.success(info);
+								case exn:
+									callback.fail(exn);
+							}
+						});
+					});
+				case exn:
+					callback.fail(exn);
+			}
+		});
+	}
+
+	/**
+		Set symbolic link owner and group.
+	**/
+	static public function setLinkOwner(path:String, user:SystemUser, group:SystemGroup, callback:Callback<NoData>):Void {
+		cpp.asys.Directory.setLinkOwner(
+			@:privateAccess Thread.current().events.context,
+			path,
+			user,
+			group,
+			() -> callback.success(null),
+			msg -> callback.fail(new FsException(msg, path)));
+	}
+
+	/**
+		Create a link to `target` at `path`.
+		If `type` is `SymLink` the `target` is expected to be an absolute path or
+		a path relative to `path`, however the existance of `target` is not checked
+		and the link is created even if `target` does not exist.
+		If `type` is `HardLink` the `target` is expected to be an existing path either
+		absolute or relative to the current working directory.
+	**/
+	static public function link(target:String, path:String, type:FileLink = SymLink, callback:Callback<NoData>):Void {
+		cpp.asys.Directory.link(
+			@:privateAccess Thread.current().events.context,
+			target,
+			path,
+			() -> callback.success(null),
+			msg -> callback.fail(new FsException(msg, path)));
+	}
+
+	/**
+		Check if the path is a symbolic link.
+		Returns `false` if `path` does not exist.
+	**/
+	static public function isLink(path:String, callback:Callback<Bool>):Void {
+		cpp.asys.Directory.isLink(
 			@:privateAccess Thread.current().events.context,
 			path,
 			callback.success,

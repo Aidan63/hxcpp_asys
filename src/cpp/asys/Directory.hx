@@ -35,4 +35,13 @@ extern class Directory {
 
     @:native('::hx::asys::filesystem::Directory_obj::isDirectory')
     static function isDirectory(ctx : Context, path : String, onSuccess : Bool->Void, onFailure : AsysError->Void) : Void;
+
+    @:native('::hx::asys::filesystem::Directory_obj::isLink')
+    static function isLink(ctx : Context, path : String, onSuccess : Bool->Void, onFailure : AsysError->Void) : Void;
+
+    @:native('::hx::asys::filesystem::Directory_obj::setLinkOwner')
+    static function setLinkOwner(ctx : Context, path : String, user : Int, group : Int, cbSuccess : Void->Void, cbFailure : AsysError->Void) : Void;
+
+    @:native('::hx::asys::filesystem::Directory_obj::link')
+    static function link(ctx : Context, target : String, path : String, cbSuccess : Void->Void, cbFailure : AsysError->Void) : Void;
 }

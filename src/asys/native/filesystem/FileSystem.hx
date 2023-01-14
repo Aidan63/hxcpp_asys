@@ -558,6 +558,19 @@ class FileSystem {
 		});
 	}
 
+	/**
+		Get a canonical absolute path. The path must exist.
+		Resolves intermediate `.`, `..`, excessive slashes.
+		Resolves symbolic links on all targets except C#.
+	**/
+	static public function realPath(path:String, callback:Callback<String>):Void {
+		cpp.asys.Directory.realPath(
+			@:privateAccess Thread.current().events.context,
+			path,
+			callback.success,
+			msg -> callback.fail(new FsException(msg, path)));
+	}
+
 	private static function rename(ctx:cpp.asys.Context, oldPath:String, newPath:String, callback:Callback<NoData>):Void {
 		cpp.asys.Directory.move(
 			ctx,

@@ -500,6 +500,36 @@ class FileSystem {
 			msg -> callback.fail(new FsException(msg, source)));
 	}
 
+	/**
+		Shrink or expand a file specified by `path` to `newSize` bytes.
+		If the file does not exist, it is created.
+		If the file is larger than `newSize`, the extra data is lost.
+		If the file is shorter, zero bytes are used to fill the added length.
+	**/
+	static public function resize(path:String, newSize:Int, callback:Callback<NoData>):Void {
+		openFile(path, Write, (error, file) -> {
+			switch error {
+				case null:
+					file.resize(newSize, (error, _) -> {
+						file.close((_, _) -> {
+							// TODO : What should we do if closing fails?
+							// create a composite exception?
+
+							switch error {
+								case null:
+									// Should we error if not all of the data was written?
+									callback.success(null);
+								case exn:
+									callback.fail(exn);
+							}
+						});
+					});
+				case exn:
+					callback.fail(exn);
+			}
+		});
+	}
+
 	private static function rename(ctx:cpp.asys.Context, oldPath:String, newPath:String, callback:Callback<NoData>):Void {
 		cpp.asys.Directory.move(
 			ctx,

@@ -530,6 +530,34 @@ class FileSystem {
 		});
 	}
 
+	/**
+		Change access and modification times of an existing file.
+		TODO: Decide on type for `accessTime` and `modificationTime` - see TODO in `asys.native.filesystem.FileInfo.FileStat`
+	**/
+	static public function setTimes(path:String, accessTime:Int, modificationTime:Int, callback:Callback<NoData>):Void {
+		openFile(path, Write, (error, file) -> {
+			switch error {
+				case null:
+					file.setTimes(accessTime, modificationTime, (error, _) -> {
+						file.close((_, _) -> {
+							// TODO : What should we do if closing fails?
+							// create a composite exception?
+
+							switch error {
+								case null:
+									// Should we error if not all of the data was written?
+									callback.success(null);
+								case exn:
+									callback.fail(exn);
+							}
+						});
+					});
+				case exn:
+					callback.fail(exn);
+			}
+		});
+	}
+
 	private static function rename(ctx:cpp.asys.Context, oldPath:String, newPath:String, callback:Callback<NoData>):Void {
 		cpp.asys.Directory.move(
 			ctx,

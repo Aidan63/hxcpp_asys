@@ -487,6 +487,19 @@ class FileSystem {
 			msg -> callback.fail(new FsException(msg, path)));
 	}
 
+	/**
+		Copy a file from `source` path to `destination` path.
+	**/
+	static public function copyFile(source:String, destination:String, overwrite:Bool = true, callback:Callback<NoData>):Void {
+		cpp.asys.Directory.copyFile(
+			@:privateAccess Thread.current().events.context,
+			source,
+			destination,
+			overwrite,
+			() -> callback.success(null),
+			msg -> callback.fail(new FsException(msg, source)));
+	}
+
 	private static function rename(ctx:cpp.asys.Context, oldPath:String, newPath:String, callback:Callback<NoData>):Void {
 		cpp.asys.Directory.move(
 			ctx,

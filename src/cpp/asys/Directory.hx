@@ -50,4 +50,7 @@ extern class Directory {
 
     @:native('::hx::asys::filesystem::Directory_obj::readLink')
     static function readLink(ctx : Context, path : String, cbSuccess : String->Void, cbFailure : AsysError->Void) : Void;
+
+    @:native('::hx::asys::filesystem::Directory_obj::copyFile')
+    static function copyFile(ctx : Context, source : String, destination : String, overwrite : Bool, cbSuccess : Void->Void, cbFailure : AsysError->Void) : Void;
 }

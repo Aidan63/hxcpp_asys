@@ -1,6 +1,6 @@
 package asys.native.filesystem;
 
-import cpp.asys.File.NativeInfo;
+import cpp.asys.NativeInfo;
 import asys.native.system.SystemUser;
 import asys.native.system.SystemGroup;
 

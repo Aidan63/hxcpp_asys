@@ -448,6 +448,7 @@ class FileSystem {
 			@:privateAccess Thread.current().events.context,
 			target,
 			path,
+			cast type,
 			() -> callback.success(null),
 			msg -> callback.fail(new FsException(msg, path)));
 	}
@@ -458,6 +459,28 @@ class FileSystem {
 	**/
 	static public function isLink(path:String, callback:Callback<Bool>):Void {
 		cpp.asys.Directory.isLink(
+			@:privateAccess Thread.current().events.context,
+			path,
+			callback.success,
+			msg -> callback.fail(new FsException(msg, path)));
+	}
+
+	/**
+		Get the value of a symbolic link.
+	**/
+	static public function readLink(path:String, callback:Callback<String>):Void {
+		cpp.asys.Directory.readLink(
+			@:privateAccess Thread.current().events.context,
+			path,
+			callback.success,
+			msg -> callback.fail(new FsException(msg, path)));
+	}
+
+	/**
+		Get information at the given path without following symbolic links.
+	**/
+	static public function linkInfo(path:String, callback:Callback<FileInfo>):Void {
+		cpp.asys.Directory.linkInfo(
 			@:privateAccess Thread.current().events.context,
 			path,
 			callback.success,

@@ -43,5 +43,11 @@ extern class Directory {
     static function setLinkOwner(ctx : Context, path : String, user : Int, group : Int, cbSuccess : Void->Void, cbFailure : AsysError->Void) : Void;
 
     @:native('::hx::asys::filesystem::Directory_obj::link')
-    static function link(ctx : Context, target : String, path : String, cbSuccess : Void->Void, cbFailure : AsysError->Void) : Void;
+    static function link(ctx : Context, target : String, path : String, type : Int, cbSuccess : Void->Void, cbFailure : AsysError->Void) : Void;
+
+    @:native('::hx::asys::filesystem::Directory_obj::linkInfo')
+    static function linkInfo(ctx : Context, path : String, cbSuccess : NativeInfo->Void, cbFailure : AsysError->Void) : Void;
+
+    @:native('::hx::asys::filesystem::Directory_obj::readLink')
+    static function readLink(ctx : Context, path : String, cbSuccess : String->Void, cbFailure : AsysError->Void) : Void;
 }

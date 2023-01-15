@@ -1,7 +1,10 @@
 package asys.native.net;
 
+import haxe.Exception;
 import haxe.exceptions.NotImplementedException;
 import haxe.io.Bytes;
+
+using Lambda;
 
 /**
 	Represents a resolved IP address.
@@ -56,28 +59,50 @@ class IpTools {
 		Throws an exception if provided string does not represent a valid IP address.
 	**/
 	static public function parseIp(ip:String):Ip {
-		throw new NotImplementedException();
+		return switch cpp.asys.Net.parse(ip) {
+			case null:
+				throw new Exception('Unable to parse address');
+			case parsed:
+				switch parsed.getIndex() {
+					case 0:
+						Ip.Ipv4(parsed.getParamI(0));
+					case 1:
+						Ip.Ipv6(Bytes.ofData(parsed.getParamI(0)));
+					case _:
+						throw new Exception('Unable to parse address');
+				}
+		}
 	}
 
 	/**
 		Check if `str` contains a valid IPv6 or IPv4 address.
 	**/
 	static public function isIp(str:String):Bool {
-		throw new NotImplementedException();
+		return cpp.asys.Net.parse(str) != null;
 	}
 
 	/**
 		Check if `str` contains a valid IPv4 address.
 	**/
 	static public function isIpv4(str:String):Bool {
-		throw new NotImplementedException();
+		return switch cpp.asys.Net.parse(str) {
+			case null:
+				false;
+			case parsed:
+				parsed.getIndex() == 0;
+		}
 	}
 
 	/**
 		Check if `str` contains a valid IPv6 address.
 	**/
 	static public function isIpv6(str:String):Bool {
-		throw new NotImplementedException();
+		return switch cpp.asys.Net.parse(str) {
+			case null:
+				false;
+			case parsed:
+				parsed.getIndex() == 1;
+		}
 	}
 
 	/**
@@ -91,6 +116,21 @@ class IpTools {
 		Check if `a` and `b` contain the same IP address.
 	**/
 	static public function equals(a:Ip, b:Ip):Bool {
-		throw new NotImplementedException();
+		return switch a {
+			case Ipv4(v4a):
+				switch b {
+					case Ipv4(v4b):
+						v4a == v4b;
+					case Ipv6(_):
+						equals(a.toIpv6(), b);
+				}
+			case Ipv6(v6a):
+				switch b {
+					case Ipv4(_):
+						equals(a.toIpv6(), b);
+					case Ipv6(v6b):
+						v6a.compare(v6b) == 0;
+				}
+		}
 	}
 }

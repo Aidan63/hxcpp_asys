@@ -19,4 +19,7 @@ extern class Net
 
     @:native('::hx::asys::net::ip::name')
     static overload function ipName(ip : BytesData) : String;
+
+    @:native('::hx::asys::net::ip::parse')
+    static overload function parse(ip : String) : cpp.EnumBase;
 }

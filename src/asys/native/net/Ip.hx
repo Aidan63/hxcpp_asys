@@ -109,7 +109,19 @@ class IpTools {
 		Convert any IP address to IPv6 format.
 	**/
 	static public function toIpv6(ip:Ip):Ip {
-		throw new NotImplementedException();
+		return switch ip {
+			case Ipv4(_):
+				final name = ip.toFullString();
+				final str  = '2002::$name';
+
+				if (IpTools.isIpv6(str)) {
+					return IpTools.parseIp(str);
+				} else {
+					throw new Exception('Unable to convert from ipv4 address to ipv6');
+				}
+			case Ipv6(_):
+				ip;
+		}
 	}
 
 	/**

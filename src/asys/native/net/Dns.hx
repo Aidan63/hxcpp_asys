@@ -26,7 +26,15 @@ class Dns {
 		Find host names associated with the given IP address.
 	**/
 	static public function reverse(ip:Ip, callback:Callback<Array<String>>) {
-		throw new NotImplementedException();
+		switch ip {
+			case Ipv4(raw):
+				cpp.asys.Net.reverse(
+					@:privateAccess Thread.current().events.context,
+					raw,
+					host -> callback.success([ host ]),
+					msg -> callback.fail(new Exception('')));
+			case Ipv6(raw):
+		}
 	}
 
 	static function convertIp(ip:cpp.EnumBase):Ip {

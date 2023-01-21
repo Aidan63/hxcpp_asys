@@ -32,12 +32,27 @@ class Socket implements IDuplex {
 	static public function connect(address:SocketAddress, ?options:SocketOptions, callback:Callback<Socket>) {
 		switch address {
 			case Net(host, port):
-				cpp.asys.Socket.connect(
-					@:privateAccess Thread.current().events.context,
-					host,
-					port,
-					socket -> callback.success(new Socket(socket)),
-					msg -> callback.fail(new IoException(msg)));
+				try {
+					switch IpTools.parseIp(host) {
+						case Ipv4(_):
+							cpp.asys.Socket.connect_ipv4(
+								@:privateAccess Thread.current().events.context,
+								host,
+								port,
+								socket -> callback.success(new Socket(socket)),
+								msg -> callback.fail(new IoException(msg)));
+						case Ipv6(_):
+							cpp.asys.Socket.connect_ipv6(
+								@:privateAccess Thread.current().events.context,
+								host,
+								port,
+								socket -> callback.success(new Socket(socket)),
+								msg -> callback.fail(new IoException(msg)));
+					}
+				}
+				catch (exn) {
+					callback.fail(exn);
+				}
 			case Ipc(_):
 				throw new NotImplementedException();
 		}

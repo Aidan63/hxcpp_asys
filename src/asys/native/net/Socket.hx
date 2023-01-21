@@ -53,8 +53,12 @@ class Socket implements IDuplex {
 				catch (exn) {
 					callback.fail(exn);
 				}
-			case Ipc(_):
-				throw new NotImplementedException();
+			case Ipc(path):
+				cpp.asys.Socket.connect_ipc(
+					@:privateAccess Thread.current().events.context,
+					path,
+					socket -> callback.success(new Socket(socket)),
+					msg -> callback.fail(new IoException(msg)));
 		}
 	}
 

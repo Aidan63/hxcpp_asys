@@ -1,5 +1,6 @@
 package asys.native.net;
 
+import asys.native.net.Ip.IpTools;
 import sys.thread.Thread;
 import asys.native.net.SocketOptions.SocketOptionKind;
 import haxe.NoData;
@@ -35,7 +36,6 @@ class Socket implements IDuplex {
 					@:privateAccess Thread.current().events.context,
 					host,
 					port,
-					options,
 					socket -> callback.success(new Socket(socket)),
 					msg -> callback.fail(new IoException(msg)));
 			case Ipc(_):

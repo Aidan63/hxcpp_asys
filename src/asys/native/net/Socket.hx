@@ -48,7 +48,12 @@ class Socket implements IDuplex {
 		position in `buffer`, then invoke `callback` with the amount of bytes read.
 	**/
 	public function read(buffer:Bytes, offset:Int, length:Int, callback:Callback<Int>) {
-		throw new NotImplementedException();
+		native.read(
+			buffer.getData(),
+			offset,
+			length,
+			() -> callback.success(length),
+			msg -> callback.fail(new IoException(msg)));
 	}
 
 	/**
@@ -89,6 +94,8 @@ class Socket implements IDuplex {
 		Close the connection.
 	**/
 	public function close(callback:Callback<NoData>) {
-		throw new NotImplementedException();
+		native.close(
+			() -> callback.success(null),
+			msg -> callback.fail(new IoException(msg)));
 	}
 }

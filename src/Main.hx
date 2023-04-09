@@ -32,6 +32,27 @@ class Main {
 						});
 					}
 				});
+
+				server.accept((error, socket) -> {
+					if (error != null) {
+						trace(error.message);
+					} else {
+						final data = Bytes.ofString('Goodbye, World!');
+						final len  = data.length;
+
+						socket.write(data, 0, len, (error, _) -> {
+							if (error != null) {
+								trace(error.message);
+							}
+							
+							socket.close((error, _) -> {
+								if (error != null) {
+									trace(error.message);
+								}
+							});
+						});
+					}
+				});
 			}
 		});
 	}

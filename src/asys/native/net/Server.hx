@@ -1,7 +1,7 @@
 package asys.native.net;
 
 import haxe.NoData;
-import haxe.exceptions.NotImplementedException;
+import asys.native.net.Ip.IpTools;
 import sys.thread.Thread;
 
 typedef ServerOptions = {
@@ -35,14 +35,32 @@ class Server {
     static public function open(address:SocketAddress, ?options:ServerOptions, callback:Callback<Server>) {
         switch address {
             case Net(host, port):
-                cpp.asys.Server.open_ipv4(
+                try {
+                    switch IpTools.parseIp(host) {
+						case Ipv4(_):
+                            cpp.asys.Server.open_ipv4(
+                                @:privateAccess Thread.current().events.context,
+                                host,
+                                port,
+                                server -> callback.success(new Server(server)),
+                                msg -> callback.fail(new IoException(msg)));
+						case Ipv6(_):
+							cpp.asys.Server.open_ipv6(
+                                @:privateAccess Thread.current().events.context,
+                                host,
+                                port,
+                                server -> callback.success(new Server(server)),
+                                msg -> callback.fail(new IoException(msg)));
+                    }
+                } catch (exn) {
+                    callback.fail(exn);
+                }
+            case Ipc(path):
+                cpp.asys.Server.open_ipc(
                     @:privateAccess Thread.current().events.context,
-                    host,
-                    port,
+                    path,
                     server -> callback.success(new Server(server)),
                     msg -> callback.fail(new IoException(msg)));
-            case Ipc(path):
-                callback.fail(new NotImplementedException());
         }
     }
 }

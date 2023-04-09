@@ -16,33 +16,13 @@ class Main {
 					if (error != null) {
 						trace(error.message);
 					} else {
-						final data = Bytes.ofString('Hello, World!');
-						final len  = data.length;
+						final data = Bytes.alloc(64);
 
-						socket.write(data, 0, len, (error, _) -> {
+						socket.read(data, 0, 13, (error, c) -> {
 							if (error != null) {
 								trace(error.message);
-							}
-							
-							socket.close((error, _) -> {
-								if (error != null) {
-									trace(error.message);
-								}
-							});
-						});
-					}
-				});
-
-				server.accept((error, socket) -> {
-					if (error != null) {
-						trace(error.message);
-					} else {
-						final data = Bytes.ofString('Goodbye, World!');
-						final len  = data.length;
-
-						socket.write(data, 0, len, (error, _) -> {
-							if (error != null) {
-								trace(error.message);
+							} else {
+								trace(data.sub(0, c).toString());
 							}
 							
 							socket.close((error, _) -> {

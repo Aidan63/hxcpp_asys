@@ -70,7 +70,7 @@ class Socket implements IDuplex {
 				cpp.asys.Socket.connect_ipc(
 					@:privateAccess Thread.current().events.context,
 					path,
-					(socket, sock, peer) -> callback.success(new Socket(socket, sock, peer)),
+					socket -> callback.success(new Socket(socket, socket.socket(), socket.peer())),
 					msg -> callback.fail(new IoException(msg)));
 		}
 	}

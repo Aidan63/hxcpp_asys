@@ -25,10 +25,18 @@ class Main {
 								trace(data.sub(0, c).toString());
 							}
 							
-							socket.close((error, _) -> {
+							socket.read(data, 0, 13, (error, c) -> {
 								if (error != null) {
 									trace(error.message);
+								} else {
+									trace(data.sub(0, c).toString());
 								}
+
+								socket.close((error, _) -> {
+									if (error != null) {
+										trace(error.message);
+									}
+								});
 							});
 						});
 					}

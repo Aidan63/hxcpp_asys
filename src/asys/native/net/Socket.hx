@@ -84,7 +84,7 @@ class Socket implements IDuplex {
 			buffer.getData(),
 			offset,
 			length,
-			() -> callback.success(length),
+			len -> callback.success(len),
 			msg -> callback.fail(new IoException(msg)));
 	}
 

@@ -10,10 +10,10 @@ extern class Socket {
     final peer : Null<cpp.EnumBase>;
 
     @:native('::hx::asys::net::Socket_obj::connect_ipv4')
-    static function connect_ipv4(ctx : Context, host : String, port : Int, onSuccess : (Socket, cpp.EnumBase, cpp.EnumBase)->Void, onFailure : AsysError->Void) : Void;
+    static function connect_ipv4(ctx : Context, host : String, port : Int, onSuccess : Socket->Void, onFailure : AsysError->Void) : Void;
 
     @:native('::hx::asys::net::Socket_obj::connect_ipv6')
-    static function connect_ipv6(ctx : Context, host : String, port : Int, onSuccess : (Socket, cpp.EnumBase, cpp.EnumBase)->Void, onFailure : AsysError->Void) : Void;
+    static function connect_ipv6(ctx : Context, host : String, port : Int, onSuccess : Socket->Void, onFailure : AsysError->Void) : Void;
 
     @:native('::hx::asys::net::Socket_obj::connect_ipc')
     static function connect_ipc(ctx : Context, host : String, onSuccess : Socket->Void, onFailure : AsysError->Void) : Void;

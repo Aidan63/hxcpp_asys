@@ -13,7 +13,9 @@ extern class Server {
     @:native('::hx::asys::net::Server_obj::open_ipc')
     static function open_ipc(ctx : Context, path : String, onSuccess : Server->Void, onFailure : AsysError->Void) : Void;
 
-    function accept(onSuccess : (Socket, cpp.EnumBase, cpp.EnumBase)->Void, onFailure : AsysError->Void) : Void;
+    final name : cpp.EnumBase;
+
+    function accept(onSuccess : Socket->Void, onFailure : AsysError->Void) : Void;
 
     function close(onSuccess : Void->Void, onFailure : AsysError->Void) : Void;
 }

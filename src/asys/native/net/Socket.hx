@@ -1,5 +1,6 @@
 package asys.native.net;
 
+import cpp.asys.SocketAddressTools.makeSocketAddress;
 import haxe.Exception;
 import asys.native.net.Ip.IpTools;
 import sys.thread.Thread;
@@ -13,10 +14,10 @@ class Socket implements IDuplex {
 	final iSocketAddress : Null<SocketAddress>;
 	final iRemoteAddress : Null<SocketAddress>;
 
-	function new(native, socketEnum, remoteEnum) {
+	function new(native) {
 		this.native = native;
-		this.iSocketAddress = makeSocketAddress(socketEnum);
-		this.iRemoteAddress = makeSocketAddress(remoteEnum);
+		this.iSocketAddress = makeSocketAddress(native.name);
+		this.iRemoteAddress = makeSocketAddress(native.peer);
 	}
 
 	/**
@@ -36,7 +37,11 @@ class Socket implements IDuplex {
 	**/
 	public var remoteAddress(get,never):Null<SocketAddress>;
 	function get_remoteAddress():Null<SocketAddress> {
-		return iRemoteAddress;
+		return if (iRemoteAddress != null) {
+			iRemoteAddress;
+		} else {
+			throw new Exception("Unable to get remote address");
+		}
 	}
 
 	/**
@@ -52,14 +57,14 @@ class Socket implements IDuplex {
 								@:privateAccess Thread.current().events.context,
 								host,
 								port,
-								(socket, sock, peer) -> callback.success(new Socket(socket, sock, peer)),
+								socket -> callback.success(new Socket(socket)),
 								msg -> callback.fail(new IoException(msg)));
 						case Ipv6(_):
 							cpp.asys.Socket.connect_ipv6(
 								@:privateAccess Thread.current().events.context,
 								host,
 								port,
-								(socket, sock, peer) -> callback.success(new Socket(socket, sock, peer)),
+								socket -> callback.success(new Socket(socket)),
 								msg -> callback.fail(new IoException(msg)));
 					}
 				}
@@ -70,7 +75,7 @@ class Socket implements IDuplex {
 				cpp.asys.Socket.connect_ipc(
 					@:privateAccess Thread.current().events.context,
 					path,
-					socket -> callback.success(new Socket(socket, socket.name, socket.peer)),
+					socket -> callback.success(new Socket(socket)),
 					msg -> callback.fail(new IoException(msg)));
 		}
 	}
@@ -129,20 +134,5 @@ class Socket implements IDuplex {
 		native.close(
 			() -> callback.success(null),
 			msg -> callback.fail(new IoException(msg)));
-	}
-
-	static function makeSocketAddress(e : cpp.EnumBase):Null<SocketAddress> {
-		return if (e != null) {
-			switch e.getIndex() {
-				case 0:
-					SocketAddress.Net(e.getParamI(0), e.getParamI(1));
-				case 1:
-					SocketAddress.Ipc(e.getParamI(0));
-				case _:
-					null;
-			}
-		} else {
-			null;
-		}
 	}
 }

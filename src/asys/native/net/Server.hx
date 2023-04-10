@@ -1,5 +1,6 @@
 package asys.native.net;
 
+import cpp.asys.SocketAddressTools.makeSocketAddress;
 import haxe.NoData;
 import asys.native.net.Ip.IpTools;
 import sys.thread.Thread;
@@ -15,14 +16,19 @@ typedef ServerOptions = {
 
 class Server {
     final native : cpp.asys.Server;
+    final address : SocketAddress;
+
+    public var localAddress(get,never):SocketAddress;
+    function get_localAddress():SocketAddress return address;
 
     function new(native) {
         this.native = native;
+        this.address = makeSocketAddress(native.name);
     }
 
     public function accept(callback:Callback<Socket>) {
         native.accept(
-            (socket, sock, peer) -> callback.success(@:privateAccess new Socket(socket, sock, peer)),
+            socket -> callback.success(@:privateAccess new Socket(socket)),
             msg -> callback.fail(new IoException(msg)));
     }
 

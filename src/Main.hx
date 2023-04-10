@@ -12,10 +12,15 @@ class Main {
 			if (error != null) {
 				trace(error.message);
 			} else {
+				trace(server.localAddress);
+
 				server.accept((error, socket) -> {
 					if (error != null) {
 						trace(error.message);
 					} else {
+						trace(socket.localAddress);
+						trace(socket.remoteAddress);
+
 						final data = Bytes.alloc(64);
 
 						socket.read(data, 0, 13, (error, c) -> {

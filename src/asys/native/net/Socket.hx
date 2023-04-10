@@ -110,21 +110,56 @@ class Socket implements IDuplex {
 		Force all buffered data to be committed.
 	**/
 	public function flush(callback:Callback<NoData>):Void {
-		throw new NotImplementedException();
+		native.flush(
+			() -> callback.success(null),
+			msg -> callback.fail(new IoException(msg)));
 	}
 
 	/**
 		Get the value of a specified socket option.
 	**/
 	public function getOption<T>(option:SocketOptionKind<T>, callback:Callback<T>) {
-		throw new NotImplementedException();
+		switch option {
+			case KeepAlive:
+				native.getKeepAlive(
+					callback.success,
+					msg -> callback.fail(new IoException(msg)));
+			case SendBuffer:
+				native.getSendBufferSize(
+					callback.success,
+					msg -> callback.fail(new IoException(msg)));
+			case ReceiveBuffer:
+				native.getRecvBufferSize(
+					callback.success,
+					msg -> callback.fail(new IoException(msg)));
+			case _:
+				callback.fail(new NotImplementedException());
+		}
 	}
 
 	/**
 		Set socket option.
 	**/
 	public function setOption<T>(option:SocketOptionKind<T>, value:T, callback:Callback<NoData>) {
-		throw new NotImplementedException();
+		switch option {
+			case KeepAlive:
+				native.setKeepAlive(
+					value,
+					() -> callback.success(null),
+					msg -> callback.fail(new IoException(msg)));
+			case SendBuffer:
+				native.setSendBufferSize(
+					value,
+					() -> callback.success(null),
+					msg -> callback.fail(new IoException(msg)));
+			case ReceiveBuffer:
+				native.setRecvBufferSize(
+					value,
+					() -> callback.success(null),
+					msg -> callback.fail(new IoException(msg)));
+			case _:
+				//
+		}
 	}
 
 	/**

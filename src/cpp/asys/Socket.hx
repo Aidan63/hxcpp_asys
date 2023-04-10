@@ -22,5 +22,19 @@ extern class Socket {
 
     function read(output : BytesData, offset : Int, length : Int, cbSuccess : Int->Void, cbFailure : AsysError->Void) : Void;
 
+    function flush(cbSuccess : Void->Void, cbFailure : AsysError->Void) : Void;
+
     function close(cbSuccess : Void->Void, cbFailure : AsysError->Void) : Void;
+
+    function getKeepAlive(cbSuccess : Bool->Void, cbFailure : AsysError->Void) : Void;
+
+    function getSendBufferSize(cbSuccess : Int->Void, cbFailure : AsysError->Void) : Void;
+
+    function getRecvBufferSize(cbSuccess : Int->Void, cbFailure : AsysError->Void) : Void;
+
+    function setKeepAlive(keepAlive : Bool, cbSuccess : Void->Void, cbFailure : AsysError->Void) : Void;
+
+    function setSendBufferSize(size : Int, cbSuccess : Void->Void, cbFailure : AsysError->Void) : Void;
+
+    function setRecvBufferSize(size : Int, cbSuccess : Void->Void, cbFailure : AsysError->Void) : Void;
 }

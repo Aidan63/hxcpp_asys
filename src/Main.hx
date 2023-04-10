@@ -1,3 +1,9 @@
+import asys.native.net.SocketOptions.SocketOptionKind;
+import haxe.io.BytesData;
+import haxe.Timer;
+import sys.thread.Thread;
+import cpp.Callable;
+import haxe.Exception;
 import asys.native.net.Server;
 import asys.native.filesystem.File;
 import asys.native.net.Ip;
@@ -12,36 +18,36 @@ class Main {
 			if (error != null) {
 				trace(error.message);
 			} else {
-				trace(server.localAddress);
-
 				server.accept((error, socket) -> {
 					if (error != null) {
 						trace(error.message);
 					} else {
-						trace(socket.localAddress);
-						trace(socket.remoteAddress);
+						socket.getOption(SocketOptionKind.ReceiveBuffer, (error, size) -> {
+							if (error != null) {
+								trace(error.message);
+							} else {
+								trace(size);
+							}
+						});
+						socket.setOption(SocketOptionKind.KeepAlive, true, (error, size) -> {
+							if (error != null) {
+								trace(error.message);
+							}
+						});
 
 						final data = Bytes.alloc(64);
 
-						socket.read(data, 0, 13, (error, c) -> {
+						socket.read(data, 0, data.length, (error, c) -> {
 							if (error != null) {
 								trace(error.message);
 							} else {
 								trace(data.sub(0, c).toString());
 							}
 							
-							socket.read(data, 0, 13, (error, c) -> {
+							socket.close((error, _) -> {
 								if (error != null) {
 									trace(error.message);
-								} else {
-									trace(data.sub(0, c).toString());
 								}
-
-								socket.close((error, _) -> {
-									if (error != null) {
-										trace(error.message);
-									}
-								});
 							});
 						});
 					}

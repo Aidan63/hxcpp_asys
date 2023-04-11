@@ -161,7 +161,7 @@ class Socket implements IDuplex {
 					() -> callback.success(null),
 					msg -> callback.fail(new IoException(msg)));
 			case _:
-				//
+				callback.fail(new NotImplementedException());
 		}
 	}
 

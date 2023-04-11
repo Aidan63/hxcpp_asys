@@ -1,5 +1,6 @@
 package asys.native.net;
 
+import haxe.exceptions.NotImplementedException;
 import asys.native.net.SocketOptions;
 import cpp.asys.SocketAddressTools.makeSocketAddress;
 import haxe.NoData;
@@ -39,6 +40,53 @@ class Server {
             msg -> callback.fail(new IoException(msg)));
     }
 
+    	/**
+		Get the value of a specified socket option.
+	**/
+	public function getOption<T>(option:SocketOptionKind<T>, callback:Callback<T>) {
+		switch option {
+			case KeepAlive:
+				native.getKeepAlive(
+					callback.success,
+					msg -> callback.fail(new IoException(msg)));
+			case SendBuffer:
+				native.getSendBufferSize(
+					callback.success,
+					msg -> callback.fail(new IoException(msg)));
+			case ReceiveBuffer:
+				native.getRecvBufferSize(
+					callback.success,
+					msg -> callback.fail(new IoException(msg)));
+			case _:
+				callback.fail(new NotImplementedException());
+		}
+	}
+
+	/**
+		Set socket option.
+	**/
+	public function setOption<T>(option:SocketOptionKind<T>, value:T, callback:Callback<NoData>) {
+		switch option {
+			case KeepAlive:
+				native.setKeepAlive(
+					value,
+					() -> callback.success(null),
+					msg -> callback.fail(new IoException(msg)));
+			case SendBuffer:
+				native.setSendBufferSize(
+					value,
+					() -> callback.success(null),
+					msg -> callback.fail(new IoException(msg)));
+			case ReceiveBuffer:
+				native.setRecvBufferSize(
+					value,
+					() -> callback.success(null),
+					msg -> callback.fail(new IoException(msg)));
+			case _:
+				callback.fail(new NotImplementedException());
+		}
+	}
+
     static public function open(address:SocketAddress, ?options:ServerOptions, callback:Callback<Server>) {
         switch address {
             case Net(host, port):
@@ -49,6 +97,7 @@ class Server {
                                 @:privateAccess Thread.current().events.context,
                                 host,
                                 port,
+                                options,
                                 server -> callback.success(new Server(server)),
                                 msg -> callback.fail(new IoException(msg)));
 						case Ipv6(_):
@@ -56,6 +105,7 @@ class Server {
                                 @:privateAccess Thread.current().events.context,
                                 host,
                                 port,
+                                options,
                                 server -> callback.success(new Server(server)),
                                 msg -> callback.fail(new IoException(msg)));
                     }
@@ -66,6 +116,7 @@ class Server {
                 cpp.asys.Server.open_ipc(
                     @:privateAccess Thread.current().events.context,
                     path,
+                    options,
                     server -> callback.success(new Server(server)),
                     msg -> callback.fail(new IoException(msg)));
         }

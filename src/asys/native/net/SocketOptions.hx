@@ -4,43 +4,43 @@ typedef SocketOptions = {
 	/**
 		Whether local addresses can be reused.
 	**/
-	var reuseAddress:Bool;
+	var ?reuseAddress:Bool;
 	/**
 		Whether local ports can be reused.
 	**/
-	var reusePort:Bool;
+	var ?reusePort:Bool;
 	/**
 		Enable sending of keep-alive messages on connection-oriented sockets.
 	**/
-	var keepAlive:Bool;
+	var ?keepAlive:Bool;
 	/**
 		The maximum size of the send buffer in bytes.
 	**/
-	var sendBuffer:Int;
+	var ?sendBuffer:Int;
 	/**
 		The maximum size of the receive buffer in bytes.
 	**/
-	var receiveBuffer:Int;
+	var ?receiveBuffer:Int;
 	/**
 		Whether UDP sockets are allowed to send packets to a broadcast address.
 	**/
-	var broadcast:Bool;
+	var ?broadcast:Bool;
 	/**
 		The outgoing interface for multicast packets.
 	**/
-	var multicastInterface:String;
+	var ?multicastInterface:String;
 	/**
 		The multicast loopback policy, which determines whether multicast packets
 		sent by the socket also reach receivers in the same host.
 		This is the case by default.
 	**/
-	var multicastLoop:Bool;
+	var ?multicastLoop:Bool;
 	/**
 		The time-to-live of outgoing multicast packets.
 		This should be a value between 0 (don't leave the interface) and 255.
 		The default value is 1 (only the local network is reached).
 	**/
-	var multicastTtl:Int;
+	var ?multicastTtl:Int;
 }
 
 enum abstract SocketOptionKind<T>(Int) {

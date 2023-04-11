@@ -1,11 +1,12 @@
 package asys.native.net;
 
+import asys.native.net.SocketOptions;
 import cpp.asys.SocketAddressTools.makeSocketAddress;
 import haxe.NoData;
 import asys.native.net.Ip.IpTools;
 import sys.thread.Thread;
 
-typedef ServerOptions = {
+typedef ServerOptions = SocketOptions & {
 	/**
 		Maximum size of incoming connections queue.
 		Default: 0

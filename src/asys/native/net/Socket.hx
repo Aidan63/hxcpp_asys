@@ -57,6 +57,7 @@ class Socket implements IDuplex {
 								@:privateAccess Thread.current().events.context,
 								host,
 								port,
+								options,
 								socket -> callback.success(new Socket(socket)),
 								msg -> callback.fail(new IoException(msg)));
 						case Ipv6(_):
@@ -64,6 +65,7 @@ class Socket implements IDuplex {
 								@:privateAccess Thread.current().events.context,
 								host,
 								port,
+								options,
 								socket -> callback.success(new Socket(socket)),
 								msg -> callback.fail(new IoException(msg)));
 					}
@@ -75,6 +77,7 @@ class Socket implements IDuplex {
 				cpp.asys.Socket.connect_ipc(
 					@:privateAccess Thread.current().events.context,
 					path,
+					options,
 					socket -> callback.success(new Socket(socket)),
 					msg -> callback.fail(new IoException(msg)));
 		}

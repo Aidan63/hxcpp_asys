@@ -21,7 +21,7 @@ class Process {
 		cpp.asys.Process.open(
             @:privateAccess Thread.current().events.context,
             command,
-            options,
+            toSensibleOptions(options),
             proc -> callback.success(@:privateAccess new ChildProcess(proc)),
             msg -> callback.fail(new IoException(msg)));
 	}
@@ -29,4 +29,57 @@ class Process {
     public function sendSignal(signal:Signal, callback:Callback<NoData>) {
 		throw new NotImplementedException();
 	}
+
+    private static function toSensibleOptions(input:ProcessOptions) {
+        if (input == null) {
+            return null;
+        }
+
+        return {
+            args : input.args,
+            cwd : input.cwd,
+            env : input.env,
+            user : input.user,
+            group : input.group,
+            detached : input.detached,
+            stdio : {
+                stdin : makeStdin(input.stdio),
+                stdout : makeStdout(input.stdio),
+                stderr : makeStderr(input.stdio),
+                extra : makeExtra(input.stdio)
+            }
+        }
+    }
+
+    static function makeExtra(arg:Null<Array<StdioConfig>>) {
+        if (arg == null || arg.length < 4) {
+            return [];
+        }
+
+        return [ for (i in 3...arg.length - 1) arg[i] ];
+    }
+
+    static function makeStderr(arg:Null<Array<StdioConfig>>) {
+        if (arg == null || arg.length < 3) {
+            return StdioConfig.PipeWrite;
+        }
+
+        return arg[2];
+    }
+
+    static function makeStdout(arg:Null<Array<StdioConfig>>) {
+        if (arg == null || arg.length < 2) {
+            return StdioConfig.PipeWrite;
+        }
+
+        return arg[1];
+    }
+
+    static function makeStdin(arg:Null<Array<StdioConfig>>) {
+        if (arg == null || arg.length < 1) {
+            return StdioConfig.PipeWrite;
+        }
+
+        return arg[0];
+    }
 }

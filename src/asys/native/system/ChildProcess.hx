@@ -1,20 +1,31 @@
 package asys.native.system;
 
+import cpp.asys.Writable.WritableWrapper;
+import cpp.asys.Readable.ReadableWrapper;
 import haxe.NoData;
-import haxe.exceptions.NotImplementedException;
 import asys.native.net.Callback;
+import haxe.exceptions.NotImplementedException;
 
 /**
 	Additional API for child processes spawned by the current process.
 	@see asys.native.system.Process.open
 **/
 class ChildProcess extends Process {
-	final native : cpp.Pointer<cpp.asys.ChildProcess>;
+	final native : cpp.asys.ChildProcess;
 
-    function new(native:cpp.Pointer<cpp.asys.ChildProcess>) {
-		super(native.ptr.pid());
+	final stdinReader : WritableWrapper;
 
-        this.native = native;
+	final stdoutReader : ReadableWrapper;
+
+	final stderrReader : ReadableWrapper;
+
+    function new(native:cpp.asys.ChildProcess) {
+		super(native.pid());
+
+        this.native  = native;
+		stdinReader  = new WritableWrapper(this.native.stdio_in);
+		stdoutReader = new ReadableWrapper(this.native.stdio_out);
+		stderrReader = new ReadableWrapper(this.native.stdio_err);
     }
 
 	/**
@@ -27,13 +38,13 @@ class ChildProcess extends Process {
 		A stream used by the process as standard output.
 	**/
 	public var stdout(get,never):IReadable;
-	function get_stdout():IReadable throw new NotImplementedException();
+	function get_stdout():IReadable return stdoutReader;
 
 	/**
 		A stream used by the process as standard error output.
 	**/
 	public var stderr(get,never):IReadable;
-	function get_stderr():IReadable throw new NotImplementedException();
+	function get_stderr():IReadable return stderrReader;
 
 	/**
 		Wait the process to shutdown and get the exit code.
@@ -41,7 +52,7 @@ class ChildProcess extends Process {
 		may be invoked with the exit code immediately.
 	**/
 	public function exitCode(callback:Callback<Int>) {
-		native.ptr.exitCode(
+		native.exitCode(
 			callback.success,
 			msg -> callback.fail(new IoException(msg)));
 	}
@@ -51,12 +62,8 @@ class ChildProcess extends Process {
 		TODO: should this method wait for the process to finish?
 	**/
 	public function close(callback:Callback<NoData>) {
-		native.ptr.close(
-			() -> {
-				callback.success(null);
-
-				native.destroy();
-			},
+		native.close(
+			() -> callback.success(null),
 			msg -> callback.fail(new IoException(msg)));
 	}
 }

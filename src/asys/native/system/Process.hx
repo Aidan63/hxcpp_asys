@@ -82,4 +82,23 @@ class Process {
 
         return arg[0];
     }
+
+    static function mapStdioConfig(arg:StdioConfig) {
+        return switch arg {
+            case PipeRead:
+                //
+            case PipeWrite:
+                //
+            case PipeReadWrite:
+                //
+            case Inherit:
+                //
+            case Ignore:
+                //
+            case File(path, flags):
+                //
+            case OpenedFile(file):
+                //
+        }
+    }
 }

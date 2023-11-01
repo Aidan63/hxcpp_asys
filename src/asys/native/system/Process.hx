@@ -7,6 +7,13 @@ import asys.native.filesystem.Callback;
 import haxe.exceptions.NotImplementedException;
 
 class Process {
+    /**
+		Current process handle.
+		Can be used to communicate with the parent process and for self-signalling.
+	**/
+	static public var current(get,never):CurrentProcess;
+	static function get_current():CurrentProcess return new CurrentProcess(cpp.asys.CurrentProcess.pid());
+
     public final pid:Int;
 
     function new(pid) {

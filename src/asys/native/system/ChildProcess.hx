@@ -32,7 +32,7 @@ class ChildProcess extends Process {
 		A stream used by the process as standard input.
 	**/
 	public var stdin(get,never):IWritable;
-	function get_stdin():IWritable throw new NotImplementedException();
+	function get_stdin():IWritable return stdinReader;
 
 	/**
 		A stream used by the process as standard output.
@@ -45,6 +45,13 @@ class ChildProcess extends Process {
 	**/
 	public var stderr(get,never):IReadable;
 	function get_stderr():IReadable return stderrReader;
+
+	override function sendSignal(signal:Signal, callback:asys.native.filesystem.Callback<NoData>) {
+		native.sendSignal(
+			cast signal,
+			() -> callback.success(null),
+			msg -> callback.fail(new IoException(msg)));
+	}
 
 	/**
 		Wait the process to shutdown and get the exit code.

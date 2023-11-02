@@ -7,6 +7,14 @@ import haxe.exceptions.NotImplementedException;
 	@see asys.native.system.Process.current
 **/
 class CurrentProcess extends Process {
+	final native : cpp.asys.CurrentProcess;
+
+	function new(_native : cpp.asys.CurrentProcess) {
+		super(_native.pid());
+		
+		native = _native;
+	}
+
 	/**
 		A stream used by the process as standard input.
 	**/

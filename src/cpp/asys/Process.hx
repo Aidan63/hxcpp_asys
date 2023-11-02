@@ -7,6 +7,9 @@ extern class Process {
     @:native('::hx::asys::system::Process_obj::open')
     static function open(ctx : Context, command : String, options : Any, onSuccess : ChildProcess->Void, onFailure : AsysError->Void) : Void;
 
+    @:native('::hx::asys::system::Process_obj::current')
+    static function current() : CurrentProcess;
+
     function pid() : Int;
 
     function sendSignal(signal:cpp.EnumBase, onSuccess:Void->Void, onFailure:AsysError->Void) : Void;

@@ -1,5 +1,6 @@
 package asys.native.system;
 
+import haxe.NoData;
 import haxe.exceptions.NotImplementedException;
 
 /**
@@ -43,5 +44,12 @@ class CurrentProcess extends Process {
 	**/
 	public function setSignalAction(signal:Signal, action:SignalAction):Void {
 		throw new NotImplementedException();
+	}
+
+	override function sendSignal(signal:Signal, callback:asys.native.filesystem.Callback<NoData>) {
+		native.sendSignal(
+			cast signal,
+			() -> callback.success(null),
+			msg -> callback.fail(new IoException(msg)));
 	}
 }

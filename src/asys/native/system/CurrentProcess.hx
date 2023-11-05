@@ -1,5 +1,7 @@
 package asys.native.system;
 
+import cpp.asys.Writable.WritableWrapper;
+import cpp.asys.Readable.ReadableWrapper;
 import haxe.NoData;
 import haxe.exceptions.NotImplementedException;
 
@@ -20,19 +22,19 @@ class CurrentProcess extends Process {
 		A stream used by the process as standard input.
 	**/
 	public var stdin(get,never):IReadable;
-	function get_stdin():IReadable throw new NotImplementedException();
+	function get_stdin():IReadable return new ReadableWrapper(native.stdio_in);
 
 	/**
 		A stream used by the process as standard output.
 	**/
 	public var stdout(get,never):IWritable;
-	function get_stdout():IWritable throw new NotImplementedException();
+	function get_stdout():IWritable return new WritableWrapper(native.stdio_out);
 
 	/**
 		A stream used by the process as standard error output.
 	**/
 	public var stderr(get,never):IWritable;
-	function get_stderr():IWritable throw new NotImplementedException();
+	function get_stderr():IWritable return new WritableWrapper(native.stdio_err);
 
 	/**
 		Set the action taken by the process on receipt of a `signal`.

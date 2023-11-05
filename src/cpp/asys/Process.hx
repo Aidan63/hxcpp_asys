@@ -8,7 +8,7 @@ extern class Process {
     static function open(ctx : Context, command : String, options : Any, onSuccess : ChildProcess->Void, onFailure : AsysError->Void) : Void;
 
     @:native('::hx::asys::system::Process_obj::current')
-    static function current() : CurrentProcess;
+    static function current(ctx : Context) : CurrentProcess;
 
     function pid() : Int;
 

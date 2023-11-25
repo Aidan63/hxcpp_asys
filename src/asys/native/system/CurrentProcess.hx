@@ -46,7 +46,7 @@ class CurrentProcess extends Process {
 		Actions for `Kill` and `Stop` signals cannot be changed.
 	**/
 	public function setSignalAction(signal:Signal, action:SignalAction):Void {
-		throw new NotImplementedException();
+		native.setSignalAction(cast signal, cast action);
 	}
 
 	override function sendSignal(signal:Signal, callback:asys.native.filesystem.Callback<NoData>) {

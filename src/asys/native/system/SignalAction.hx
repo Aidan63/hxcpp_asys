@@ -1,6 +1,5 @@
 package asys.native.system;
 
-
 /**
 	Possible actions to handle inter-process signals.
 **/

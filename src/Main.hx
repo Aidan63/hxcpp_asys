@@ -1,3 +1,4 @@
+import asys.native.system.Signal;
 import asys.native.system.Process;
 import haxe.NoData;
 import asys.native.net.Callback;
@@ -128,53 +129,75 @@ import asys.native.filesystem.FileSystem;
 
 class Main {
 	static function main() {
-		Process.open(
-			'ffmpeg',
-			{
-				args  : [ '--help' ],
-				stdio : [
-					Ignore,
-					PipeWrite,
-					Ignore
-				]
-			},
-			(error, proc) -> {
-				switch error {
-					case null:
-						trace(proc.pid);
+		trace(Process.current.pid);
 
-						final buffer = Bytes.alloc(100000);
+		final buffer = Bytes.alloc(1024);
 
-						proc.stdout.read(buffer, 0, buffer.length, (error, length) -> {
+		Process.current.stdin.read(buffer, 0, buffer.length, (error, count) -> {
+			switch error {
+				case null:
+					trace('read $count bytes from stdin');
+					trace('"${ buffer.sub(0, count).toString() }"');
+
+					{
+						final out = Bytes.ofString('goodbye');
+
+						Process.current.stdout.write(out, 0, out.length, (error, count) -> {
 							switch error {
 								case null:
-									trace(buffer.sub(0, length).toString());
+									trace('wrote $count bytes to stdout');
 								case exn:
 									trace(exn.message);
 							}
 						});
+					}
+				case exn:
+					trace(exn.message);
+			}
+		});
 
-						proc.exitCode((error, code) -> {
-							switch error {
-								case null:
-									trace('exited with $code');
+		Process.current.setSignalAction(
+			Signal.Interrupt,
+			SignalAction.Handle(() -> {
+				trace('CTRL+C pressed');
+			}));
 
-									proc.close((error, _) -> {
-										switch error {
-											case null:
-												trace('closed');
-											case exn:
-												trace(exn.message);
-										}
-									});
-								case exn:
-									trace(exn.message);
-							}
-						});
-					case exn:
-						trace(exn.message);
-				}
-			});
+		// Process.current.sendSignal(Kill, (error, _) -> {
+		// 	switch error {
+		// 		case null:
+		// 			trace('killed');
+		// 		case exn:
+		// 			trace(exn.message);
+		// 	}
+		// });
+
+		// Process.open(
+		// 	'C:\\Users\\AidanLee\\Desktop\\hxcpp_asys\\bin\\inf_sleep.exe',
+		// 	{
+		// 		args  : [],
+		// 		stdio : [
+		// 			Ignore,
+		// 			Ignore,
+		// 			Ignore
+		// 		]
+		// 	},
+		// 	(error, proc) -> {
+		// 		switch error {
+		// 			case null:
+		// 				trace(proc.pid);
+
+		// 				proc.sendSignal(Kill, (error, _) -> {
+		// 					switch error {
+		// 						case null:
+		// 							trace('killed');
+		// 						case exn:
+		// 							trace(exn.message);
+		// 					}
+		// 				});
+		// 			case exn:
+		// 				trace(exn.message);
+		// 		}
+		// 	});
 
 		// FileSystem.readBytes('C:\\Users\\AidanLee\\Desktop\\hxcpp_asys\\test3.txt', (error, data) -> {
 		// 	if (error != null) {

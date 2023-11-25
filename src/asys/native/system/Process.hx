@@ -1,5 +1,6 @@
 package asys.native.system;
 
+import haxe.ds.ReadOnlyArray;
 import sys.thread.Thread;
 import haxe.NoData;
 import haxe.io.Bytes;
@@ -15,6 +16,20 @@ class Process {
 	static function get_current():CurrentProcess return @:privateAccess new CurrentProcess(cpp.asys.Process.current(Thread.current().events.context));
 
     public final pid:Int;
+
+    /**
+		Initial IO streams opened for this process.
+		The first three indices always are:
+		- 0 - stdin
+		- 1 - stdout
+		- 2 - stderr
+		Indices from 3 and higher contain handlers for streams created as configured
+		by the corresponding indices in `options.stdio` field of `options` argument
+		for `asys.native.system.Process.open` call.
+		@see asys.native.system.ProcessOptions.stdio
+	**/
+	public var stdio(get,never):ReadOnlyArray<Stream>;
+	function get_stdio():ReadOnlyArray<Stream> throw new NotImplementedException();
 
     function new(pid) {
         this.pid = pid;

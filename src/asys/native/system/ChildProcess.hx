@@ -1,10 +1,10 @@
 package asys.native.system;
 
+import haxe.ds.ReadOnlyArray;
 import cpp.asys.Writable.WritableWrapper;
 import cpp.asys.Readable.ReadableWrapper;
 import haxe.NoData;
 import asys.native.net.Callback;
-import haxe.exceptions.NotImplementedException;
 
 /**
 	Additional API for child processes spawned by the current process.
@@ -72,5 +72,13 @@ class ChildProcess extends Process {
 		native.close(
 			() -> callback.success(null),
 			msg -> callback.fail(new IoException(msg)));
+	}
+
+	override function get_stdio():ReadOnlyArray<Stream> {
+		return [
+			Write(stdin),
+			Read(stdout),
+			Read(stderr)
+		];
 	}
 }

@@ -1,5 +1,6 @@
 package asys.native.system;
 
+import haxe.ds.ReadOnlyArray;
 import cpp.asys.Writable.WritableWrapper;
 import cpp.asys.Readable.ReadableWrapper;
 import haxe.NoData;
@@ -53,5 +54,13 @@ class CurrentProcess extends Process {
 			cast signal,
 			() -> callback.success(null),
 			msg -> callback.fail(new IoException(msg)));
+	}
+
+	override function get_stdio():ReadOnlyArray<Stream> {
+		return [
+			Read(stdin),
+			Write(stdout),
+			Write(stderr)
+		];
 	}
 }

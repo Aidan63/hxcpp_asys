@@ -4,7 +4,6 @@ import haxe.ds.ReadOnlyArray;
 import cpp.asys.Writable.WritableWrapper;
 import cpp.asys.Readable.ReadableWrapper;
 import haxe.NoData;
-import haxe.exceptions.NotImplementedException;
 
 /**
 	Additional API for the current process.

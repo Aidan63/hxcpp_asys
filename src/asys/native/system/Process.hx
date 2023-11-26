@@ -99,7 +99,7 @@ class Process {
 
     static function makeStdin(arg:Null<Array<StdioConfig>>) {
         if (arg == null || arg.length < 1) {
-            return StdioConfig.PipeWrite;
+            return StdioConfig.PipeRead;
         }
 
         return arg[0];

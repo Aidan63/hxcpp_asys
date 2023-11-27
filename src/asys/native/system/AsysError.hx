@@ -30,6 +30,8 @@ abstract AsysError(cpp.EnumBase) {
             case 12:
                 IoErrorType.BadFile;
             case 13:
+                IoErrorType.IsDirectory;
+            case 14:
                 IoErrorType.CustomError(this.getParamI(0));
             default:
                 IoErrorType.CustomError('Unknown Error ${ this._hx_getIndex() }');

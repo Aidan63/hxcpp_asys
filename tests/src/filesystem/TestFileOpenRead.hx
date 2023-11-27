@@ -1,32 +1,13 @@
+package filesystem;
+
 import haxe.io.Bytes;
 import asys.native.IoErrorType;
 import asys.native.filesystem.FileOpenFlag;
 import asys.native.filesystem.FileSystem;
-import utest.Test;
 import utest.Assert;
 import utest.Async;
 
-class TestFileOpenRead extends Test {
-    final emptyFileName : String;
-    final dummyFileName : String;
-    final dummyFileData : String;
-    final emptyDirName : String;
-
-    public function new() {
-        super();
-
-        emptyFileName = "empty.txt";
-        dummyFileName = "dummy.txt";
-        dummyFileData = "Hello, World!";
-        emptyDirName  = "empty";
-    }
-
-    function setup() {
-        sys.io.File.saveContent(emptyFileName, "");
-        sys.io.File.saveContent(dummyFileName, dummyFileData);
-        sys.FileSystem.createDirectory(emptyDirName);
-    }
-
+class TestFileOpenRead extends FileOpenTests {
     function test_fails_to_open_non_existing_file(async:Async) {
         final nonExistingFile = "does_not_exist.txt";
 

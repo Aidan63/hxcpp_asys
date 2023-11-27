@@ -1,4 +1,6 @@
+-p tests/src
 -p src
 -m Main
---cpp bin
+-L utest
+--cpp tests/bin
 --debug

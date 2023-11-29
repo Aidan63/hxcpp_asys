@@ -1,3 +1,4 @@
+import filesystem.TestFile;
 import filesystem.TestFileOpenRead;
 import filesystem.TestFileOpenWrite;
 import filesystem.TestFileOpenAppend;
@@ -19,6 +20,7 @@ function main() {
     runner.addCase(new TestFileOpenWriteX());
     runner.addCase(new TestFileOpenOverwrite());
     runner.addCase(new TestFileOpenOverwriteRead());
+    runner.addCase(new TestFile());
 
     Report.create(runner);
     

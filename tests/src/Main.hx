@@ -7,6 +7,7 @@ import filesystem.TestFileDodgyAccess;
 import filesystem.TestFileOpenReadWrite;
 import filesystem.TestFileOpenWriteRead;
 import filesystem.TestFileOpenOverwrite;
+import filesystem.TestFileModifyingBuffers;
 import filesystem.TestFileOpenOverwriteRead;
 import utest.ui.Report;
 import utest.Runner;
@@ -23,6 +24,7 @@ function main() {
     runner.addCase(new TestFileOpenOverwriteRead());
     runner.addCase(new TestFile());
     runner.addCase(new TestFileDodgyAccess());
+    runner.addCase(new TestFileModifyingBuffers());
 
     Report.create(runner);
     

@@ -41,11 +41,13 @@ class File {
 			return;
 		}
 
+		final actualLength = (cast Math.min(length, buffer.length - offset) : Int);
+
 		native.write(
 			position,
 			buffer.getData(),
 			offset,
-			length,
+			actualLength,
 			callback.success,
 			err -> callback.fail(new FsException(err, native.path)));
 	}
@@ -60,11 +62,31 @@ class File {
 		error is passed to the `callback`.
 	**/
     public function read(position:Int64, buffer:Bytes, offset:Int, length:Int, callback:Callback<Int>):Void {
+		if (position < 0) {
+			callback.fail(new FsException(IoErrorType.CustomError("Invalid position"), native.path));
+
+			return;
+		}
+
+		if (offset < 0 || offset > buffer.length) {
+			callback.fail(new FsException(IoErrorType.CustomError("Invalid offset"), native.path));
+
+			return;
+		}
+
+		if (length < 0) {
+			callback.fail(new FsException(IoErrorType.CustomError("Invalid length"), native.path));
+
+			return;
+		}
+
+		final actualLength = (cast Math.min(length, buffer.length - offset) : Int);
+
 		native.read(
 			position,
 			buffer.getData(),
 			offset,
-			length,
+			actualLength,
 			callback.success,
 			err -> callback.fail(new FsException(err, native.path)));
 	}

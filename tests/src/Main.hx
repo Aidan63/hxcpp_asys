@@ -3,6 +3,7 @@ import filesystem.TestFileOpenRead;
 import filesystem.TestFileOpenWrite;
 import filesystem.TestFileOpenAppend;
 import filesystem.TestFileOpenWriteX;
+import filesystem.TestFileDodgyAccess;
 import filesystem.TestFileOpenReadWrite;
 import filesystem.TestFileOpenWriteRead;
 import filesystem.TestFileOpenOverwrite;
@@ -21,6 +22,7 @@ function main() {
     runner.addCase(new TestFileOpenOverwrite());
     runner.addCase(new TestFileOpenOverwriteRead());
     runner.addCase(new TestFile());
+    runner.addCase(new TestFileDodgyAccess());
 
     Report.create(runner);
     

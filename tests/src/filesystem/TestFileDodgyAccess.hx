@@ -7,6 +7,23 @@ import asys.native.filesystem.FileOpenFlag;
 import haxe.io.Bytes;
 
 class TestFileDodgyAccess extends FileOpenTests {
+    function test_writing_null_buffer(async:Async) {
+        FileSystem.openFile(emptyFileName, FileOpenFlag.Write, (error, file) -> {
+            Assert.isNull(error);
+            Assert.notNull(file);
+
+            file.write(0, null, 0, 8, (error, count) -> {
+                Assert.notNull(error);
+
+                file.close((error, _) -> {
+                    Assert.isNull(error);
+
+                    async.done();
+                });
+            });
+        });
+    }
+
     function test_writing_negative_position(async:Async) {
         FileSystem.openFile(emptyFileName, FileOpenFlag.Write, (error, file) -> {
             Assert.isNull(error);
@@ -100,6 +117,23 @@ class TestFileDodgyAccess extends FileOpenTests {
             file.write(0, buffer, offset, buffer.length, (error, count) -> {
                 Assert.isNull(error);
                 Assert.equals(count, buffer.length - offset);
+
+                file.close((error, _) -> {
+                    Assert.isNull(error);
+
+                    async.done();
+                });
+            });
+        });
+    }
+
+    function test_reading_null_buffer(async:Async) {
+        FileSystem.openFile(emptyFileName, FileOpenFlag.Read, (error, file) -> {
+            Assert.isNull(error);
+            Assert.notNull(file);
+
+            file.read(0, null, 0, 8, (error, count) -> {
+                Assert.notNull(error);
 
                 file.close((error, _) -> {
                     Assert.isNull(error);

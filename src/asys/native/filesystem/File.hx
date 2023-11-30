@@ -29,6 +29,12 @@ class File {
 			return;
 		}
 
+		if (buffer == null) {
+			callback.fail(new FsException(IoErrorType.CustomError("Null buffer"), native.path));
+
+			return;
+		}
+
 		if (offset < 0 || offset > buffer.length) {
 			callback.fail(new FsException(IoErrorType.CustomError("Invalid offset"), native.path));
 
@@ -64,6 +70,12 @@ class File {
     public function read(position:Int64, buffer:Bytes, offset:Int, length:Int, callback:Callback<Int>):Void {
 		if (position < 0) {
 			callback.fail(new FsException(IoErrorType.CustomError("Invalid position"), native.path));
+
+			return;
+		}
+
+		if (buffer == null) {
+			callback.fail(new FsException(IoErrorType.CustomError("Null buffer"), native.path));
 
 			return;
 		}

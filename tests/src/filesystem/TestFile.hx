@@ -7,6 +7,8 @@ import asys.native.filesystem.FileSystem;
 import asys.native.filesystem.FileOpenFlag;
 import haxe.io.Bytes;
 
+using StringTools;
+
 class TestFile extends FileOpenTests {
     static inline var TOO_LONG_NAME_LENGTH = 65536;
     static inline var PATH_MAX = 4096;
@@ -73,22 +75,21 @@ class TestFile extends FileOpenTests {
             Assert.isNull(error);
             Assert.notNull(file);
 
-            final text   = "lorem ipsum";
-            final buffer = Bytes.ofString(text);
+            final data = haxe.Resource.getBytes("long_ipsum");
 
-            file.write(buffer, 0, buffer.length, (error, count) -> {
+            file.write(data, 0, data.length, (error, count) -> {
                 Assert.isNull(error);
-                Assert.equals(buffer.length, count);
-                
-                file.flush((error, _) -> {
+                Assert.equals(data.length, count);
+            });
+
+            file.flush((error, _) -> {
+                Assert.isNull(error);
+                Assert.equals(0, sys.io.File.getBytes(emptyFileName).compare(data));
+
+                file.close((error, _) -> {
                     Assert.isNull(error);
-                    Assert.equals(text, sys.io.File.getContent(emptyFileName));
 
-                    file.close((error, _) -> {
-                        Assert.isNull(error);
-
-                        async.done();
-                    });
+                    async.done();
                 });
             });
         });
@@ -140,6 +141,344 @@ class TestFile extends FileOpenTests {
 
                 Assert.equals(access, stat.atime.getTime() / 1000);
                 Assert.equals(modified, stat.mtime.getTime() / 1000);
+
+                file.close((error, _) -> {
+                    Assert.isNull(error);
+
+                    async.done();
+                });
+            });
+        });
+    }
+
+    function test_writing_bigger_data(async:Async) {
+        FileSystem.openFile(emptyFileName, FileOpenFlag.Append, (error, file) -> {
+            Assert.isNull(error);
+            Assert.notNull(file);
+
+            final data = haxe.Resource.getBytes("long_ipsum");
+
+            file.write(data, 0, data.length, (error, count) -> {
+                Assert.isNull(error);
+                Assert.equals(data.length, count);
+
+                file.close((error, _) -> {
+                    Assert.isNull(error);
+                    Assert.equals(0, sys.io.File.getBytes(emptyFileName).compare(data));
+
+                    async.done();
+                });
+            });
+        });
+    }
+
+    function test_reading_bigger_data(async:Async) {
+        final data = haxe.Resource.getBytes("long_ipsum");
+
+        sys.io.File.saveBytes(emptyFileName, data);
+
+        FileSystem.openFile(emptyFileName, FileOpenFlag.Read, (error, file) -> {
+            Assert.isNull(error);
+            Assert.notNull(file);
+
+            final buffer = Bytes.alloc(data.length);
+
+            file.read(0, buffer, 0, buffer.length, (error, count) -> {
+                Assert.isNull(error);
+                Assert.equals(data.length, count);
+                Assert.equals(0, buffer.compare(data));
+
+                file.close((error, _) -> {
+                    Assert.isNull(error);
+
+                    async.done();
+                });
+            });
+        });
+    }
+
+    function test_write_order(async:Async) {
+        FileSystem.openFile(emptyFileName, FileOpenFlag.Append, (error, file) -> {
+            Assert.isNull(error);
+            Assert.notNull(file);
+
+            {
+                final data = Bytes.ofString(dummyFileData.substr(0, 5));
+
+                file.write(data, 0, data.length, (error, count) -> {
+                    Assert.isNull(error);
+                    Assert.equals(data.length, count);
+                });
+            }
+
+            {
+                final data = Bytes.ofString(dummyFileData.substr(5, 8));
+
+                file.write(data, 0, data.length, (error, count) -> {
+                    Assert.isNull(error);
+                    Assert.equals(data.length, count);
+    
+                    file.close((error, _) -> {
+                        Assert.isNull(error);
+                        Assert.equals(dummyFileData, sys.io.File.getContent(emptyFileName));
+    
+                        async.done();
+                    });
+                });
+            }
+
+        });
+    }
+
+    function test_read_order(async:Async) {
+        FileSystem.openFile(dummyFileName, FileOpenFlag.Read, (error, file) -> {
+            Assert.isNull(error);
+            Assert.notNull(file);
+
+            final read = Bytes.alloc(dummyFileData.length);
+
+            read.fill(0, read.length, 'a'.code);
+
+            file.read(0, read, 0, 5, (error, count) -> {
+                Assert.isNull(error);
+                Assert.equals(5, count);
+                Assert.equals(0, Bytes.ofString(dummyFileData.substr(0, 5).rpad('a', dummyFileData.length)).compare(read));
+            });
+
+            file.read(5, read, 5, 8, (error, count) -> {
+                Assert.isNull(error);
+                Assert.equals(8, count);
+                Assert.equals(dummyFileData, read.toString());
+
+                file.close((error, _) -> {
+                    Assert.isNull(error);
+
+                    async.done();
+                });
+            });
+        });
+    }
+
+    function test_write_offset_buffer(async:Async) {
+        FileSystem.openFile(emptyFileName, FileOpenFlag.Append, (error, file) -> {
+            Assert.isNull(error);
+            Assert.notNull(file);
+
+            final data   = Bytes.ofString(dummyFileData);
+            final offset = 2;
+            final length = 5;
+
+            file.write(data, offset, length, (error, count) -> {
+                Assert.isNull(error);
+                Assert.equals(length, count);
+
+                file.close((error, _) -> {
+                    Assert.isNull(error);
+                    Assert.equals(dummyFileData.substr(offset, length), sys.io.File.getContent(emptyFileName));
+
+                    async.done();
+                });
+            });
+        });
+    }
+
+    function test_write_pads_empty_file_when_position_is_non_zero(async:Async) {
+        FileSystem.openFile(emptyFileName, FileOpenFlag.Write, (error, file) -> {
+            Assert.isNull(error);
+            Assert.notNull(file);
+
+            final data = Bytes.ofString(dummyFileData);
+            final pos  = 2;
+
+            file.write(pos, data, 0, data.length, (error, count) -> {
+                Assert.isNull(error);
+                Assert.equals(data.length, count);
+
+                file.close((error, _) -> {
+                    final found = sys.io.File.getBytes(emptyFileName);
+                    final built = Bytes.alloc(data.length + pos);
+                    
+                    built.blit(pos, Bytes.ofString(dummyFileData), 0, dummyFileData.length);
+
+                    Assert.isNull(error);
+                    Assert.equals(0, built.compare(found));
+
+                    async.done();
+                });
+            });
+        });
+    }
+
+    function test_write_pads_empty_file_when_position_is_non_zero_and_offset_buffer(async:Async) {
+        FileSystem.openFile(emptyFileName, FileOpenFlag.Write, (error, file) -> {
+            Assert.isNull(error);
+            Assert.notNull(file);
+
+            final data   = Bytes.ofString(dummyFileData);
+            final pos    = 2;
+            final length = 5;
+            final offset = 3;
+
+            file.write(pos, data, offset, length, (error, count) -> {
+                Assert.isNull(error);
+                Assert.equals(length, count);
+
+                file.close((error, _) -> {
+                    final found = sys.io.File.getBytes(emptyFileName);
+                    final built = Bytes.alloc(pos + length);
+
+                    built.blit(pos, Bytes.ofString(dummyFileData.substr(offset, length)), 0, length);
+
+                    Assert.isNull(error);
+                    Assert.equals(0, built.compare(found));
+
+                    async.done();
+                });
+            });
+        });
+    }
+
+    function test_read_into_offset_buffer(async:Async) {
+        FileSystem.openFile(dummyFileName, FileOpenFlag.Read, (error, file) -> {
+            Assert.isNull(error);
+            Assert.notNull(file);
+
+            final buffer = Bytes.alloc(16);
+            final offset = 2;
+            final length = 5;
+            
+            buffer.fill(0, buffer.length, 'a'.code);
+
+            file.read(0, buffer, offset, length, (error, count) -> {
+                Assert.isNull(error);
+                Assert.equals(length, count);
+
+                file.close((error, _) -> {
+                    final expected = Bytes.alloc(16);
+
+                    expected.fill(0, buffer.length, 'a'.code);
+                    expected.blit(offset, Bytes.ofString(dummyFileData.substr(0, length)), 0, length);
+
+                    Assert.isNull(error);
+                    Assert.equals(0, buffer.compare(expected));
+
+                    async.done();
+                });
+            });
+        });
+    }
+
+    function test_read_from_file_non_zero_position(async:Async) {
+        FileSystem.openFile(dummyFileName, FileOpenFlag.Read, (error, file) -> {
+            Assert.isNull(error);
+            Assert.notNull(file);
+
+            final buffer = Bytes.alloc(16);
+            final pos    = 2;
+            final length = 5;
+            
+            buffer.fill(0, buffer.length, 'a'.code);
+
+            file.read(pos, buffer, 0, length, (error, count) -> {
+                Assert.isNull(error);
+                Assert.equals(length, count);
+
+                file.close((error, _) -> {
+                    final expected = Bytes.alloc(16);
+
+                    expected.fill(0, buffer.length, 'a'.code);
+                    expected.blit(0, Bytes.ofString(dummyFileData.substr(pos, length)), 0, length);
+
+                    Assert.isNull(error);
+                    Assert.equals(0, buffer.compare(expected));
+
+                    async.done();
+                });
+            });
+        });
+    }
+
+    function test_read_from_file_non_zero_position_into_offset_buffer(async:Async) {
+        FileSystem.openFile(dummyFileName, FileOpenFlag.Read, (error, file) -> {
+            Assert.isNull(error);
+            Assert.notNull(file);
+
+            final buffer = Bytes.alloc(16);
+            final pos    = 2;
+            final offset = 3;
+            final length = 5;
+            
+            buffer.fill(0, buffer.length, 'a'.code);
+
+            file.read(pos, buffer, offset, length, (error, count) -> {
+                Assert.isNull(error);
+                Assert.equals(length, count);
+
+                file.close((error, _) -> {
+                    final expected = Bytes.alloc(16);
+
+                    expected.fill(0, buffer.length, 'a'.code);
+                    expected.blit(offset, Bytes.ofString(dummyFileData.substr(pos, length)), 0, length);
+
+                    Assert.isNull(error);
+                    Assert.equals(0, buffer.compare(expected));
+
+                    async.done();
+                });
+            });
+        });
+    }
+
+    function test_writing_negative_position(async:Async) {
+        FileSystem.openFile(emptyFileName, FileOpenFlag.Write, (error, file) -> {
+            Assert.isNull(error);
+            Assert.notNull(file);
+
+            final text   = "lorem ipsum";
+            final buffer = Bytes.ofString(text);
+
+            file.write(-1, buffer, 0, buffer.length, (error, count) -> {
+                Assert.notNull(error);
+
+                file.close((error, _) -> {
+                    Assert.isNull(error);
+
+                    async.done();
+                });
+            });
+        });
+    }
+
+    function test_writing_negative_offset(async:Async) {
+        FileSystem.openFile(emptyFileName, FileOpenFlag.Write, (error, file) -> {
+            Assert.isNull(error);
+            Assert.notNull(file);
+
+            final text   = "lorem ipsum";
+            final buffer = Bytes.ofString(text);
+
+            file.write(0, buffer, -1, buffer.length, (error, count) -> {
+                Assert.notNull(error);
+
+                file.close((error, _) -> {
+                    Assert.isNull(error);
+
+                    async.done();
+                });
+            });
+        });
+    }
+
+    function test_writing_wrong_byffer_offset(async:Async) {
+        FileSystem.openFile(emptyFileName, FileOpenFlag.Write, (error, file) -> {
+            Assert.isNull(error);
+            Assert.notNull(file);
+
+            final text   = "lorem ipsum";
+            final buffer = Bytes.ofString(text);
+
+            file.write(0, buffer, buffer.length + 1, buffer.length, (error, count) -> {
+                Assert.notNull(error);
 
                 file.close((error, _) -> {
                     Assert.isNull(error);

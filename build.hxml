@@ -2,5 +2,6 @@
 -p src
 -m Main
 -L utest
+-r tests/resources/long_ipsum.txt@long_ipsum
 --cpp tests/bin
 --debug

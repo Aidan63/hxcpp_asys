@@ -38,7 +38,34 @@ class TestFileModifyingBuffers extends FileOpenTests {
     }
 
     /**
-     * Very similar to above, except we shrink the buffer instead of expanding!
+     * Using the long_ipsum bytes we can test how resizing works with the internal chunking of the cpp implementation.
+     */
+    function test_expanding_big_buffer_after_sending(async:Async) {
+        FileSystem.openFile(emptyFileName, FileOpenFlag.Append, (error, file) -> {
+            Assert.isNull(error);
+            Assert.notNull(file);
+
+            final buffer = haxe.Resource.getBytes("long_ipsum");
+            final length = buffer.length;
+
+            file.write(buffer, 0, buffer.length, (error, count) -> {
+                Assert.isNull(error);
+                Assert.equals(length, count);
+
+                file.close((error, _) -> {
+                    Assert.isNull(error);
+                    Assert.equals(0, sys.io.File.getBytes(emptyFileName).compare(haxe.Resource.getBytes("long_ipsum")));
+
+                    async.done();
+                });
+            });
+
+            buffer.getData().resize(length * 2);
+        });
+    }
+
+    /**
+     * Very similar to above cases, except we shrink the buffer instead of expanding!
      */
     function test_shrinking_buffer_after_sending(async:Async) {
         FileSystem.openFile(emptyFileName, FileOpenFlag.Append, (error, file) -> {
@@ -61,6 +88,30 @@ class TestFileModifyingBuffers extends FileOpenTests {
             });
 
             buffer.getData().resize(text.length - 5);
+        });
+    }
+
+    function test_shrinking_big_buffer_after_sending(async:Async) {
+        FileSystem.openFile(emptyFileName, FileOpenFlag.Append, (error, file) -> {
+            Assert.isNull(error);
+            Assert.notNull(file);
+
+            final buffer = haxe.Resource.getBytes("long_ipsum");
+            final length = buffer.length;
+
+            file.write(buffer, 0, buffer.length, (error, count) -> {
+                Assert.isNull(error);
+                Assert.equals(length, count);
+
+                file.close((error, _) -> {
+                    Assert.isNull(error);
+                    Assert.equals(0, sys.io.File.getBytes(emptyFileName).compare(haxe.Resource.getBytes("long_ipsum")));
+
+                    async.done();
+                });
+            });
+
+            buffer.getData().resize(length - Std.int(length / 2));
         });
     }
 }

@@ -7,7 +7,7 @@ import utest.Assert;
 import asys.native.IoErrorType;
 import asys.native.filesystem.FileSystem;
 
-class TestDirectoryRead extends FileOpenTests {
+class TestDirectoryOpen extends FileOpenTests {
     final directoryName : String;
 
     public function new() {

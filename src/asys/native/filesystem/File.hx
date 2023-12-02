@@ -9,8 +9,11 @@ import haxe.io.Bytes;
 class File {
 	final native : cpp.asys.File;
 
+	public final path : String;
+
 	function new(native:cpp.asys.File) {
 		this.native = native;
+		this.path   = native.path;
 	}
 
 	/**
@@ -24,25 +27,25 @@ class File {
 	**/
     public function write(position:Int64, buffer:Bytes, offset:Int, length:Int, callback:Callback<Int>):Void {
 		if (position < 0) {
-			callback.fail(new FsException(IoErrorType.CustomError("Invalid position"), native.path));
+			callback.fail(new FsException(IoErrorType.CustomError("Invalid position"), path));
 
 			return;
 		}
 
 		if (buffer == null) {
-			callback.fail(new FsException(IoErrorType.CustomError("Null buffer"), native.path));
+			callback.fail(new FsException(IoErrorType.CustomError("Null buffer"), path));
 
 			return;
 		}
 
 		if (offset < 0 || offset > buffer.length) {
-			callback.fail(new FsException(IoErrorType.CustomError("Invalid offset"), native.path));
+			callback.fail(new FsException(IoErrorType.CustomError("Invalid offset"), path));
 
 			return;
 		}
 
 		if (length < 0) {
-			callback.fail(new FsException(IoErrorType.CustomError("Invalid length"), native.path));
+			callback.fail(new FsException(IoErrorType.CustomError("Invalid length"), path));
 
 			return;
 		}
@@ -55,7 +58,7 @@ class File {
 			offset,
 			actualLength,
 			callback.success,
-			err -> callback.fail(new FsException(err, native.path)));
+			err -> callback.fail(new FsException(err, path)));
 	}
 
 	/**
@@ -69,25 +72,25 @@ class File {
 	**/
     public function read(position:Int64, buffer:Bytes, offset:Int, length:Int, callback:Callback<Int>):Void {
 		if (position < 0) {
-			callback.fail(new FsException(IoErrorType.CustomError("Invalid position"), native.path));
+			callback.fail(new FsException(IoErrorType.CustomError("Invalid position"), path));
 
 			return;
 		}
 
 		if (buffer == null) {
-			callback.fail(new FsException(IoErrorType.CustomError("Null buffer"), native.path));
+			callback.fail(new FsException(IoErrorType.CustomError("Null buffer"), path));
 
 			return;
 		}
 
 		if (offset < 0 || offset > buffer.length) {
-			callback.fail(new FsException(IoErrorType.CustomError("Invalid offset"), native.path));
+			callback.fail(new FsException(IoErrorType.CustomError("Invalid offset"), path));
 
 			return;
 		}
 
 		if (length < 0) {
-			callback.fail(new FsException(IoErrorType.CustomError("Invalid length"), native.path));
+			callback.fail(new FsException(IoErrorType.CustomError("Invalid length"), path));
 
 			return;
 		}
@@ -100,27 +103,27 @@ class File {
 			offset,
 			actualLength,
 			callback.success,
-			err -> callback.fail(new FsException(err, native.path)));
+			err -> callback.fail(new FsException(err, path)));
 	}
 
 	public function info(callback:Callback<FileInfo>):Void {
 		native.info(
 			callback.success,
-			err -> callback.fail(new FsException(err, native.path)));
+			err -> callback.fail(new FsException(err, path)));
 	}
 
 	public function resize(size : Int, callback:Callback<NoData>):Void {
 		native.resize(
 			size,
 			() -> callback.success(null),
-			err -> callback.fail(new FsException(err, native.path)));
+			err -> callback.fail(new FsException(err, path)));
 	}
 
 	public function setPermissions(permissions:FilePermissions, callback:Callback<NoData>):Void {
 		native.setPermissions(
 			permissions,
 			() -> callback.success(null),
-			err -> callback.fail(new FsException(err, native.path)));
+			err -> callback.fail(new FsException(err, path)));
 	}
 
 	public function setOwner(user:SystemUser, group:SystemGroup, callback:Callback<NoData>):Void {
@@ -128,7 +131,7 @@ class File {
 			user,
 			group,
 			() -> callback.success(null),
-			err -> callback.fail(new FsException(err, native.path)));
+			err -> callback.fail(new FsException(err, path)));
 	}
 
 	public function setTimes(accessTime:Int, modificationTime:Int, callback:Callback<NoData>):Void {
@@ -136,18 +139,18 @@ class File {
 			accessTime,
 			modificationTime,
 			() -> callback.success(null),
-			err -> callback.fail(new FsException(err, native.path)));
+			err -> callback.fail(new FsException(err, path)));
 	}
 
 	public function flush(callback:Callback<NoData>):Void {
 		native.flush(
 			() -> callback.success(null),
-			err -> callback.fail(new FsException(err, native.path)));
+			err -> callback.fail(new FsException(err, path)));
 	}
 
     public function close(callback:Callback<NoData>):Void {
 		native.close(
 			() -> callback.success(null),
-			err -> callback.fail(new FsException(err, native.path)));
+			err -> callback.fail(new FsException(err, path)));
 	}
 }

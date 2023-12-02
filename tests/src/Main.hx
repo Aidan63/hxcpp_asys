@@ -1,4 +1,5 @@
 import filesystem.TestFile;
+import filesystem.TestFileSystem;
 import filesystem.TestFileOpenRead;
 import filesystem.TestFileOpenWrite;
 import filesystem.TestDirectoryOpen;
@@ -29,6 +30,7 @@ function main() {
     runner.addCase(new TestFileModifyingBuffers());
     runner.addCase(new TestDirectoryOpen());
     runner.addCase(new TestDirectoryList());
+    runner.addCase(new TestFileSystem());
 
     Report.create(runner);
     

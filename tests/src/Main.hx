@@ -1,5 +1,4 @@
 import filesystem.TestFile;
-import filesystem.TestFileSystem;
 import filesystem.TestFileOpenRead;
 import filesystem.TestFileOpenWrite;
 import filesystem.TestDirectoryOpen;
@@ -10,6 +9,7 @@ import filesystem.TestFileDodgyAccess;
 import filesystem.TestFileOpenReadWrite;
 import filesystem.TestFileOpenWriteRead;
 import filesystem.TestFileOpenOverwrite;
+import filesystem.TestFileSystemTempFile;
 import filesystem.TestFileModifyingBuffers;
 import filesystem.TestFileOpenOverwriteRead;
 import utest.ui.Report;
@@ -30,7 +30,7 @@ function main() {
     runner.addCase(new TestFileModifyingBuffers());
     runner.addCase(new TestDirectoryOpen());
     runner.addCase(new TestDirectoryList());
-    runner.addCase(new TestFileSystem());
+    runner.addCase(new TestFileSystemTempFile());
 
     Report.create(runner);
     

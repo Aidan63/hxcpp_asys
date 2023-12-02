@@ -1,6 +1,7 @@
 import filesystem.TestFile;
 import filesystem.TestFileOpenRead;
 import filesystem.TestFileOpenWrite;
+import filesystem.TestDirectoryRead;
 import filesystem.TestFileOpenAppend;
 import filesystem.TestFileOpenWriteX;
 import filesystem.TestFileDodgyAccess;
@@ -25,6 +26,7 @@ function main() {
     runner.addCase(new TestFile());
     runner.addCase(new TestFileDodgyAccess());
     runner.addCase(new TestFileModifyingBuffers());
+    runner.addCase(new TestDirectoryRead());
 
     Report.create(runner);
     

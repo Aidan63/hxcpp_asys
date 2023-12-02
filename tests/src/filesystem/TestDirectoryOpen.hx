@@ -1,32 +1,11 @@
 package filesystem;
 
-import haxe.io.Path;
-import utils.Directory;
 import utest.Async;
 import utest.Assert;
 import asys.native.IoErrorType;
 import asys.native.filesystem.FileSystem;
 
-class TestDirectoryOpen extends FileOpenTests {
-    final directoryName : String;
-
-    public function new() {
-        super();
-
-        directoryName = "test_dir";
-    }
-
-    override function setup() {
-        super.setup();
-
-        ensureDirectoryIsEmpty(directoryName);
-
-        sys.FileSystem.createDirectory(Path.join([ directoryName, "sub_dir" ]));
-
-        sys.io.File.saveContent(Path.join([ directoryName, "file1.txt" ]), "");
-        sys.io.File.saveContent(Path.join([ directoryName, "file2.txt" ]), "");
-    }
-
+class TestDirectoryOpen extends DirectoryTests {
     function test_opening_directory(async:Async) {
         FileSystem.openDirectory(directoryName, 64, (error, dir) -> {
             Assert.isNull(error);

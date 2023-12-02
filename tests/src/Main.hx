@@ -10,6 +10,8 @@ import filesystem.TestFileOpenReadWrite;
 import filesystem.TestFileOpenWriteRead;
 import filesystem.TestFileOpenOverwrite;
 import filesystem.TestFileSystemTempFile;
+import filesystem.TestFileSystemReadBytes;
+import filesystem.TestFileSystemReadString;
 import filesystem.TestFileModifyingBuffers;
 import filesystem.TestFileOpenOverwriteRead;
 import utest.ui.Report;
@@ -31,6 +33,8 @@ function main() {
     runner.addCase(new TestDirectoryOpen());
     runner.addCase(new TestDirectoryList());
     runner.addCase(new TestFileSystemTempFile());
+    runner.addCase(new TestFileSystemReadBytes());
+    runner.addCase(new TestFileSystemReadString());
 
     Report.create(runner);
     

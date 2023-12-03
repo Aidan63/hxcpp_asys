@@ -3,10 +3,7 @@ package filesystem;
 import utest.Async;
 import utest.Assert;
 import asys.native.IoErrorType;
-import asys.native.filesystem.File;
 import asys.native.filesystem.FileSystem;
-import asys.native.filesystem.FileOpenFlag;
-import haxe.io.Bytes;
 
 class TestFileSystemReadBytes extends FileOpenTests {
     function test_reading_file(async:Async) {

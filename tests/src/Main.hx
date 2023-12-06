@@ -8,10 +8,12 @@ import filesystem.TestFileOpenWriteX;
 import filesystem.TestFileSystemWrite;
 import filesystem.TestFileDodgyAccess;
 import filesystem.TestFileSystemAppend;
+import filesystem.TestFileSystemWriteX;
 import filesystem.TestFileOpenReadWrite;
 import filesystem.TestFileOpenWriteRead;
 import filesystem.TestFileOpenOverwrite;
 import filesystem.TestFileSystemTempFile;
+import filesystem.TestFileSystemOverwrite;
 import filesystem.TestFileSystemReadBytes;
 import filesystem.TestFileSystemReadString;
 import filesystem.TestFileModifyingBuffers;
@@ -39,6 +41,8 @@ function main() {
     runner.addCase(new TestFileSystemReadString());
     runner.addCase(new TestFileSystemWrite());
     runner.addCase(new TestFileSystemAppend());
+    runner.addCase(new TestFileSystemWriteX());
+    runner.addCase(new TestFileSystemOverwrite());
 
     Report.create(runner);
     

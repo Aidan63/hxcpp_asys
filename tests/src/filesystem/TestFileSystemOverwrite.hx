@@ -6,12 +6,13 @@ import utest.Assert;
 import asys.native.IoErrorType;
 import asys.native.filesystem.FileSystem;
 
+using StringTools;
 
-class TestFileSystemAppend extends FileOpenTests {
+class TestFileSystemOverwrite extends FileOpenTests {   
     function test_write_bytes_to_empty_file(async:Async) {
         final bytes = Bytes.ofString(dummyFileData);
 
-        FileSystem.writeBytes(emptyFileName, bytes, Append, (error, _) -> {
+        FileSystem.writeBytes(emptyFileName, bytes, Overwrite, (error, _) -> {
             if (Assert.isNull(error)) {
                 Assert.equals(0, bytes.compare(sys.io.File.getBytes(emptyFileName)));
             }
@@ -21,7 +22,7 @@ class TestFileSystemAppend extends FileOpenTests {
     }
 
     function test_write_string_to_empty_file(async:Async) {
-        FileSystem.writeString(emptyFileName, dummyFileData, Append, (error, _) -> {
+        FileSystem.writeString(emptyFileName, dummyFileData, Overwrite, (error, _) -> {
             if (Assert.isNull(error)) {
                 Assert.equals(dummyFileData, sys.io.File.getContent(emptyFileName));
             }
@@ -33,7 +34,7 @@ class TestFileSystemAppend extends FileOpenTests {
     function test_write_bytes_to_non_existing_file(async:Async) {
         final bytes = Bytes.ofString(dummyFileData);
 
-        FileSystem.writeBytes(nonExistingFile, bytes, Append, (error, _) -> {
+        FileSystem.writeBytes(nonExistingFile, bytes, Overwrite, (error, _) -> {
             if (Assert.isNull(error)) {
                 Assert.equals(0, bytes.compare(sys.io.File.getBytes(nonExistingFile)));
             }
@@ -43,7 +44,7 @@ class TestFileSystemAppend extends FileOpenTests {
     }
 
     function test_write_string_to_non_existing_file(async:Async) {
-        FileSystem.writeString(nonExistingFile, dummyFileData, Append, (error, _) -> {
+        FileSystem.writeString(nonExistingFile, dummyFileData, Overwrite, (error, _) -> {
             if (Assert.isNull(error)) {
                 Assert.equals(dummyFileData, sys.io.File.getBytes(nonExistingFile));
             }
@@ -52,25 +53,27 @@ class TestFileSystemAppend extends FileOpenTests {
         });
     }
 
-    function test_bytes_appending_existing_file(async:Async) {
-        final text  = "lorem";
-        final bytes = Bytes.ofString(text);
+    function test_bytes_overwrite_existing_file(async:Async) {
+        final text     = "lorem";
+        final bytes    = Bytes.ofString(text);
+        final expected = Bytes.ofString(dummyFileData.replace(dummyFileData.substr(0, text.length), text));
 
-        FileSystem.writeBytes(dummyFileName, bytes, Append, (error, _) -> {
+        FileSystem.writeBytes(dummyFileName, bytes, Overwrite, (error, _) -> {
             if (Assert.isNull(error)) {
-                Assert.equals(0, Bytes.ofString(dummyFileData + text).compare(sys.io.File.getBytes(dummyFileName)));
+                Assert.equals(0, expected.compare(sys.io.File.getBytes(dummyFileName)));
             }
 
             async.done();
         });
     }
 
-    function test_string_appending_existing_file(async:Async) {
-        final text = "lorem";
+    function test_string_overwrite_existing_file(async:Async) {
+        final text     = "lorem";
+        final expected = dummyFileData.replace(dummyFileData.substr(0, text.length), text);
 
-        FileSystem.writeString(dummyFileName, text, Append, (error, _) -> {
+        FileSystem.writeString(dummyFileName, text, Overwrite, (error, _) -> {
             if (Assert.isNull(error)) {
-                Assert.equals(dummyFileData + text, sys.io.File.getContent(dummyFileName));
+                Assert.equals(expected, sys.io.File.getContent(dummyFileName));
             }
 
             async.done();
@@ -78,7 +81,7 @@ class TestFileSystemAppend extends FileOpenTests {
     }
 
     function test_writing_bytes_directory_as_file(async:Async) {
-        FileSystem.writeBytes(emptyDirName, Bytes.ofString(dummyFileData), Append, (error, _) -> {
+        FileSystem.writeBytes(emptyDirName, Bytes.ofString(dummyFileData), Overwrite, (error, _) -> {
             if (Assert.notNull(error)) {
                 Assert.equals(emptyDirName, error.path);
                 Assert.equals(IoErrorType.IsDirectory, error.type);
@@ -89,7 +92,7 @@ class TestFileSystemAppend extends FileOpenTests {
     }
 
     function test_writing_string_directory_as_file(async:Async) {
-        FileSystem.writeString(emptyDirName, dummyFileData, Append, (error, _) -> {
+        FileSystem.writeString(emptyDirName, dummyFileData, Overwrite, (error, _) -> {
             if (Assert.notNull(error)) {
                 Assert.equals(emptyDirName, error.path);
                 Assert.equals(IoErrorType.IsDirectory, error.type);

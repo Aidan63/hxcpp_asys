@@ -9,6 +9,8 @@ private extern class FileAccessMode {
 
 @:native('::hx::asys::filesystem::Directory')
 extern class Directory {
+    final path : String;
+
     function next(batch : Int, cbSuccess : Array<String>->Void, cbFailure : AsysError->Void) : Void;
     function close(cbSuccess : Void->Void, cbFailure : AsysError->Void) : Void;
 

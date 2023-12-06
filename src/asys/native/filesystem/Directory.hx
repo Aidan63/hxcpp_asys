@@ -16,7 +16,7 @@ class Directory {
         this.dir = dir;
         this.batch = batch;
 
-		path = 'stub';
+		path = dir.path;
 	}
 
 	/**

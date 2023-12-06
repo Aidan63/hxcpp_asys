@@ -9,15 +9,12 @@ import haxe.io.Bytes;
 
 class TestFileOpenAppend extends FileOpenTests
 {
-    final nonExistingFile : String;
-
     final flags : FileOpenFlag<FileAppend>;
 
     public function new() {
         super();
 
-        nonExistingFile = "does_not_exist.txt";
-        flags           = FileOpenFlag.Append;
+        flags = FileOpenFlag.Append;
     }
 
     function teardown() {

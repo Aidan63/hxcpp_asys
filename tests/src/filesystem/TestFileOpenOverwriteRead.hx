@@ -9,15 +9,12 @@ import asys.native.filesystem.FileOpenFlag;
 import haxe.io.Bytes;
 
 class TestFileOpenOverwriteRead extends FileOpenTests {
-    final nonExistingFile : String;
-
     final flags : FileOpenFlag<File>;
 
     public function new() {
         super();
 
-        nonExistingFile = "does_not_exist.txt";
-        flags           = FileOpenFlag.OverwriteRead;
+        flags = FileOpenFlag.OverwriteRead;
     }
 
     override function setup() {

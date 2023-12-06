@@ -9,23 +9,12 @@ import asys.native.filesystem.FileOpenFlag;
 import haxe.io.Bytes;
 
 class TestFileOpenWriteRead extends FileOpenTests {
-    final nonExistingFile : String;
-
     final flags : FileOpenFlag<File>;
 
     public function new() {
         super();
 
-        nonExistingFile = "does_not_exist.txt";
-        flags           = FileOpenFlag.WriteRead;
-    }
-
-    override function setup() {
-        super.setup();
-
-        if (sys.FileSystem.exists(nonExistingFile)) {
-            sys.FileSystem.deleteFile(nonExistingFile);
-        }
+        flags = FileOpenFlag.WriteRead;
     }
 
     function test_write_to_non_existing_file(async:Async) {

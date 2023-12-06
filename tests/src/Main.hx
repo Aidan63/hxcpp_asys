@@ -5,7 +5,9 @@ import filesystem.TestDirectoryOpen;
 import filesystem.TestDirectoryList;
 import filesystem.TestFileOpenAppend;
 import filesystem.TestFileOpenWriteX;
+import filesystem.TestFileSystemWrite;
 import filesystem.TestFileDodgyAccess;
+import filesystem.TestFileSystemAppend;
 import filesystem.TestFileOpenReadWrite;
 import filesystem.TestFileOpenWriteRead;
 import filesystem.TestFileOpenOverwrite;
@@ -35,6 +37,8 @@ function main() {
     runner.addCase(new TestFileSystemTempFile());
     runner.addCase(new TestFileSystemReadBytes());
     runner.addCase(new TestFileSystemReadString());
+    runner.addCase(new TestFileSystemWrite());
+    runner.addCase(new TestFileSystemAppend());
 
     Report.create(runner);
     

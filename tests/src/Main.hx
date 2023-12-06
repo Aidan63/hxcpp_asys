@@ -18,6 +18,7 @@ import filesystem.TestFileSystemReadBytes;
 import filesystem.TestFileSystemReadString;
 import filesystem.TestFileModifyingBuffers;
 import filesystem.TestFileOpenOverwriteRead;
+import filesystem.TestFileSystemCreateDirectory;
 import utest.ui.Report;
 import utest.Runner;
 
@@ -43,6 +44,7 @@ function main() {
     runner.addCase(new TestFileSystemAppend());
     runner.addCase(new TestFileSystemWriteX());
     runner.addCase(new TestFileSystemOverwrite());
+    runner.addCase(new TestFileSystemCreateDirectory());
 
     Report.create(runner);
     

@@ -1,4 +1,5 @@
 import filesystem.TestFile;
+import filesystem.TestFilePath;
 import filesystem.TestFileOpenRead;
 import filesystem.TestFileOpenWrite;
 import filesystem.TestDirectoryOpen;
@@ -19,6 +20,7 @@ import filesystem.TestFileSystemReadString;
 import filesystem.TestFileModifyingBuffers;
 import filesystem.TestFileOpenOverwriteRead;
 import filesystem.TestFileSystemCreateDirectory;
+import filesystem.TestFileSystemUniqueDirectory;
 import utest.ui.Report;
 import utest.Runner;
 
@@ -45,6 +47,8 @@ function main() {
     runner.addCase(new TestFileSystemWriteX());
     runner.addCase(new TestFileSystemOverwrite());
     runner.addCase(new TestFileSystemCreateDirectory());
+    runner.addCase(new TestFileSystemUniqueDirectory());
+    runner.addCase(new TestFilePath());
 
     Report.create(runner);
     

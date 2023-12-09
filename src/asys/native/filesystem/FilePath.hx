@@ -10,7 +10,7 @@ private typedef NativeFilePath = String;
 abstract FilePath(NativeFilePath) to String {
 	public static var SEPARATOR(get,never):String;
 	static inline function get_SEPARATOR():String {
-		return Sys.systemName() == 'Windows' ? '\\' : '/';
+		return if (Sys.systemName() == 'Windows') '\\' else '/';
 	}
 
 	overload extern static public inline function createPath(path:String, ...appendices:String):FilePath {
@@ -66,8 +66,7 @@ abstract FilePath(NativeFilePath) to String {
 			case 0: false;
 			case _ if (isSeparator(this.fastCodeAt(0))): true;
 			case 1: false;
-			case length if (SEPARATOR == '\\'): this.fastCodeAt(1) == ':'.code && length >= 3 && isSeparator(this.fastCodeAt(2));
-			case _: false;
+			case length: this.fastCodeAt(1) == ':'.code && length >= 3 && isSeparator(this.fastCodeAt(2));
 		}
 	}
 
@@ -140,27 +139,94 @@ abstract FilePath(NativeFilePath) to String {
 		It does not matter if the path does not exist.
 	**/
 	public function normalize():FilePath {
-		final parts = if (SEPARATOR == '\\') {
-			this.replace('\\', '/').split('/');
-		} else {
-			this.split('/');
+
+		// Follow the normalisation algorithm defined here
+		// https://en.cppreference.com/w/cpp/filesystem/path
+
+		// If the path is empty, stop (normal form of an empty path is an empty path). 
+
+		if (this == null) {
+			return new FilePath(".");
 		}
 
-		var i      = parts.length - 1;
-		var result = [];
-		var skip   = 0;
+		var working = this.trim();
+		if (working.length == 0) {
+			return new FilePath(".");
+		}
+
+		// Replace each directory-separator (which may consist of multiple slashes) with a single SEPARATOR.
+
+		var i = 0;
+		while (i < working.length) {
+			if (isSeparator(working.fastCodeAt(i))) {
+				var j = i + 1;
+				while (j < working.length) {
+					if (isSeparator(working.fastCodeAt(j))) {
+						j++;
+					} else {
+						break;
+					}
+				}
+
+				working = working.substring(0, i) + SEPARATOR + working.substr(j);
+
+				i = j;
+			} else {
+				i++;
+			}
+		}
+
+		// Remove each dot and immediately following separator.
+
+		var i = 0;
+		while (i < working.length) {
+			if (".".code == working.fastCodeAt(i) && i + 1 < working.length && isSeparator(working.fastCodeAt(i + 1))) {
+				// Special case for ./ being the very first thing in the path.
+				if (i == 0) {
+					if (i + 2 < working.length) {
+						working = working.substr(2);
+					} else {
+						return FilePath.ofString(".");
+					}
+				} else {
+					if (isSeparator(working.fastCodeAt(i - 1))) {
+						if (i + 2 < working.length) {
+							final begin = working.substring(0, i);
+							final end   = working.substr(i + 2);
+	
+							working = begin + end;
+							i       = begin.length;
+						} else {
+							working = working.substring(0, i);
+						}
+					} else {
+						i++;
+					}
+				}
+			} else {
+				i++;
+			}
+		}
+		
+		// Remove each non-dot-dot filename immediately followed by a SEPARATOR and a dot-dot
+
+		final parts  = working.split(SEPARATOR);
+		final result = [];
+
+		var i    = parts.length - 1;
+		var skip = 0;
 
 		while (i >= 0) {
 			switch parts[i] {
 				case '.' | '':
+					//
 				case '..':
 					++skip;
-				case _ if (skip > 0):
+				case _ if(skip > 0):
 					--skip;
 				case part:
 					result.unshift(part);
 			}
-
 			--i;
 		}
 
@@ -168,7 +234,48 @@ abstract FilePath(NativeFilePath) to String {
 			result.unshift('..');
 		}
 
-		return ofString(result.join(SEPARATOR));
+		// If there is root-directory, remove all dot-dots and any directory-separators immediately following them. 
+
+		final isAbs = FilePath.ofString(working).isAbsolute();
+		
+		var i = if (isAbs && justRootDirectory(working)) 0 else 1;
+		if (isAbs) {
+			while (i < result.length) {
+				if (result[i] == "..") {
+					result.shift();
+				}
+
+				i++;
+			}
+		}
+
+		// Splitting will have potentially removed our root
+
+		return if (result.length == 0) {
+			final prefix = if (isAbs) {
+				getRootPath(working) + SEPARATOR;
+			} else {
+				".";
+			}
+
+			FilePath.ofString(prefix);
+		} else {
+			final prefix = if (isAbs && justRootDirectory(working)) {
+				SEPARATOR;
+			} else {
+				"";
+			}
+
+			working = prefix + result.join(SEPARATOR);
+
+			// Remove trailing slash
+
+			if (isSeparator(working.fastCodeAt(working.length - 1))) {
+				working = working.substr(0, working.length - 1);
+			}
+
+			FilePath.ofString(working);
+		}
 	}
 
 	public function add(path:FilePath):FilePath {
@@ -198,7 +305,7 @@ abstract FilePath(NativeFilePath) to String {
 	}
 
 	static inline function isSeparator(c:Int):Bool {
-		return c == '/'.code || (SEPARATOR == '\\' && c == '\\'.code);
+		return c == "/".code || String.fromCharCode(c) == SEPARATOR;
 	}
 
 	static function trimSlashes(s:String):String {
@@ -222,5 +329,35 @@ abstract FilePath(NativeFilePath) to String {
 
 	static inline function isDriveLetter(c:Int):Bool {
 		return ('a'.code <= c && c <= 'z'.code) || ('A'.code <= c && c <= 'Z'.code);
+	}
+
+	static function getRootPath(p:String):String {
+		var i = 0;
+		while (i < p.length) {
+			if (isSeparator(p.fastCodeAt(i))) {
+				return p.substring(0, i);
+			}
+
+			i++;
+		}
+
+		return "";
+	}
+
+	static function justRootDirectory(p:String):Bool {
+		var i = 0;
+		while (i < p.length) {
+			if (!p.isSpace(i)) {
+				return if (isSeparator(p.fastCodeAt(i))) {
+					true;
+				} else {
+					false;
+				}
+			}
+
+			i++;
+		}
+
+		return false;
 	}
 }

@@ -9,7 +9,7 @@ private typedef NativeFilePath = String;
 
 abstract FilePath(NativeFilePath) to String {
 	public static var SEPARATOR(get,never):String;
-	static inline function get_SEPARATOR():String {
+	static function get_SEPARATOR():String {
 		return if (Sys.systemName() == 'Windows') '\\' else '/';
 	}
 
@@ -146,12 +146,12 @@ abstract FilePath(NativeFilePath) to String {
 		// If the path is empty, stop (normal form of an empty path is an empty path). 
 
 		if (this == null) {
-			return new FilePath(".");
+			return new FilePath("");
 		}
 
 		var working = this.trim();
 		if (working.length == 0) {
-			return new FilePath(".");
+			return new FilePath("");
 		}
 
 		// Replace each directory-separator (which may consist of multiple slashes) with a single SEPARATOR.
@@ -211,6 +211,7 @@ abstract FilePath(NativeFilePath) to String {
 		// Remove each non-dot-dot filename immediately followed by a SEPARATOR and a dot-dot
 
 		// Extract and save any root name as we will want to re-prefix it later.
+		final isAbs  = FilePath.ofString(working).isAbsolute();
 		final prefix = extractRootName(working);
 		working = working.substr(prefix.length);
 
@@ -225,13 +226,14 @@ abstract FilePath(NativeFilePath) to String {
 				case '.' | '':
 					//
 				case '..':
-					++skip;
+					skip++;
 				case _ if(skip > 0):
-					--skip;
+					skip--;
 				case part:
 					result.unshift(part);
 			}
-			--i;
+
+			i--;
 		}
 
 		for (_ in 0...skip) {
@@ -240,20 +242,21 @@ abstract FilePath(NativeFilePath) to String {
 
 		// If there is root-directory, remove all dot-dots and any directory-separators immediately following them. 
 
-		final isAbs = FilePath.ofString(working).isAbsolute();
-		
 		if (isAbs) {
 			var i = rootIndex(working);
 
 			while (i < result.length) {
-				if (result[i] == "..") {
-					result.shift();
+				if (result[i] != "..") {
+					break;
 				}
+				
+				result.shift();
 
 				i++;
 			}
 		}
 
+		// If the path is empty, add a dot (normal form of ./ is .)
 		// Splitting will have potentially removed our root
 
 		return if (result.length == 0) {
@@ -309,7 +312,7 @@ abstract FilePath(NativeFilePath) to String {
 		return new FilePath(trimSlashes(this) + SEPARATOR + strPath);
 	}
 
-	static inline function isSeparator(c:Int):Bool {
+	static function isSeparator(c:Int):Bool {
 		return c == "/".code || String.fromCharCode(c) == SEPARATOR;
 	}
 
@@ -332,7 +335,7 @@ abstract FilePath(NativeFilePath) to String {
 		}
 	}
 
-	static inline function isDriveLetter(c:Int):Bool {
+	static function isDriveLetter(c:Int):Bool {
 		return ('a'.code <= c && c <= 'z'.code) || ('A'.code <= c && c <= 'Z'.code);
 	}
 

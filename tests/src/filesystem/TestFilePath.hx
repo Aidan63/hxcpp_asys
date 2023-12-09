@@ -60,9 +60,9 @@ class TestFilePath extends Test {
     // }
 
     function test_normalise_empty_paths() {
-        Assert.equals('.', FilePath.ofString(null).normalize());
-        Assert.equals('.', FilePath.ofString('').normalize());
-        Assert.equals('.', FilePath.ofString('        ').normalize());
+        Assert.equals('', FilePath.ofString(null).normalize());
+        Assert.equals('', FilePath.ofString('').normalize());
+        Assert.equals('', FilePath.ofString('        ').normalize());
     }
 
     function test_normalise_multiple_separators() {

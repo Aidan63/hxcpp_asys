@@ -2,7 +2,6 @@ package asys.native.filesystem;
 
 import sys.thread.Thread;
 import haxe.NoData;
-import haxe.io.Path;
 import haxe.io.Bytes;
 import asys.native.system.SystemUser;
 import asys.native.system.SystemGroup;
@@ -229,7 +228,7 @@ class FileSystem {
 	static public function uniqueDirectory(parentDirectory:String, ?prefix:String, ?permissions:FilePermissions, recursive:Bool = false, callback:Callback<String>):Void {
 		final rndIntValue = Std.random(2147483647);
 		final finalPrefix = if (prefix == null) Std.string(rndIntValue) else '$prefix$rndIntValue';
-		final finalPath   = Path.join([ parentDirectory, finalPrefix ]);
+		final finalPath   = FilePath.createPath(parentDirectory, finalPrefix);
 
 		createDirectory(finalPath, permissions, recursive, (error, _) -> {
 			if (error != null) {

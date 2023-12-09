@@ -210,6 +210,10 @@ abstract FilePath(NativeFilePath) to String {
 		
 		// Remove each non-dot-dot filename immediately followed by a SEPARATOR and a dot-dot
 
+		// Extract and save any root name as we will want to re-prefix it later.
+		final prefix = extractRootName(working);
+		working = working.substr(prefix.length);
+
 		final parts  = working.split(SEPARATOR);
 		final result = [];
 
@@ -238,8 +242,9 @@ abstract FilePath(NativeFilePath) to String {
 
 		final isAbs = FilePath.ofString(working).isAbsolute();
 		
-		var i = if (isAbs && justRootDirectory(working)) 0 else 1;
 		if (isAbs) {
+			var i = rootIndex(working);
+
 			while (i < result.length) {
 				if (result[i] == "..") {
 					result.shift();
@@ -252,21 +257,21 @@ abstract FilePath(NativeFilePath) to String {
 		// Splitting will have potentially removed our root
 
 		return if (result.length == 0) {
-			final prefix = if (isAbs) {
-				getRootPath(working) + SEPARATOR;
+			if (isAbs) {
+				FilePath.ofString(prefix + SEPARATOR);
 			} else {
-				".";
+				if (prefix == "") {
+					FilePath.ofString(".");
+				} else {
+					FilePath.ofString(prefix);
+				}
 			}
-
-			FilePath.ofString(prefix);
 		} else {
-			final prefix = if (isAbs && justRootDirectory(working)) {
-				SEPARATOR;
+			working = if (isAbs) {
+				prefix + SEPARATOR + result.join(SEPARATOR);
 			} else {
-				"";
+				prefix + result.join(SEPARATOR);
 			}
-
-			working = prefix + result.join(SEPARATOR);
 
 			// Remove trailing slash
 
@@ -331,33 +336,32 @@ abstract FilePath(NativeFilePath) to String {
 		return ('a'.code <= c && c <= 'z'.code) || ('A'.code <= c && c <= 'Z'.code);
 	}
 
-	static function getRootPath(p:String):String {
-		var i = 0;
-		while (i < p.length) {
-			if (isSeparator(p.fastCodeAt(i))) {
-				return p.substring(0, i);
-			}
+	static function extractRootName(p:String):String {
+		if (p == null || p.length < 2) {
+			return "";
+		}
 
-			i++;
+		if (isDriveLetter(p.fastCodeAt(0)) && ":".code == p.fastCodeAt(1)) {
+			return p.substr(0, 2);
 		}
 
 		return "";
 	}
 
-	static function justRootDirectory(p:String):Bool {
+	static function rootIndex(p:String):Int {
 		var i = 0;
 		while (i < p.length) {
 			if (!p.isSpace(i)) {
 				return if (isSeparator(p.fastCodeAt(i))) {
-					true;
+					i;
 				} else {
-					false;
+					-1;
 				}
 			}
 
 			i++;
 		}
 
-		return false;
+		return -1;
 	}
 }

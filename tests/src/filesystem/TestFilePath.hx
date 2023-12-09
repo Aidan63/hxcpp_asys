@@ -101,5 +101,7 @@ class TestFilePath extends Test {
         Assert.equals('C:${FilePath.SEPARATOR}', FilePath.ofString('C:/..').normalize());
         Assert.equals('..${FilePath.SEPARATOR}..', FilePath.ofString('leaves/../non-redundant/../double-dots/../../..').normalize());
         Assert.equals('non-existent${FilePath.SEPARATOR}file', FilePath.ofString('path/to/./../../non-existent/./file').normalize());
+        Assert.equals('C:', FilePath.ofString('C:relative/.././').normalize());
+        Assert.equals('C:..${FilePath.SEPARATOR}..', FilePath.ofString('C:relative/../excessive/dots/../../../..').normalize());
     }
 }

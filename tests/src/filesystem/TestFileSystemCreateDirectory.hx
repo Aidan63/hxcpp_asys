@@ -1,10 +1,9 @@
 package filesystem;
 
-import asys.native.filesystem.FilePermissions;
-import haxe.io.Path;
 import utest.Async;
 import utest.Assert;
 import asys.native.IoErrorType;
+import asys.native.filesystem.FilePath;
 import asys.native.filesystem.FileSystem;
 
 import utils.Directory;
@@ -37,7 +36,7 @@ class TestFileSystemCreateDirectory extends DirectoryTests {
     }
 
     function test_create_nested_dir_recursive(async:Async) {
-        final target = Path.join([ directoryName, "sub_dir" ]);
+        final target = FilePath.createPath(directoryName, "sub_dir");
 
         FileSystem.createDirectory(target, null, true, (error, _) -> {
             if (Assert.isNull(error)) {
@@ -49,7 +48,7 @@ class TestFileSystemCreateDirectory extends DirectoryTests {
     }
 
     function test_create_nested_dir_non_recursive(async:Async) {
-        final target = Path.join([ directoryName, "sub_dir" ]);
+        final target = FilePath.createPath(directoryName, "sub_dir");
 
         FileSystem.createDirectory(target, null, false, (error, _) -> {
             if (Assert.notNull(error)) {
@@ -66,20 +65,38 @@ class TestFileSystemCreateDirectory extends DirectoryTests {
         sys.FileSystem.createDirectory(directoryName);
 
         FileSystem.createDirectory(directoryName, null, true, (error, _) -> {
+            Assert.isNull(error);
+
+            async.done();
+        });
+    }
+
+    function test_multi_stage_directory_creation(async:Async) {
+        sys.FileSystem.createDirectory(directoryName);
+
+        final target = FilePath.createPath(directoryName, "some", "sub_dir");
+
+        FileSystem.createDirectory(target, null, false, (error, _) -> {
             if (Assert.notNull(error)) {
-                Assert.equals(directoryName, error.path);
-                Assert.equals(IoErrorType.FileExists, error.type);
+                Assert.equals(target, error.path);
+                Assert.equals(IoErrorType.FileNotFound, error.type);
             }
 
             async.done();
         });
     }
 
-    // function test_default_permissions(async:Async) {
-    //     //
-    // }
+    function test_multi_stage_recursive_directory_creation(async:Async) {
+        sys.FileSystem.createDirectory(directoryName);
 
-    // function test_custom_permissions(async:Async) {
-    //     //
-    // }
+        final target = FilePath.createPath(directoryName, "some", "sub_dir");
+
+        FileSystem.createDirectory(target, null, true, (error, _) -> {
+            if (Assert.isNull(error)) {
+                Assert.isTrue(sys.FileSystem.isDirectory(target));
+            }
+            
+            async.done();
+        });
+    }
 }

@@ -5,107 +5,117 @@ using StringTools;
 
 class FilePathExtras
 {
-    public static function hasRootName(p:String):Bool {
-		if (p == null || p.length == 0) {
+    public static function hasRootName(path:String):Bool {
+		if (path == null || path.length == 0) {
 			return false;
 		}
 
 		var i = 0;
-		while (i < p.length) {
-			if (p.isSpace(i)) {
+		while (i < path.length) {
+			if (path.isSpace(i)) {
+                i++;
+
 				continue;
 			}
 
-			return isDriveLetter(p.fastCodeAt(i)) && i + 1 < p.length && ":".code == p.fastCodeAt(i + 1);
+			return isDriveLetter(path.fastCodeAt(i)) && i + 1 < path.length && ":".code == path.fastCodeAt(i + 1);
 		}
 
 		return false;
 	}
 
-	public static function hasRootDirectory(p:String):Bool {
-		if (p == null || p.length == 0) {
+	public static function hasRootDirectory(path:String):Bool {
+		if (path == null || path.length == 0) {
 			return false;
 		}
 
 		var i = 0;
-		while (i < p.length) {
-			if (p.isSpace(i)) {
+		while (i < path.length) {
+			if (path.isSpace(i)) {
+                i++;
+
 				continue;
 			}
 
-			if (isSeparator(p.fastCodeAt(i))) {
+			if (isSeparator(path.fastCodeAt(i))) {
 				return true;
 			}
 
 			return
-				isDriveLetter(p.fastCodeAt(i)) &&
-				i + 2 < p.length &&
-				":".code == p.fastCodeAt(i + 1) &&
-				isSeparator(p.fastCodeAt(i + 2));
+				isDriveLetter(path.fastCodeAt(i)) &&
+				i + 2 < path.length &&
+				":".code == path.fastCodeAt(i + 1) &&
+				isSeparator(path.fastCodeAt(i + 2));
 		}
 
 		return false;
 	}
 
-	public static function getRootName(p:String):String {
-		if (p == null || p.length == 0) {
+	public static function getRootName(path:String):String {
+		if (path == null || path.length == 0) {
 			return "";
 		}
 
 		var i = 0;
-		while (i < p.length) {
-			if (p.isSpace(i)) {
+		while (i < path.length) {
+			if (path.isSpace(i)) {
+                i++;
+
 				continue;
 			}
 
-			if (isDriveLetter(p.fastCodeAt(i)) && i + 1 < p.length && ":".code == p.fastCodeAt(i + 1)) {
-				return p.substr(i, 2);
+			if (isDriveLetter(path.fastCodeAt(i)) && i + 1 < path.length && ":".code == path.fastCodeAt(i + 1)) {
+				return path.substr(i, 2);
 			}
+
+            i++;
 		}
 
 		return "";
 	}
 
-	public static function getRootDirectory(p:String):String {
-		if (p == null || p.length == 0) {
+	public static function getRootDirectory(path:String):String {
+		if (path == null || path.length == 0) {
 			return "";
 		}
 
 		var i = 0;
-		while (i < p.length) {
-			if (p.isSpace(i)) {
+		while (i < path.length) {
+			if (path.isSpace(i)) {
+                i++;
+
 				continue;
 			}
 
-			if (isSeparator(p.fastCodeAt(i))) {
+			if (isSeparator(path.fastCodeAt(i))) {
 				var j = i;
-				while (j < p.length) {
-					if (isSeparator(p.fastCodeAt(j))) {
+				while (j < path.length) {
+					if (!isSeparator(path.fastCodeAt(j))) {
 						break;
 					}
 
 					j++;
 				}
 
-				p.substring(i, j);
+				return path.substring(i, j);
 			}
 
-			if (isDriveLetter(p.fastCodeAt(i)) &&
-				i + 2 < p.length &&
-				":".code == p.fastCodeAt(i + 1) &&
-				isSeparator(p.fastCodeAt(i + 2))) {
+			if (isDriveLetter(path.fastCodeAt(i)) &&
+				i + 2 < path.length &&
+				":".code == path.fastCodeAt(i + 1) &&
+				isSeparator(path.fastCodeAt(i + 2))) {
 				i += 2;
 
-				var j = i;
-				while (j < p.length) {
-					if (!isSeparator(p.fastCodeAt(j))) {
+				var j = i + 1;
+				while (j < path.length) {
+					if (!isSeparator(path.fastCodeAt(j))) {
 						break;
 					}
 
 					j++;
 				}
 
-				p.substring(i, j);
+				return path.substring(i, j);
 			}
 
 			return "";
@@ -114,8 +124,25 @@ class FilePathExtras
 		return "";
 	}
 
+    public static function getRootPath(path:String):String {
+        return getRootName(path) + getRootDirectory(path);
+    }
+
     public static function empty(path:String) {
-		return path == null || path.trim() == "";
+		if (path == null) {
+            return true;
+        }
+
+        var i = 0;
+        while (i < path.length) {
+            if (!path.isSpace(i)) {
+                return false;
+            }
+
+            i++;
+        }
+
+        return true;
 	}
 
 	public static function isSeparator(c:Int):Bool {

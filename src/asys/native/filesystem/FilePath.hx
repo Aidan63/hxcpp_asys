@@ -220,8 +220,6 @@ abstract FilePath(NativeFilePath) to String {
 		
 		// Remove each non-dot-dot filename immediately followed by a SEPARATOR and a dot-dot
 
-		// Extract and save any root name as we will want to re-prefix it later.
-		final isAbs    = FilePath.ofString(working).isAbsolute();
 		final rootName = working.getRootName();
 		final rootDir  = working.getRootDirectory();
 
@@ -237,7 +235,7 @@ abstract FilePath(NativeFilePath) to String {
 					//
 				case '..':
 					skip++;
-				case _ if(skip > 0):
+				case _ if (skip > 0):
 					skip--;
 				case part:
 					result.unshift(part);
@@ -252,7 +250,7 @@ abstract FilePath(NativeFilePath) to String {
 
 		// If there is root-directory, remove all dot-dots and any directory-separators immediately following them. 
 
-		if (isAbs) {
+		if (rootDir != "") {
 			while (result.length > 0 && result[0] == "..") {
 				result.shift();
 			}
@@ -292,12 +290,20 @@ abstract FilePath(NativeFilePath) to String {
 		```
 	**/
 	public function add(path:FilePath):FilePath {
+		if (this == null || this == "") {
+			return path;
+		}
+
 		if (path == null || path.empty()) {
 			return abstract;
 		}
 
 		if (path.isAbsolute() || (path.hasRootName() && path.getRootName() != this.getRootName())) {
-			return path;
+			if (path.hasRootName()) {
+				return path;
+			} else {
+				return this.getRootName() + path.getRootDirectory() + path.getRelativePath();
+			}
 		}
 
 		final strPath = path.toString();

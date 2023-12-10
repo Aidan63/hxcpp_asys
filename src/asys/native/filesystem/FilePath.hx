@@ -222,7 +222,7 @@ abstract FilePath(NativeFilePath) to String {
 
 		// Extract and save any root name as we will want to re-prefix it later.
 		final isAbs  = FilePath.ofString(working).isAbsolute();
-		final prefix = working.extractRootName();
+		final prefix = working.getRootName();
 		working = working.substr(prefix.length);
 
 		final parts  = working.split(SEPARATOR);
@@ -253,7 +253,8 @@ abstract FilePath(NativeFilePath) to String {
 		// If there is root-directory, remove all dot-dots and any directory-separators immediately following them. 
 
 		if (isAbs) {
-			var i = working.rootIndex();
+			// If the first element in the array is a root
+			var i = if (result[i].hasRootName()) 1 else 0;
 
 			while (i < result.length) {
 				if (result[i] != "..") {

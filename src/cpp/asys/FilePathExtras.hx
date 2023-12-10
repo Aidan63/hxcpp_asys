@@ -171,33 +171,4 @@ class FilePathExtras
 	public static function isDriveLetter(c:Int):Bool {
 		return (c >= 'a'.code && c <= 'z'.code) || (c >= 'A'.code && c <= 'Z'.code);
 	}
-
-	public static function extractRootName(p:String):String {
-		if (p == null || p.length < 2) {
-			return "";
-		}
-
-		if (isDriveLetter(p.fastCodeAt(0)) && ":".code == p.fastCodeAt(1)) {
-			return p.substr(0, 2);
-		}
-
-		return "";
-	}
-
-	public static function rootIndex(p:String):Int {
-		var i = 0;
-		while (i < p.length) {
-			if (!p.isSpace(i)) {
-				return if (isSeparator(p.fastCodeAt(i))) {
-					i;
-				} else {
-					-1;
-				}
-			}
-
-			i++;
-		}
-
-		return -1;
-	}
 }

@@ -9,7 +9,7 @@ import haxe.io.Bytes;
 class File {
 	final native : cpp.asys.File;
 
-	public final path : String;
+	public final path : FilePath;
 
 	function new(native:cpp.asys.File) {
 		this.native = native;

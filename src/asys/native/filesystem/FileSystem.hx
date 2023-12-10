@@ -17,7 +17,7 @@ class FileSystem {
 		- `asys.native.filesystem.FileAppend` for writing to the end of file only;
 		@see asys.native.filesystem.FileOpenFlag for more details.
 	**/
-    static public function openFile<T>(path:String, flag:FileOpenFlag<T>, callback:Callback<T>) {
+    static public function openFile<T>(path:FilePath, flag:FileOpenFlag<T>, callback:Callback<T>) {
         cpp.asys.File.open(
             @:privateAccess Thread.current().events.context,
             path,
@@ -45,7 +45,7 @@ class FileSystem {
 	/**
 		Read the contents of a file specified by `path`.
 	**/
-	static public function readBytes(path:String, callback:Callback<Bytes>):Void {
+	static public function readBytes(path:FilePath, callback:Callback<Bytes>):Void {
 		openFile(path, Read, (error, file) -> {
 			switch error {
 				case null:
@@ -88,7 +88,7 @@ class FileSystem {
 		TODO:
 		Should this return an error if the file does not contain a valid unicode string?
 	**/
-	static public function readString(path:String, callback:Callback<String>):Void {
+	static public function readString(path:FilePath, callback:Callback<String>):Void {
 		readBytes(path, (error, bytes) -> {
 			switch error {
 				case null:
@@ -105,7 +105,7 @@ class FileSystem {
 		By default the file truncated if it exists and created if it does not exist.
 		@see asys.native.filesystem.FileOpenFlag for more details.
 	**/
-	static public function writeBytes(path:String, data:Bytes, flag:FileOpenFlag<Dynamic> = Write, callback:Callback<NoData>):Void {
+	static public function writeBytes(path:FilePath, data:Bytes, flag:FileOpenFlag<Dynamic> = Write, callback:Callback<NoData>):Void {
 		openFile(path, flag, (error, file) -> {
 			switch error {
 				case null:
@@ -135,7 +135,7 @@ class FileSystem {
 		By default the file is truncated if it exists and is created if it does not exist.
 		@see asys.native.filesystem.FileOpenFlag for more details.
 	**/
-	static public function writeString(path:String, text:String, flag:FileOpenFlag<Dynamic> = Write, callback:Callback<NoData>):Void {
+	static public function writeString(path:FilePath, text:String, flag:FileOpenFlag<Dynamic> = Write, callback:Callback<NoData>):Void {
 		writeBytes(path, Bytes.ofString(text), flag, callback);
 	}
 
@@ -146,7 +146,7 @@ class FileSystem {
 		memory per call to `directory.next`.
 		@see asys.native.filesystem.Directory.next
 	**/
-	static public function openDirectory(path:String, maxBatchSize:Int = 64, callback:Callback<Directory>):Void {
+	static public function openDirectory(path:FilePath, maxBatchSize:Int = 64, callback:Callback<Directory>):Void {
 		cpp.asys.Directory.open(
             @:privateAccess Thread.current().events.context,
             path,
@@ -159,7 +159,7 @@ class FileSystem {
 		Does not add `.` and `..` to the result.
 		Entries are provided as paths relative to the directory.
 	**/
-	static public function listDirectory(path:String, callback:Callback<Array<String>>):Void {
+	static public function listDirectory(path:FilePath, callback:Callback<Array<String>>):Void {
 		function read(dir:Directory, accumulated:Array<String>, callback:Callback<Array<String>>) {
 			dir.next((error, entries) -> {
 				switch error {
@@ -205,7 +205,7 @@ class FileSystem {
 		If `recursive` is `false`: fail if any parent directory of `path` does not exist.
 		[cs] `permissions` parameter is ignored when targeting C#
 	**/
-	static public function createDirectory(path:String, ?permissions:FilePermissions, recursive:Bool = false, callback:Callback<NoData>):Void {
+	static public function createDirectory(path:FilePath, ?permissions:FilePermissions, recursive:Bool = false, callback:Callback<NoData>):Void {
 		cpp.asys.Directory.create(
             @:privateAccess Thread.current().events.context,
 			path,
@@ -225,7 +225,7 @@ class FileSystem {
 		If `recursive` is `false`: fail if any parent directory of the generated path does not exist.
 		[cs] `permissions` parameter is ignored when targeting C#
 	**/
-	static public function uniqueDirectory(parentDirectory:String, ?prefix:String, ?permissions:FilePermissions, recursive:Bool = false, callback:Callback<String>):Void {
+	static public function uniqueDirectory(parentDirectory:FilePath, ?prefix:String, ?permissions:FilePermissions, recursive:Bool = false, callback:Callback<String>):Void {
 		final rndIntValue = Std.random(2147483647);
 		final finalPrefix = if (prefix == null) Std.string(rndIntValue) else '$prefix$rndIntValue';
 		final finalPath   = FilePath.createPath(parentDirectory, finalPrefix);
@@ -250,7 +250,7 @@ class FileSystem {
 		check for existance and the actual move operation then the data created
 		by that third-party process may be overwritten.
 	**/
-	static public function move(oldPath:String, newPath:String, overwrite:Bool = true, callback:Callback<NoData>):Void {
+	static public function move(oldPath:FilePath, newPath:FilePath, overwrite:Bool = true, callback:Callback<NoData>):Void {
 		final ctx = @:privateAccess Thread.current().events.context;
 
 		if (overwrite) {
@@ -273,7 +273,7 @@ class FileSystem {
 	/**
 		Remove a file or symbolic link.
 	**/
-	static public function deleteFile(path:String, callback:Callback<NoData>):Void {
+	static public function deleteFile(path:FilePath, callback:Callback<NoData>):Void {
 		cpp.asys.Directory.deleteFile(
 			@:privateAccess Thread.current().events.context,
 			path,
@@ -284,7 +284,7 @@ class FileSystem {
 	/**
 		Remove an empty directory.
 	**/
-	static public function deleteDirectory(path:String, callback:Callback<NoData>):Void {
+	static public function deleteDirectory(path:FilePath, callback:Callback<NoData>):Void {
 		cpp.asys.Directory.deleteDirectory(
 			@:privateAccess Thread.current().events.context,
 			path,
@@ -298,7 +298,7 @@ class FileSystem {
 		@see `asys.native.filesystem.FileSystem.linkInfo` to get information of the
 		link itself.
 	**/
-	static public function info(path:String, callback:Callback<FileInfo>):Void {
+	static public function info(path:FilePath, callback:Callback<FileInfo>):Void {
 		openFile(path, Read, (error, file) -> {
 			switch error {
 				case null:
@@ -330,7 +330,7 @@ class FileSystem {
 		FileSystem.check(path, Readable | Writable, (error, result) -> trace(result));
 		```
 	**/
-	static public function check(path:String, mode:FileAccessMode, callback:Callback<Bool>):Void {
+	static public function check(path:FilePath, mode:FileAccessMode, callback:Callback<Bool>):Void {
 		cpp.asys.Directory.check(
 			@:privateAccess Thread.current().events.context,
 			path,
@@ -344,7 +344,7 @@ class FileSystem {
 		If `path` is a symbolic links then it will be resolved and checked.
 		Returns `false` if `path` does not exist.
 	**/
-	static public function isDirectory(path:String, callback:Callback<Bool>):Void {
+	static public function isDirectory(path:FilePath, callback:Callback<Bool>):Void {
 		cpp.asys.Directory.isDirectory(
 			@:privateAccess Thread.current().events.context,
 			path,
@@ -357,7 +357,7 @@ class FileSystem {
 		If `path` is a symbolic links then it will be resolved and checked.
 		Returns `false` if `path` does not exist.
 	**/
-	static public function isFile(path:String, callback:Callback<Bool>):Void {
+	static public function isFile(path:FilePath, callback:Callback<Bool>):Void {
 		cpp.asys.Directory.isFile(
 			@:privateAccess Thread.current().events.context,
 			path,
@@ -369,7 +369,7 @@ class FileSystem {
 		Set path permissions.
 		If `path` is a symbolic link it is dereferenced.
 	**/
-	static public function setPermissions(path:String, permissions:FilePermissions, callback:Callback<NoData>):Void {
+	static public function setPermissions(path:FilePath, permissions:FilePermissions, callback:Callback<NoData>):Void {
 		openFile(path, Read, (error, file) -> {
 			switch error {
 				case null:
@@ -397,7 +397,7 @@ class FileSystem {
 		Set path owner and group.
 		If `path` is a symbolic link it is dereferenced.
 	**/
-	static public function setOwner(path:String, user:SystemUser, group:SystemGroup, callback:Callback<NoData>):Void {
+	static public function setOwner(path:FilePath, user:SystemUser, group:SystemGroup, callback:Callback<NoData>):Void {
 		openFile(path, Read, (error, file) -> {
 			switch error {
 				case null:
@@ -424,7 +424,7 @@ class FileSystem {
 	/**
 		Set symbolic link owner and group.
 	**/
-	static public function setLinkOwner(path:String, user:SystemUser, group:SystemGroup, callback:Callback<NoData>):Void {
+	static public function setLinkOwner(path:FilePath, user:SystemUser, group:SystemGroup, callback:Callback<NoData>):Void {
 		cpp.asys.Directory.setLinkOwner(
 			@:privateAccess Thread.current().events.context,
 			path,
@@ -442,7 +442,7 @@ class FileSystem {
 		If `type` is `HardLink` the `target` is expected to be an existing path either
 		absolute or relative to the current working directory.
 	**/
-	static public function link(target:String, path:String, type:FileLink = SymLink, callback:Callback<NoData>):Void {
+	static public function link(target:FilePath, path:String, type:FileLink = SymLink, callback:Callback<NoData>):Void {
 		cpp.asys.Directory.link(
 			@:privateAccess Thread.current().events.context,
 			target,
@@ -456,7 +456,7 @@ class FileSystem {
 		Check if the path is a symbolic link.
 		Returns `false` if `path` does not exist.
 	**/
-	static public function isLink(path:String, callback:Callback<Bool>):Void {
+	static public function isLink(path:FilePath, callback:Callback<Bool>):Void {
 		cpp.asys.Directory.isLink(
 			@:privateAccess Thread.current().events.context,
 			path,
@@ -467,7 +467,7 @@ class FileSystem {
 	/**
 		Get the value of a symbolic link.
 	**/
-	static public function readLink(path:String, callback:Callback<String>):Void {
+	static public function readLink(path:FilePath, callback:Callback<String>):Void {
 		cpp.asys.Directory.readLink(
 			@:privateAccess Thread.current().events.context,
 			path,
@@ -478,7 +478,7 @@ class FileSystem {
 	/**
 		Get information at the given path without following symbolic links.
 	**/
-	static public function linkInfo(path:String, callback:Callback<FileInfo>):Void {
+	static public function linkInfo(path:FilePath, callback:Callback<FileInfo>):Void {
 		cpp.asys.Directory.linkInfo(
 			@:privateAccess Thread.current().events.context,
 			path,
@@ -489,7 +489,7 @@ class FileSystem {
 	/**
 		Copy a file from `source` path to `destination` path.
 	**/
-	static public function copyFile(source:String, destination:String, overwrite:Bool = true, callback:Callback<NoData>):Void {
+	static public function copyFile(source:FilePath, destination:FilePath, overwrite:Bool = true, callback:Callback<NoData>):Void {
 		cpp.asys.Directory.copyFile(
 			@:privateAccess Thread.current().events.context,
 			source,
@@ -505,7 +505,7 @@ class FileSystem {
 		If the file is larger than `newSize`, the extra data is lost.
 		If the file is shorter, zero bytes are used to fill the added length.
 	**/
-	static public function resize(path:String, newSize:Int, callback:Callback<NoData>):Void {
+	static public function resize(path:FilePath, newSize:Int, callback:Callback<NoData>):Void {
 		openFile(path, Write, (error, file) -> {
 			switch error {
 				case null:
@@ -533,7 +533,7 @@ class FileSystem {
 		Change access and modification times of an existing file.
 		TODO: Decide on type for `accessTime` and `modificationTime` - see TODO in `asys.native.filesystem.FileInfo.FileStat`
 	**/
-	static public function setTimes(path:String, accessTime:Int, modificationTime:Int, callback:Callback<NoData>):Void {
+	static public function setTimes(path:FilePath, accessTime:Int, modificationTime:Int, callback:Callback<NoData>):Void {
 		openFile(path, Write, (error, file) -> {
 			switch error {
 				case null:
@@ -562,7 +562,7 @@ class FileSystem {
 		Resolves intermediate `.`, `..`, excessive slashes.
 		Resolves symbolic links on all targets except C#.
 	**/
-	static public function realPath(path:String, callback:Callback<String>):Void {
+	static public function realPath(path:FilePath, callback:Callback<String>):Void {
 		cpp.asys.Directory.realPath(
 			@:privateAccess Thread.current().events.context,
 			path,
@@ -570,7 +570,7 @@ class FileSystem {
 			msg -> callback.fail(new FsException(msg, path)));
 	}
 
-	private static function rename(ctx:cpp.asys.Context, oldPath:String, newPath:String, callback:Callback<NoData>):Void {
+	private static function rename(ctx:cpp.asys.Context, oldPath:FilePath, newPath:FilePath, callback:Callback<NoData>):Void {
 		cpp.asys.Directory.move(
 			ctx,
 			oldPath,

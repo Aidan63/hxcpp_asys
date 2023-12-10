@@ -1,5 +1,6 @@
 package filesystem;
 
+import cpp.asys.FilePathExtras;
 import utest.Async;
 import utest.Assert;
 import asys.native.filesystem.FileSystem;
@@ -30,7 +31,7 @@ class TestFileSystemTempFile extends FileOpenTests {
 
                 // TODO : Could we have a better test for temp file names?
                 if (Assert.notNull(file.path)) {
-                    Assert.isTrue(file.path.length > 0);
+                    Assert.isFalse(FilePathExtras.empty(file.path));
                 }
 
                 file.close((error, _) -> {

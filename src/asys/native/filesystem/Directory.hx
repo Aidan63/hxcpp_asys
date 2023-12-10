@@ -10,10 +10,10 @@ class Directory {
     final batch:Int;
 
 	/** The path of this directory as it was at the moment of opening the directory */
-	public final path:String;
+	public final path:FilePath;
 
 	function new(dir:cpp.asys.Directory, batch:Int) {
-        this.dir = dir;
+        this.dir   = dir;
         this.batch = batch;
 
 		path = dir.path;

@@ -15,26 +15,26 @@ class TestFilePath extends Test {
         Assert.equals(if (Sys.systemName() == 'Windows') '\\' else '/', FilePath.SEPARATOR);
     }
 
-    // function test_create_path() {
-    //     Assert.equals('path${FilePath.SEPARATOR}to${FilePath.SEPARATOR}file', FilePath.createPath('path', 'to', 'file'));
-    //     Assert.equals('path${FilePath.SEPARATOR}to${FilePath.SEPARATOR}file', FilePath.createPath('path/', 'to', 'file'));
-    //     Assert.equals('${FilePath.SEPARATOR}to${FilePath.SEPARATOR}file', FilePath.createPath('path', '/to', 'file'));
-    //     Assert.equals('path${FilePath.SEPARATOR}file', FilePath.createPath('path', '', 'file'));
-    // }
+    function test_create_path() {
+        Assert.equals('path${FilePath.SEPARATOR}to${FilePath.SEPARATOR}file', FilePath.createPath('path', 'to', 'file'));
+        Assert.equals('path${FilePath.SEPARATOR}to${FilePath.SEPARATOR}file', FilePath.createPath('path/', 'to', 'file'));
+        Assert.equals('/to${FilePath.SEPARATOR}file', FilePath.createPath('path', '/to', 'file'));
+        Assert.equals('path${FilePath.SEPARATOR}file', FilePath.createPath('path', '', 'file'));
+    }
 
-    // function test_is_absolute() {
-    //     Assert.isFalse(FilePath.ofString(null).isAbsolute());
-    //     Assert.isTrue(FilePath.ofString(Sys.getCwd()).isAbsolute());
-    //     Assert.isTrue(FilePath.ofString('/something/something').isAbsolute());
-    //     Assert.isFalse(FilePath.ofString('').isAbsolute());
-    //     Assert.isFalse(FilePath.ofString('     ').isAbsolute());
-    //     Assert.isFalse(FilePath.ofString('./').isAbsolute());
-    //     Assert.isFalse(FilePath.ofString('..').isAbsolute());
-    //     Assert.isTrue(FilePath.ofString('C:/something').isAbsolute());
-    //     Assert.isTrue(FilePath.ofString('/').isAbsolute());
-    //     Assert.isTrue(FilePath.ofString('//').isAbsolute());
-    //     Assert.isFalse(FilePath.ofString('C:something').isAbsolute());
-    // }
+    function test_is_absolute() {
+        Assert.isFalse(FilePath.ofString(null).isAbsolute());
+        Assert.isTrue(FilePath.ofString(Sys.getCwd()).isAbsolute());
+        Assert.isTrue(FilePath.ofString('/something/something').isAbsolute());
+        Assert.isFalse(FilePath.ofString('').isAbsolute());
+        Assert.isFalse(FilePath.ofString('     ').isAbsolute());
+        Assert.isFalse(FilePath.ofString('./').isAbsolute());
+        Assert.isFalse(FilePath.ofString('..').isAbsolute());
+        Assert.isTrue(FilePath.ofString('C:/something').isAbsolute());
+        Assert.isTrue(FilePath.ofString('/').isAbsolute());
+        Assert.isTrue(FilePath.ofString('//').isAbsolute());
+        Assert.isFalse(FilePath.ofString('C:something').isAbsolute());
+    }
 
     // function test_parent() {
     //     Assert.equals(null, FilePath.ofString(null).parent());

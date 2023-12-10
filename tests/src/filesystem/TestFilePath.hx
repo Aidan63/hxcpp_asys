@@ -16,10 +16,10 @@ class TestFilePath extends Test {
     }
 
     // function test_create_path() {
-    //     Assert.equals('path/to/file', FilePath.createPath('path', 'to', 'file'));
-    //     Assert.equals('path/to/file', FilePath.createPath('path/', 'to', 'file'));
-    //     Assert.equals('/to/file', FilePath.createPath('path', '/to', 'file'));
-    //     Assert.equals('path/file', FilePath.createPath('path', '', 'file'));
+    //     Assert.equals('path${FilePath.SEPARATOR}to${FilePath.SEPARATOR}file', FilePath.createPath('path', 'to', 'file'));
+    //     Assert.equals('path${FilePath.SEPARATOR}to${FilePath.SEPARATOR}file', FilePath.createPath('path/', 'to', 'file'));
+    //     Assert.equals('${FilePath.SEPARATOR}to${FilePath.SEPARATOR}file', FilePath.createPath('path', '/to', 'file'));
+    //     Assert.equals('path${FilePath.SEPARATOR}file', FilePath.createPath('path', '', 'file'));
     // }
 
     // function test_is_absolute() {
@@ -27,10 +27,12 @@ class TestFilePath extends Test {
     //     Assert.isTrue(FilePath.ofString(Sys.getCwd()).isAbsolute());
     //     Assert.isTrue(FilePath.ofString('/something/something').isAbsolute());
     //     Assert.isFalse(FilePath.ofString('').isAbsolute());
+    //     Assert.isFalse(FilePath.ofString('     ').isAbsolute());
     //     Assert.isFalse(FilePath.ofString('./').isAbsolute());
     //     Assert.isFalse(FilePath.ofString('..').isAbsolute());
-    //     Assert.isTrue(FilePath.ofString('C:\\something').isAbsolute());
-    //     Assert.isTrue(FilePath.ofString('\\').isAbsolute());
+    //     Assert.isTrue(FilePath.ofString('C:/something').isAbsolute());
+    //     Assert.isTrue(FilePath.ofString('/').isAbsolute());
+    //     Assert.isTrue(FilePath.ofString('//').isAbsolute());
     //     Assert.isFalse(FilePath.ofString('C:something').isAbsolute());
     // }
 
@@ -42,6 +44,7 @@ class TestFilePath extends Test {
     //     Assert.equals('path/to', FilePath.ofString('path/to/file').parent());
     //     Assert.equals('path/to', FilePath.ofString('path/to/dir/').parent());
     //     Assert.equals('path/to', FilePath.ofString('path/to///dir/').parent());
+    //     Assert.equals('path/to', FilePath.ofString('path/to/dir////').parent());
     //     Assert.equals('path/to/..', FilePath.ofString('path/to/../file').parent());
     //     Assert.equals('path/to', FilePath.ofString('path/to/..').parent());
     //     Assert.equals('path/to', FilePath.ofString('path/to/.').parent());
@@ -49,15 +52,30 @@ class TestFilePath extends Test {
     //     Assert.equals(null, FilePath.ofString('.').parent());
     //     Assert.equals(null, FilePath.ofString('').parent());
     //     Assert.equals(null, FilePath.ofString('/').parent());
-    //     Assert.equals(null, FilePath.ofString('\\').parent());
+    //     Assert.equals(null, FilePath.ofString('//').parent());
     // }
 
-    // function test_equal() {
-    //     final p1 = FilePath.ofString('qwe');
-	// 	final p2 = FilePath.ofString('qwe');
+    function test_add() {
+        Assert.equals('file', FilePath.ofString("file").add(""));
+        Assert.equals('file', FilePath.ofString("file").add("    "));
+        Assert.equals('file', FilePath.ofString("file").add(null));
 
-	// 	Assert.isTrue(p1 == p2);
-    // }
+        Assert.equals('file', FilePath.ofString("").add("file"));
+        Assert.equals('file', FilePath.ofString("   ").add("file"));
+        Assert.equals('file', FilePath.ofString(null).add("file"));
+
+        Assert.equals('dir${FilePath.SEPARATOR}file', FilePath.ofString("dir").add("file"));
+        Assert.equals('dir${FilePath.SEPARATOR}file', FilePath.ofString("dir/").add("file"));
+        Assert.equals('dir${FilePath.SEPARATOR}file', FilePath.ofString("dir/////").add("file"));
+        Assert.equals('/file', FilePath.ofString("dir").add("/file"));
+        Assert.equals('dir', FilePath.ofString("dir").add(""));
+
+        Assert.equals('C:/bar', FilePath.ofString("foo").add("C:/bar"));
+        Assert.equals('C:', FilePath.ofString("foo").add("C:"));
+        Assert.equals('C:', FilePath.ofString("C:").add(""));
+        Assert.equals('C:${FilePath.SEPARATOR}bar', FilePath.ofString("C:foo").add("/bar"));
+        Assert.equals('C:foo${FilePath.SEPARATOR}bar', FilePath.ofString("C:foo").add("bar"));
+    }
 
     function test_normalise_empty_paths() {
         Assert.equals('', FilePath.ofString(null).normalize());

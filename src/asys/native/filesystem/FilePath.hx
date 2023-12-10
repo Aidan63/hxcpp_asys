@@ -4,6 +4,7 @@ import haxe.exceptions.NotImplementedException;
 import haxe.exceptions.ArgumentException;
 
 using StringTools;
+using cpp.asys.FilePathExtras;
 
 private typedef NativeFilePath = String;
 
@@ -57,6 +58,9 @@ abstract FilePath(NativeFilePath) to String {
 		return this == null ? null : this.toString();
 	}
 
+	/**
+		Check if this is an absolute path.
+	**/
 	public function isAbsolute():Bool {
 		if (this == null) {
 			return false;
@@ -64,9 +68,9 @@ abstract FilePath(NativeFilePath) to String {
 
 		return switch this.length {
 			case 0: false;
-			case _ if (isSeparator(this.fastCodeAt(0))): true;
+			case _ if (this.fastCodeAt(0).isSeparator()): true;
 			case 1: false;
-			case length: this.fastCodeAt(1) == ':'.code && length >= 3 && isSeparator(this.fastCodeAt(2));
+			case length: this.fastCodeAt(1) == ':'.code && length >= 3 && this.fastCodeAt(2).isSeparator();
 		}
 	}
 
@@ -84,17 +88,17 @@ abstract FilePath(NativeFilePath) to String {
 			return null;
 		}
 
-		final s = trimSlashes(this);
+		final s = this.trimSlashes();
 
 		switch s.length {
 			case 0:
 				return null;
-			case 1 if (isSeparator(s.fastCodeAt(0))):
+			case 1 if (s.fastCodeAt(0).isSeparator()):
 				return null;
-			case 2 | 3 if (SEPARATOR == '\\' && s.fastCodeAt(1) == ':'.code):
+			case 2 | 3 if (s.fastCodeAt(1) == ':'.code):
 				return null;
 			case (_ - 1) => i:
-				while (!isSeparator(s.fastCodeAt(i))) {
+				while (!s.fastCodeAt(i).isSeparator()) {
 					--i;
 					if (i < 0) {
 						return null;
@@ -105,15 +109,21 @@ abstract FilePath(NativeFilePath) to String {
 		}
 	}
 
+	/**
+		Get the last element (farthest from the root) of this path.
+		E.g. for `dir/to/path` this method returns `path`.
+		Ignores trailing slashes.
+		E.g. for `dir/to/path/` this method returns `path`.
+	**/
 	public function name():FilePath {
-		final s = trimSlashes(this);
+		final s = this.trimSlashes();
 		
 		var i = s.length - 1;
 		if (i < 0) {
 			return s;
 		}
 
-		while (!isSeparator(s.fastCodeAt(i))) {
+		while (!s.fastCodeAt(i).isSeparator()) {
 			--i;
 			if (i < 0) {
 				return s;
@@ -158,10 +168,10 @@ abstract FilePath(NativeFilePath) to String {
 
 		var i = 0;
 		while (i < working.length) {
-			if (isSeparator(working.fastCodeAt(i))) {
+			if (working.fastCodeAt(i).isSeparator()) {
 				var j = i + 1;
 				while (j < working.length) {
-					if (isSeparator(working.fastCodeAt(j))) {
+					if (working.fastCodeAt(j).isSeparator()) {
 						j++;
 					} else {
 						break;
@@ -180,7 +190,7 @@ abstract FilePath(NativeFilePath) to String {
 
 		var i = 0;
 		while (i < working.length) {
-			if (".".code == working.fastCodeAt(i) && i + 1 < working.length && isSeparator(working.fastCodeAt(i + 1))) {
+			if (".".code == working.fastCodeAt(i) && i + 1 < working.length && working.fastCodeAt(i + 1).isSeparator()) {
 				// Special case for ./ being the very first thing in the path.
 				if (i == 0) {
 					if (i + 2 < working.length) {
@@ -189,7 +199,7 @@ abstract FilePath(NativeFilePath) to String {
 						return FilePath.ofString(".");
 					}
 				} else {
-					if (isSeparator(working.fastCodeAt(i - 1))) {
+					if (working.fastCodeAt(i - 1).isSeparator()) {
 						if (i + 2 < working.length) {
 							final begin = working.substring(0, i);
 							final end   = working.substr(i + 2);
@@ -212,7 +222,7 @@ abstract FilePath(NativeFilePath) to String {
 
 		// Extract and save any root name as we will want to re-prefix it later.
 		final isAbs  = FilePath.ofString(working).isAbsolute();
-		final prefix = extractRootName(working);
+		final prefix = working.extractRootName();
 		working = working.substr(prefix.length);
 
 		final parts  = working.split(SEPARATOR);
@@ -243,7 +253,7 @@ abstract FilePath(NativeFilePath) to String {
 		// If there is root-directory, remove all dot-dots and any directory-separators immediately following them. 
 
 		if (isAbs) {
-			var i = rootIndex(working);
+			var i = working.rootIndex();
 
 			while (i < result.length) {
 				if (result[i] != "..") {
@@ -278,7 +288,7 @@ abstract FilePath(NativeFilePath) to String {
 
 			// Remove trailing slash
 
-			if (isSeparator(working.fastCodeAt(working.length - 1))) {
+			if (working.fastCodeAt(working.length - 1).isSeparator()) {
 				working = working.substr(0, working.length - 1);
 			}
 
@@ -286,85 +296,49 @@ abstract FilePath(NativeFilePath) to String {
 		}
 	}
 
+	/**
+		Creates a new path by appending `path` to this one.
+		This path is treated as a directory and a directory separator is inserted between this and `path` if needed.
+
+		If `path` is an absolute path, then this method simply returns `path`.
+		If either this or `path` is empty then this method simply return the other one.
+
+		```haxe
+		FilePath.ofString('dir').add('file'); // result: dir/file
+		FilePath.ofString('dir/').add('file'); // result: dir/file
+		FilePath.ofString('dir').add('/file'); // result: /file
+		FilePath.ofString('').add('file'); // result: file
+		FilePath.ofString('dir').add(''); // result: dir
+		```
+
+		TODO:
+		What to do with windows paths relative to a drive?
+		```haxe
+		'D:dir'.add('C:file') == exception ?
+		'/dir'.add('C:file') == 'C:/dir/file' ?
+		```
+	**/
 	public function add(path:FilePath):FilePath {
-		if (path.isAbsolute() || this.length == 0) {
+		if (path == null || path.empty()) {
+			return abstract;
+		}
+
+		if (path.isAbsolute() || path.empty()) {
 			return path;
 		}
 
-		var strPath = (path:String);
-		if (strPath.length == 0) {
-			return new FilePath(this);
-		}
-
-		if (SEPARATOR == '\\') {
-			if (strPath.length >= 2 && strPath.fastCodeAt(1) == ':'.code) {
-				if (this.length >= 2 && this.fastCodeAt(1) == ':'.code) {
-					if (strPath.charAt(0).toLowerCase() != this.charAt(0).toLowerCase()) {
-						throw new ArgumentException('path', 'Cannot combine paths on different drives');
-					}
-					return new FilePath(trimSlashes(this) + SEPARATOR + strPath.substr(2));
-				} else if (isSeparator(this.fastCodeAt(0))) {
-					return new FilePath(strPath.substr(0, 2) + trimSlashes(this) + SEPARATOR + strPath.substr(2));
+		final strPath = path.toString();
+		if (strPath.length >= 2 && strPath.fastCodeAt(1) == ':'.code) {
+			if (this.length >= 2 && this.fastCodeAt(1) == ':'.code) {
+				if (strPath.charAt(0).toLowerCase() != this.charAt(0).toLowerCase()) {
+					throw new ArgumentException('path', 'Cannot combine paths on different drives');
 				}
+				return new FilePath(this.trimSlashes() + SEPARATOR + strPath.substr(2));
+			} else if (this.fastCodeAt(0).isSeparator()) {
+				return new FilePath(strPath.substr(0, 2) + this.trimSlashes() + SEPARATOR + strPath.substr(2));
 			}
 		}
 
-		return new FilePath(trimSlashes(this) + SEPARATOR + strPath);
-	}
-
-	static function isSeparator(c:Int):Bool {
-		return c == "/".code || String.fromCharCode(c) == SEPARATOR;
-	}
-
-	static function trimSlashes(s:String):String {
-		var i = s.length - 1;
-		if (i <= 0) {
-			return s;
-		}
-
-		var sep = isSeparator(s.fastCodeAt(i));
-		if (sep) {
-			do {
-				--i;
-				sep = isSeparator(s.fastCodeAt(i));
-			} while(i > 0 && sep);
-
-			return s.substr(0, i + 1);
-		} else {
-			return s;
-		}
-	}
-
-	static function isDriveLetter(c:Int):Bool {
-		return ('a'.code <= c && c <= 'z'.code) || ('A'.code <= c && c <= 'Z'.code);
-	}
-
-	static function extractRootName(p:String):String {
-		if (p == null || p.length < 2) {
-			return "";
-		}
-
-		if (isDriveLetter(p.fastCodeAt(0)) && ":".code == p.fastCodeAt(1)) {
-			return p.substr(0, 2);
-		}
-
-		return "";
-	}
-
-	static function rootIndex(p:String):Int {
-		var i = 0;
-		while (i < p.length) {
-			if (!p.isSpace(i)) {
-				return if (isSeparator(p.fastCodeAt(i))) {
-					i;
-				} else {
-					-1;
-				}
-			}
-
-			i++;
-		}
-
-		return -1;
+		return new FilePath(this.trimSlashes() + SEPARATOR + strPath);
 	}
 }

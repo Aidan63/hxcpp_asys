@@ -281,13 +281,6 @@ abstract FilePath(NativeFilePath) to String {
 		FilePath.ofString('').add('file'); // result: file
 		FilePath.ofString('dir').add(''); // result: dir
 		```
-
-		TODO:
-		What to do with windows paths relative to a drive?
-		```haxe
-		'D:dir'.add('C:file') == exception ?
-		'/dir'.add('C:file') == 'C:/dir/file' ?
-		```
 	**/
 	public function add(path:FilePath):FilePath {
 		if (this == null || this == "") {
@@ -306,18 +299,6 @@ abstract FilePath(NativeFilePath) to String {
 			}
 		}
 
-		final strPath = path.toString();
-		if (strPath.length >= 2 && strPath.fastCodeAt(1) == ':'.code) {
-			if (this.length >= 2 && this.fastCodeAt(1) == ':'.code) {
-				if (strPath.charAt(0).toLowerCase() != this.charAt(0).toLowerCase()) {
-					throw new ArgumentException('path', 'Cannot combine paths on different drives');
-				}
-				return new FilePath(this.trimSlashes() + SEPARATOR + strPath.substr(2));
-			} else if (this.fastCodeAt(0).isSeparator()) {
-				return new FilePath(strPath.substr(0, 2) + this.trimSlashes() + SEPARATOR + strPath.substr(2));
-			}
-		}
-
-		return new FilePath(this.trimSlashes() + SEPARATOR + strPath);
+		return new FilePath(this.trimSlashes() + SEPARATOR + path);
 	}
 }

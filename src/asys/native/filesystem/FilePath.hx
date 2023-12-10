@@ -283,6 +283,9 @@ abstract FilePath(NativeFilePath) to String {
 		```
 	**/
 	public function add(path:FilePath):FilePath {
+		// Append according to the algorithm defined here.
+		// https://en.cppreference.com/w/cpp/filesystem/path/append
+
 		if (this == null || this == "") {
 			return path;
 		}

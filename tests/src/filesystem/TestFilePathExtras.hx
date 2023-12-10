@@ -80,8 +80,8 @@ class TestFilePathExtras extends Test {
     }
 
     function test_hasRelativePath() {
-        Assert.isTrue(FilePathExtras.hasRelativePath("foo"));
-        Assert.isTrue(FilePathExtras.hasRelativePath("/foo"));
+        Assert.isTrue(FilePathExtras.hasRelativePath("foo/bar"));
+        Assert.isTrue(FilePathExtras.hasRelativePath("/foo/bar"));
         Assert.isTrue(FilePathExtras.hasRelativePath("/  foo"));
         Assert.isTrue(FilePathExtras.hasRelativePath("   foo"));
         Assert.isTrue(FilePathExtras.hasRelativePath("   foo"));
@@ -116,8 +116,8 @@ class TestFilePathExtras extends Test {
     }
 
     function test_getRelativePath() {
-        Assert.equals("foo", FilePathExtras.getRelativePath("foo"));
-        Assert.equals("foo", FilePathExtras.getRelativePath("/foo"));
+        Assert.equals("foo/bar", FilePathExtras.getRelativePath("foo/bar"));
+        Assert.equals("foo/bar", FilePathExtras.getRelativePath("/foo/bar"));
         Assert.equals("  foo", FilePathExtras.getRelativePath("/  foo"));
         Assert.equals("   foo", FilePathExtras.getRelativePath("   foo"));
         Assert.equals("   foo", FilePathExtras.getRelativePath("   foo"));

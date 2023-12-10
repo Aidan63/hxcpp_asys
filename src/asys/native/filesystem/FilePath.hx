@@ -221,11 +221,11 @@ abstract FilePath(NativeFilePath) to String {
 		// Remove each non-dot-dot filename immediately followed by a SEPARATOR and a dot-dot
 
 		// Extract and save any root name as we will want to re-prefix it later.
-		final isAbs  = FilePath.ofString(working).isAbsolute();
-		final prefix = working.getRootName();
-		working = working.substr(prefix.length);
+		final isAbs    = FilePath.ofString(working).isAbsolute();
+		final rootName = working.getRootName();
+		final rootDir  = working.getRootDirectory();
 
-		final parts  = working.split(SEPARATOR);
+		final parts  = working.getRelativePath().split(SEPARATOR);
 		final result = [];
 
 		var i    = parts.length - 1;
@@ -253,47 +253,19 @@ abstract FilePath(NativeFilePath) to String {
 		// If there is root-directory, remove all dot-dots and any directory-separators immediately following them. 
 
 		if (isAbs) {
-			// If the first element in the array is a root
-			var i = if (result[i].hasRootName()) 1 else 0;
-
-			while (i < result.length) {
-				if (result[i] != "..") {
-					break;
-				}
-				
+			while (result.length > 0 && result[0] == "..") {
 				result.shift();
-
-				i++;
 			}
 		}
 
 		// If the path is empty, add a dot (normal form of ./ is .)
-		// Splitting will have potentially removed our root
 
-		return if (result.length == 0) {
-			if (isAbs) {
-				FilePath.ofString(prefix + SEPARATOR);
-			} else {
-				if (prefix == "") {
-					FilePath.ofString(".");
-				} else {
-					FilePath.ofString(prefix);
-				}
-			}
-		} else {
-			working = if (isAbs) {
-				prefix + SEPARATOR + result.join(SEPARATOR);
-			} else {
-				prefix + result.join(SEPARATOR);
-			}
+		working = rootName + rootDir + result.join(SEPARATOR);
 
-			// Remove trailing slash
-
-			if (working.fastCodeAt(working.length - 1).isSeparator()) {
-				working = working.substr(0, working.length - 1);
-			}
-
+		return if (working.length > 0) {
 			FilePath.ofString(working);
+		} else {
+			FilePath.ofString(".");
 		}
 	}
 

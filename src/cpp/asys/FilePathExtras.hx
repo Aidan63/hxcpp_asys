@@ -1,6 +1,8 @@
 package cpp.asys;
 
+import haxe.exceptions.NotImplementedException;
 import asys.native.filesystem.FilePath;
+
 using StringTools;
 
 class FilePathExtras
@@ -128,8 +130,66 @@ class FilePathExtras
         return getRootName(path) + getRootDirectory(path);
     }
 
+    public static function hasRelativePath(path:String):Bool {
+        if (path == null || path.length <= 0) {
+            return false;
+        }
+
+        if (isSeparator(path.fastCodeAt(0))) {
+            var i = 1;
+            while (i < path.length) {
+                if (!isSeparator(path.fastCodeAt(i))) {
+                    return true;
+                }
+
+                i++;
+            }
+
+            return false;
+        }
+
+        if (isDriveLetter(path.fastCodeAt(0)) && path.length >= 2 && ":".code == path.fastCodeAt(1)) {
+            return if (path.length >= 3) {
+                hasRelativePath(path.substr(2));
+            } else {
+                false;
+            }
+        }
+
+        return true;
+    }
+
+    public static function getRelativePath(path:String):String {
+        if (path == null || path.length <= 0) {
+            return "";
+        }
+
+        if (isSeparator(path.fastCodeAt(0))) {
+            var i = 1;
+            while (i < path.length) {
+                if (!isSeparator(path.fastCodeAt(i))) {
+                    return path.substr(i);
+                }
+
+                i++;
+            }
+
+            return "";
+        }
+
+        if (isDriveLetter(path.fastCodeAt(0)) && path.length >= 2 && ":".code == path.fastCodeAt(1)) {
+            return if (path.length >= 3) {
+                getRelativePath(path.substr(2));
+            } else {
+                "";
+            }
+        }
+
+        return path;
+    }
+
     public static function empty(path:String) {
-		if (path == null) {
+		if (path == null || path.length == 0) {
             return true;
         }
 

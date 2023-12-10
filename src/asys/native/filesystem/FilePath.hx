@@ -324,7 +324,7 @@ abstract FilePath(NativeFilePath) to String {
 			return abstract;
 		}
 
-		if (path.isAbsolute() || path.empty()) {
+		if (path.isAbsolute() || (path.hasRootName() && path.getRootName() != this.getRootName())) {
 			return path;
 		}
 

@@ -79,6 +79,78 @@ class TestFilePathExtras extends Test {
         Assert.equals("", FilePathExtras.getRootPath(null));
     }
 
+    function test_hasRelativePath() {
+        Assert.isTrue(FilePathExtras.hasRelativePath("foo"));
+        Assert.isTrue(FilePathExtras.hasRelativePath("/foo"));
+        Assert.isTrue(FilePathExtras.hasRelativePath("/  foo"));
+        Assert.isTrue(FilePathExtras.hasRelativePath("   foo"));
+        Assert.isTrue(FilePathExtras.hasRelativePath("   foo"));
+        Assert.isTrue(FilePathExtras.hasRelativePath("C:foo"));
+        Assert.isTrue(FilePathExtras.hasRelativePath("C:/foo"));
+        Assert.isTrue(FilePathExtras.hasRelativePath("  C:foo"));
+        Assert.isTrue(FilePathExtras.hasRelativePath("  C:/foo"));
+        Assert.isTrue(FilePathExtras.hasRelativePath("   "));
+        Assert.isTrue(FilePathExtras.hasRelativePath("  C:  foo"));
+        Assert.isTrue(FilePathExtras.hasRelativePath("  C:/  foo"));
+        Assert.isTrue(FilePathExtras.hasRelativePath("/   "));
+        Assert.isTrue(FilePathExtras.hasRelativePath("////   "));
+        Assert.isTrue(FilePathExtras.hasRelativePath("   /   "));
+        Assert.isTrue(FilePathExtras.hasRelativePath("   ////   "));
+        Assert.isTrue(FilePathExtras.hasRelativePath("C:   "));
+        Assert.isTrue(FilePathExtras.hasRelativePath("C:/   "));
+        Assert.isTrue(FilePathExtras.hasRelativePath("   C:   "));
+        Assert.isTrue(FilePathExtras.hasRelativePath("   C:/   "));
+        Assert.isTrue(FilePathExtras.hasRelativePath("   /"));
+        Assert.isTrue(FilePathExtras.hasRelativePath("   ////"));
+        Assert.isTrue(FilePathExtras.hasRelativePath("   C:"));
+        Assert.isTrue(FilePathExtras.hasRelativePath("   C:/"));
+        
+        Assert.isFalse(FilePathExtras.hasRelativePath(null));
+        Assert.isFalse(FilePathExtras.hasRelativePath(""));
+        Assert.isFalse(FilePathExtras.hasRelativePath("/"));
+        Assert.isFalse(FilePathExtras.hasRelativePath("////"));
+        Assert.isFalse(FilePathExtras.hasRelativePath("/"));
+        Assert.isFalse(FilePathExtras.hasRelativePath("C:"));
+        Assert.isFalse(FilePathExtras.hasRelativePath("C:/"));
+        Assert.isFalse(FilePathExtras.hasRelativePath("C:////"));
+    }
+
+    function test_getRelativePath() {
+        Assert.equals("foo", FilePathExtras.getRelativePath("foo"));
+        Assert.equals("foo", FilePathExtras.getRelativePath("/foo"));
+        Assert.equals("  foo", FilePathExtras.getRelativePath("/  foo"));
+        Assert.equals("   foo", FilePathExtras.getRelativePath("   foo"));
+        Assert.equals("   foo", FilePathExtras.getRelativePath("   foo"));
+        Assert.equals("foo", FilePathExtras.getRelativePath("C:foo"));
+        Assert.equals("foo", FilePathExtras.getRelativePath("C:/foo"));
+        Assert.equals("  C:foo", FilePathExtras.getRelativePath("  C:foo"));
+        Assert.equals("  C:/foo", FilePathExtras.getRelativePath("  C:/foo"));
+        Assert.equals("   ", FilePathExtras.getRelativePath("   "));
+        Assert.equals("  C:  foo", FilePathExtras.getRelativePath("  C:  foo"));
+        Assert.equals("  C:/  foo", FilePathExtras.getRelativePath("  C:/  foo"));
+        Assert.equals("   ", FilePathExtras.getRelativePath("/   "));
+        Assert.equals("   ", FilePathExtras.getRelativePath("////   "));
+        Assert.equals("   /   ", FilePathExtras.getRelativePath("   /   "));
+        Assert.equals("   ////   ", FilePathExtras.getRelativePath("   ////   "));
+        Assert.equals("   ", FilePathExtras.getRelativePath("C:   "));
+        Assert.equals("   ", FilePathExtras.getRelativePath("C:/   "));
+        Assert.equals("   C:   ", FilePathExtras.getRelativePath("   C:   "));
+        Assert.equals("   C:/   ", FilePathExtras.getRelativePath("   C:/   "));
+        Assert.equals("   /", FilePathExtras.getRelativePath("   /"));
+        Assert.equals("   ////", FilePathExtras.getRelativePath("   ////"));
+        Assert.equals("   C:", FilePathExtras.getRelativePath("   C:"));
+        Assert.equals("   C:/", FilePathExtras.getRelativePath("   C:/"));
+        
+        Assert.equals("", FilePathExtras.getRelativePath(null));
+        Assert.equals("", FilePathExtras.getRelativePath(""));
+        Assert.equals("", FilePathExtras.getRelativePath("/"));
+        Assert.equals("", FilePathExtras.getRelativePath("////"));
+        Assert.equals("", FilePathExtras.getRelativePath("/"));
+        Assert.equals("", FilePathExtras.getRelativePath("C:"));
+        Assert.equals("", FilePathExtras.getRelativePath("C:/"));
+        Assert.equals("", FilePathExtras.getRelativePath("C:////"));
+    }
+
     function test_empty() {
         Assert.isTrue(FilePathExtras.empty(null));
         Assert.isTrue(FilePathExtras.empty(""));

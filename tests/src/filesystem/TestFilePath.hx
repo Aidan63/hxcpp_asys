@@ -17,7 +17,7 @@ class TestFilePath extends Test {
 
     function test_create_path() {
         Assert.equals('path${FilePath.SEPARATOR}to${FilePath.SEPARATOR}file', FilePath.createPath('path', 'to', 'file'));
-        Assert.equals('path${FilePath.SEPARATOR}to${FilePath.SEPARATOR}file', FilePath.createPath('path/', 'to', 'file'));
+        Assert.equals('path/to${FilePath.SEPARATOR}file', FilePath.createPath('path/', 'to', 'file'));
         Assert.equals('/to${FilePath.SEPARATOR}file', FilePath.createPath('path', '/to', 'file'));
         Assert.equals('path${FilePath.SEPARATOR}file', FilePath.createPath('path', '', 'file'));
     }
@@ -65,14 +65,15 @@ class TestFilePath extends Test {
         Assert.equals('file', FilePath.ofString(null).add("file"));
 
         Assert.equals('dir${FilePath.SEPARATOR}file', FilePath.ofString("dir").add("file"));
-        Assert.equals('dir${FilePath.SEPARATOR}file', FilePath.ofString("dir/").add("file"));
-        Assert.equals('dir${FilePath.SEPARATOR}file', FilePath.ofString("dir/////").add("file"));
+        Assert.equals('dir/file', FilePath.ofString("dir/").add("file"));
+        Assert.equals('dir/////file', FilePath.ofString("dir/////").add("file"));
         Assert.equals('/file', FilePath.ofString("dir").add("/file"));
         Assert.equals('dir', FilePath.ofString("dir").add(""));
 
         Assert.equals('C:/bar', FilePath.ofString("foo").add("C:/bar"));
         Assert.equals('C:', FilePath.ofString("foo").add("C:"));
         Assert.equals('C:', FilePath.ofString("C:").add(""));
+        Assert.equals('C:foo', FilePath.ofString("C:").add("foo"));
         Assert.equals('C:/bar', FilePath.ofString("C:foo").add("/bar"));
         Assert.equals('C:foo${FilePath.SEPARATOR}bar', FilePath.ofString("C:foo").add("bar"));
     }

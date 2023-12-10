@@ -188,6 +188,47 @@ class FilePathExtras
         return path;
     }
 
+	public static function hasFilename(path:String):Bool {
+		if (path == null || path.length <= 0) {
+			return false;
+		}
+
+		if (path.length >= 2 && ":".code == path.fastCodeAt(path.length - 1) && isDriveLetter(path.fastCodeAt(path.length - 2))) {
+			return false;
+		}
+
+		return !isSeparator(path.fastCodeAt(path.length - 1));
+	}
+
+	public static function getFilename(path:String):String {
+		if (path == null || path.length <= 0) {
+			return "";
+		}
+
+		if (path.length >= 2 && ":".code == path.fastCodeAt(path.length - 1) && isDriveLetter(path.fastCodeAt(path.length - 2))) {
+			return "";
+		}
+
+		return if (isSeparator(path.fastCodeAt(path.length - 1))) {
+			"";
+		} else {
+			var i = path.length - 2;
+			while (i >= 0) {
+				if (isSeparator(path.fastCodeAt(i))) {
+					return path.substr(i + 1);
+				}
+
+				if (":".code == path.fastCodeAt(i) && i - 1 >= 0 && isDriveLetter(path.fastCodeAt(i - 1))) {
+					return path.substr(i + 1);
+				}
+
+				i--;
+			}
+
+			return path;
+		}
+	}
+
     public static function empty(path:String) {
 		if (path == null || path.length == 0) {
             return true;

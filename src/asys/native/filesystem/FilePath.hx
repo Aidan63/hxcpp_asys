@@ -299,6 +299,14 @@ abstract FilePath(NativeFilePath) to String {
 			}
 		}
 
-		return new FilePath(this.trimSlashes() + SEPARATOR + path);
+		var out = this;
+		if (path.hasRootDirectory()) {
+			out = this.getRootName();
+		}
+		else if (this.hasFilename() || (!this.hasRootDirectory() && isAbsolute())) {
+			out = this + SEPARATOR;
+		}
+
+		return new FilePath(out + path.getRootDirectory() + path.getRelativePath());
 	}
 }

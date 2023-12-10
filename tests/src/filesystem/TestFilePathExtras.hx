@@ -151,6 +151,37 @@ class TestFilePathExtras extends Test {
         Assert.equals("", FilePathExtras.getRelativePath("C:////"));
     }
 
+    function test_hasFilename() {
+        Assert.isTrue(FilePathExtras.hasFilename("/foo/bar.txt"));
+        Assert.isTrue(FilePathExtras.hasFilename("/foo/.bar"));
+        Assert.isFalse(FilePathExtras.hasFilename("/foo/bar/"));
+        Assert.isTrue(FilePathExtras.hasFilename("/foo/."));
+        Assert.isTrue(FilePathExtras.hasFilename("/foo/.."));
+        Assert.isTrue(FilePathExtras.hasFilename("."));
+        Assert.isTrue(FilePathExtras.hasFilename(".."));
+        Assert.isFalse(FilePathExtras.hasFilename("/"));
+        Assert.isTrue(FilePathExtras.hasFilename("//hostname"));
+        Assert.isFalse(FilePathExtras.hasFilename("C:"));
+        Assert.isTrue(FilePathExtras.hasFilename("C:foo"));
+        Assert.isTrue(FilePathExtras.hasFilename("C:/foo"));
+    }
+
+    function test_getFilename() {
+        Assert.equals("bar", FilePathExtras.getFilename("bar"));
+        Assert.equals("bar.txt", FilePathExtras.getFilename("/foo/bar.txt"));
+        Assert.equals(".bar", FilePathExtras.getFilename("/foo/.bar"));
+        Assert.equals("", FilePathExtras.getFilename("/foo/bar/"));
+        Assert.equals(".", FilePathExtras.getFilename("/foo/."));
+        Assert.equals("..", FilePathExtras.getFilename("/foo/.."));
+        Assert.equals(".", FilePathExtras.getFilename("."));
+        Assert.equals("..", FilePathExtras.getFilename(".."));
+        Assert.equals("", FilePathExtras.getFilename("/"));
+        Assert.equals("hostname", FilePathExtras.getFilename("//hostname"));
+        Assert.equals("", FilePathExtras.getFilename("C:"));
+        Assert.equals("foo", FilePathExtras.getFilename("C:foo"));
+        Assert.equals("foo", FilePathExtras.getFilename("C:/foo"));
+    }
+
     function test_empty() {
         Assert.isTrue(FilePathExtras.empty(null));
         Assert.isTrue(FilePathExtras.empty(""));

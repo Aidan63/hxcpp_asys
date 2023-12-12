@@ -1,5 +1,6 @@
 package filesystem;
 
+import asys.native.filesystem.FsException;
 import utest.Async;
 import utest.Assert;
 import asys.native.IoErrorType;
@@ -84,10 +85,10 @@ class TestFileOpenWrite extends FileOpenTests {
 
     function test_writing_directory_as_file(async:Async) {
         FileSystem.openFile(emptyDirName, flags, (error, file) -> {
-            Assert.isNull(file);
-            Assert.notNull(error);
-            Assert.equals(emptyDirName, error.path);
-            Assert.equals(IoErrorType.IsDirectory, error.type);
+            if (Assert.isOfType(error, FsException)) {
+                Assert.equals(emptyDirName, (cast error : FsException).path);
+                Assert.equals(IoErrorType.IsDirectory, (cast error : FsException).type);
+            }
 
             async.done();
         });

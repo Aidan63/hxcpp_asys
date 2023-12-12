@@ -1,5 +1,6 @@
 package filesystem;
 
+import asys.native.filesystem.FsException;
 import utest.Async;
 import utest.Assert;
 import asys.native.IoErrorType;
@@ -45,10 +46,10 @@ class TestFileSystemUniqueDirectory extends DirectoryTests {
         final target = FilePath.createPath(directoryName, "other_dir");
 
         FileSystem.uniqueDirectory(target, null, null, false, (error, path) -> {
-            if (Assert.notNull(error)) {
-                Assert.isNull(path);
-                Assert.equals(target, error.path.substr(0, target.toString().length));
-                Assert.equals(IoErrorType.FileNotFound, error.type);
+            Assert.isNull(path);
+            if (Assert.isOfType(error, FsException)) {
+                Assert.equals(target, (cast error : FsException).path.substr(0, target.toString().length));
+                Assert.equals(IoErrorType.FileNotFound, (cast error : FsException).type);
             }
 
             async.done();

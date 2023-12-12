@@ -1,5 +1,6 @@
 package filesystem;
 
+import asys.native.filesystem.FsException;
 import utest.Async;
 import utest.Assert;
 import asys.native.IoErrorType;
@@ -145,9 +146,10 @@ class TestFileOpenOverwriteRead extends FileOpenTests {
             final buffer = Bytes.ofString(text);
 
             file.write(0, buffer, 0, buffer.length, (error, count) -> {
-                Assert.notNull(error);
-                Assert.equals(emptyDirName, error.path);
-                Assert.equals(IoErrorType.IsDirectory, error.type);
+                if (Assert.isOfType(error, FsException)) {
+                    Assert.equals(emptyDirName, (cast error : FsException).path);
+                    Assert.equals(IoErrorType.IsDirectory, (cast error : FsException).type);
+                }
                 
                 file.close((error, _) -> {
                     Assert.isNull(error);
@@ -166,9 +168,10 @@ class TestFileOpenOverwriteRead extends FileOpenTests {
             final buffer = Bytes.alloc(8);
 
             file.read(0, buffer, 0, buffer.length, (error, count) -> {
-                Assert.notNull(error);
-                Assert.equals(emptyDirName, error.path);
-                Assert.equals(IoErrorType.IsDirectory, error.type);
+                if (Assert.isOfType(error, FsException)) {
+                    Assert.equals(emptyDirName, (cast error : FsException).path);
+                    Assert.equals(IoErrorType.IsDirectory, (cast error : FsException).type);
+                }
                 
                 file.close((error, _) -> {
                     Assert.isNull(error);

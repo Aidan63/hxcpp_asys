@@ -1,5 +1,6 @@
 package filesystem;
 
+import asys.native.filesystem.FsException;
 import haxe.io.Bytes;
 import utest.Async;
 import utest.Assert;
@@ -77,9 +78,9 @@ class TestFileSystemWrite extends FileOpenTests {
 
     function test_writing_bytes_directory_as_file(async:Async) {
         FileSystem.writeBytes(emptyDirName, Bytes.ofString(dummyFileData), Write, (error, _) -> {
-            if (Assert.notNull(error)) {
-                Assert.equals(emptyDirName, error.path);
-                Assert.equals(IoErrorType.IsDirectory, error.type);
+            if (Assert.isOfType(error, FsException)) {
+                Assert.equals(emptyDirName, (cast error : FsException).path);
+                Assert.equals(IoErrorType.IsDirectory, (cast error : FsException).type);
             }
 
             async.done();
@@ -88,9 +89,9 @@ class TestFileSystemWrite extends FileOpenTests {
 
     function test_writing_string_directory_as_file(async:Async) {
         FileSystem.writeString(emptyDirName, dummyFileData, Write, (error, _) -> {
-            if (Assert.notNull(error)) {
-                Assert.equals(emptyDirName, error.path);
-                Assert.equals(IoErrorType.IsDirectory, error.type);
+            if (Assert.isOfType(error, FsException)) {
+                Assert.equals(emptyDirName, (cast error : FsException).path);
+                Assert.equals(IoErrorType.IsDirectory, (cast error : FsException).type);
             }
 
             async.done();

@@ -6,6 +6,7 @@ import asys.native.net.Ip.IpTools;
 import sys.thread.Thread;
 import asys.native.net.SocketOptions.SocketOptionKind;
 import haxe.NoData;
+import haxe.Callback;
 import haxe.io.Bytes;
 import haxe.exceptions.NotImplementedException;
 

@@ -1,5 +1,6 @@
 package filesystem;
 
+import asys.native.filesystem.FsException;
 import utest.Async;
 import utest.Assert;
 import asys.native.IoErrorType;
@@ -24,8 +25,8 @@ class TestDirectoryList extends DirectoryTests {
             FileSystem.listDirectory(dummyFileName, (error, entries) -> {
                 Assert.isNull(entries);
     
-                if (Assert.notNull(error)) {
-                    Assert.equals(IoErrorType.NotDirectory, error.type);
+                if (Assert.isOfType(error, FsException)) {
+                    Assert.equals(IoErrorType.NotDirectory, (cast error : FsException).type);
                 }
     
                 async.done();
@@ -36,8 +37,8 @@ class TestDirectoryList extends DirectoryTests {
             FileSystem.listDirectory("does_not_exist", (error, entries) -> {
                 Assert.isNull(entries);
     
-                if (Assert.notNull(error)) {
-                    Assert.equals(IoErrorType.FileNotFound, error.type);
+                if (Assert.isOfType(error, FsException)) {
+                    Assert.equals(IoErrorType.FileNotFound, (cast error : FsException).type);
                 }
     
                 async.done();

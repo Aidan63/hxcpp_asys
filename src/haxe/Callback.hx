@@ -1,6 +1,6 @@
 package haxe;
 
-typedef CallbackHandler<E,R> = (error:Null<E>, result:R) -> Void;
+typedef CallbackHandler<R, E=Exception> = (error:Null<E>, result:R) -> Void;
 
 /**
 	A callback.
@@ -11,7 +11,7 @@ typedef CallbackHandler<E,R> = (error:Null<E>, result:R) -> Void;
 	not be used.
 	The underlying function type is declared in `haxe.CallbackHandler`.
 **/
-abstract Callback<E,R>(CallbackHandler<E,R>) from CallbackHandler<E,R> {
+abstract Callback<R, E=Exception>(CallbackHandler<R, E>) from CallbackHandler<R, E> {
 	/**
 		This method may be used instead of allocating an anonymous function to ignore
 		the outcome of an operation.

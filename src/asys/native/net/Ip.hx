@@ -1,7 +1,6 @@
 package asys.native.net;
 
 import haxe.Exception;
-import haxe.exceptions.NotImplementedException;
 import haxe.io.Bytes;
 
 using Lambda;

@@ -4,6 +4,7 @@ import haxe.exceptions.NotImplementedException;
 import asys.native.net.SocketOptions;
 import cpp.asys.SocketAddressTools.makeSocketAddress;
 import haxe.NoData;
+import haxe.Callback;
 import asys.native.net.Ip.IpTools;
 import sys.thread.Thread;
 

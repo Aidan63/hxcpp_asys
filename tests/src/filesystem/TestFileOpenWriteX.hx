@@ -1,5 +1,6 @@
 package filesystem;
 
+import asys.native.filesystem.FsException;
 import utest.Async;
 import utest.Assert;
 import asys.native.IoErrorType;
@@ -41,9 +42,10 @@ class TestFileOpenWriteX extends FileOpenTests {
     function test_fails_to_write_to_empty_file(async:Async) {
         FileSystem.openFile(emptyFileName, flags, (error, file) -> {
             Assert.isNull(file);
-            Assert.notNull(error);
-            Assert.equals(emptyFileName, error.path);
-            Assert.equals(IoErrorType.FileExists, error.type);
+            if (Assert.isOfType(error, FsException)) {
+                Assert.equals(emptyFileName, (cast error : FsException).path);
+                Assert.equals(IoErrorType.FileExists, (cast error : FsException).type);
+            }
 
             async.done();
         });
@@ -52,9 +54,10 @@ class TestFileOpenWriteX extends FileOpenTests {
     function test_fails_to_write_to_existing_file(async:Async) {
         FileSystem.openFile(dummyFileName, flags, (error, file) -> {
             Assert.isNull(file);
-            Assert.notNull(error);
-            Assert.equals(dummyFileName, error.path);
-            Assert.equals(IoErrorType.FileExists, error.type);
+            if (Assert.isOfType(error, FsException)) {
+                Assert.equals(dummyFileName, (cast error : FsException).path);
+                Assert.equals(IoErrorType.FileExists, (cast error : FsException).type);
+            }
 
             async.done();
         });
@@ -63,9 +66,10 @@ class TestFileOpenWriteX extends FileOpenTests {
     function test_writing_directory_as_file(async:Async) {
         FileSystem.openFile(emptyDirName, flags, (error, file) -> {
             Assert.isNull(file);
-            Assert.notNull(error);
-            Assert.equals(emptyDirName, error.path);
-            Assert.equals(IoErrorType.FileExists, error.type);
+            if (Assert.isOfType(error, FsException)) {
+                Assert.equals(emptyDirName, (cast error : FsException).path);
+                Assert.equals(IoErrorType.FileExists, (cast error : FsException).type);
+            }
 
             async.done();
         });

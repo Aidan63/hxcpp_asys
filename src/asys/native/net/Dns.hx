@@ -2,8 +2,8 @@ package asys.native.net;
 
 import sys.thread.Thread;
 import haxe.Exception;
+import haxe.Callback;
 import haxe.io.Bytes;
-import haxe.exceptions.NotImplementedException;
 
 using Lambda;
 

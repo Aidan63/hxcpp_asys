@@ -4,6 +4,7 @@ import asys.native.system.SystemUser;
 import asys.native.system.SystemGroup;
 import haxe.Int64;
 import haxe.NoData;
+import haxe.Callback;
 import haxe.io.Bytes;
 
 class File {

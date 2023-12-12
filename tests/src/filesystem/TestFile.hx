@@ -3,6 +3,7 @@ package filesystem;
 import utest.Async;
 import utest.Assert;
 import asys.native.IoErrorType;
+import asys.native.filesystem.FsException;
 import asys.native.filesystem.FileSystem;
 import asys.native.filesystem.FileOpenFlag;
 import haxe.io.Bytes;
@@ -22,9 +23,10 @@ class TestFile extends FileOpenTests {
 
         FileSystem.openFile(path, FileOpenFlag.Read, (error, file) -> {
             Assert.isNull(file);
-            Assert.notNull(error);
-            Assert.equals(path, error.path);
-            Assert.equals(IoErrorType.CustomError("ENAMETOOLONG"), error.type);
+            if (Assert.isOfType(error, FsException)) {
+                Assert.equals(path, (cast error : FsException).path);
+                Assert.equals(IoErrorType.CustomError("ENAMETOOLONG"), (cast error : FsException).type);
+            }
 
             async.done();
         });

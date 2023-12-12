@@ -2,6 +2,7 @@ package asys.native.filesystem;
 
 import sys.thread.Thread;
 import haxe.NoData;
+import haxe.Callback;
 import haxe.io.Bytes;
 import asys.native.system.SystemUser;
 import asys.native.system.SystemGroup;

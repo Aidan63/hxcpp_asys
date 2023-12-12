@@ -1,5 +1,6 @@
 package filesystem;
 
+import asys.native.filesystem.FsException;
 import haxe.io.Bytes;
 import asys.native.IoErrorType;
 import asys.native.filesystem.FileOpenFlag;
@@ -12,9 +13,10 @@ class TestFileOpenRead extends FileOpenTests {
         final nonExistingFile = "does_not_exist.txt";
 
         FileSystem.openFile(nonExistingFile, FileOpenFlag.Read, (error, file) -> {
-            Assert.notNull(error);
-            Assert.equals(nonExistingFile, error.path);
-            Assert.equals(IoErrorType.FileNotFound, error.type);
+            if (Assert.isOfType(error, FsException)) {
+                Assert.equals(nonExistingFile, (cast error : FsException).path);
+                Assert.equals(IoErrorType.FileNotFound, (cast error : FsException).type);
+            }
 
             async.done();
         });
@@ -73,9 +75,10 @@ class TestFileOpenRead extends FileOpenTests {
             final buffer = Bytes.alloc(size);
 
             file.read(0, buffer, 0, buffer.length, (error, count) -> {
-                Assert.notNull(error);
-                Assert.equals(emptyDirName, error.path);
-                Assert.equals(IoErrorType.IsDirectory, error.type);
+                if (Assert.isOfType(error, FsException)) {
+                    Assert.equals(emptyDirName, (cast error : FsException).path);
+                    Assert.equals(IoErrorType.IsDirectory, (cast error : FsException).type);
+                }
                 
                 file.close((error, _) -> {
                     Assert.isNull(error);

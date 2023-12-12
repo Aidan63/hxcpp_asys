@@ -1,5 +1,6 @@
 package filesystem;
 
+import asys.native.filesystem.FsException;
 import utest.Async;
 import utest.Assert;
 import asys.native.IoErrorType;
@@ -51,9 +52,9 @@ class TestFileSystemCreateDirectory extends DirectoryTests {
         final target = FilePath.createPath(directoryName, "sub_dir");
 
         FileSystem.createDirectory(target, null, false, (error, _) -> {
-            if (Assert.notNull(error)) {
-                Assert.equals(target, error.path);
-                Assert.equals(IoErrorType.FileNotFound, error.type);
+            if (Assert.isOfType(error, FsException)) {
+                Assert.equals(target, (cast error : FsException).path);
+                Assert.equals(IoErrorType.FileNotFound, (cast error : FsException).type);
                 Assert.isFalse(sys.FileSystem.exists(target));
             }
 
@@ -77,9 +78,9 @@ class TestFileSystemCreateDirectory extends DirectoryTests {
         final target = FilePath.createPath(directoryName, "some", "sub_dir");
 
         FileSystem.createDirectory(target, null, false, (error, _) -> {
-            if (Assert.notNull(error)) {
-                Assert.equals(target, error.path);
-                Assert.equals(IoErrorType.FileNotFound, error.type);
+            if (Assert.isOfType(error, FsException)) {
+                Assert.equals(target, (cast error : FsException).path);
+                Assert.equals(IoErrorType.FileNotFound, (cast error : FsException).type);
             }
 
             async.done();

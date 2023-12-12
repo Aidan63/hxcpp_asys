@@ -1,5 +1,6 @@
 package asys.native.filesystem;
 
+import haxe.Callback;
 import haxe.NoData;
 
 /**

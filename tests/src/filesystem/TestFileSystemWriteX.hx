@@ -1,5 +1,6 @@
 package filesystem;
 
+import asys.native.filesystem.FsException;
 import haxe.io.Bytes;
 import utest.Async;
 import utest.Assert;
@@ -11,9 +12,9 @@ class TestFileSystemWriteX extends FileOpenTests {
         final bytes = Bytes.ofString(dummyFileData);
 
         FileSystem.writeBytes(emptyFileName, bytes, WriteX, (error, _) -> {
-            if (Assert.notNull(error)) {
-                Assert.equals(emptyFileName, error.path);
-                Assert.equals(IoErrorType.FileExists, error.type);
+            if (Assert.isOfType(error, FsException)) {
+                Assert.equals(emptyFileName, (cast error : FsException).path);
+                Assert.equals(IoErrorType.FileExists, (cast error : FsException).type);
             }
 
             async.done();
@@ -22,9 +23,9 @@ class TestFileSystemWriteX extends FileOpenTests {
 
     function test_write_string_to_empty_file(async:Async) {
         FileSystem.writeString(emptyFileName, dummyFileData, WriteX, (error, _) -> {
-            if (Assert.notNull(error)) {
-                Assert.equals(emptyFileName, error.path);
-                Assert.equals(IoErrorType.FileExists, error.type);
+            if (Assert.isOfType(error, FsException)) {
+                Assert.equals(emptyFileName, (cast error : FsException).path);
+                Assert.equals(IoErrorType.FileExists, (cast error : FsException).type);
             }
 
             async.done();
@@ -57,9 +58,9 @@ class TestFileSystemWriteX extends FileOpenTests {
         final bytes = Bytes.ofString("lorem");
 
         FileSystem.writeBytes(dummyFileName, bytes, WriteX, (error, _) -> {
-            if (Assert.notNull(error)) {
-                Assert.equals(dummyFileName, error.path);
-                Assert.equals(IoErrorType.FileExists, error.type);
+            if (Assert.isOfType(error, FsException)) {
+                Assert.equals(dummyFileName, (cast error : FsException).path);
+                Assert.equals(IoErrorType.FileExists, (cast error : FsException).type);
             }
 
             async.done();
@@ -70,9 +71,9 @@ class TestFileSystemWriteX extends FileOpenTests {
         final text = "lorem";
 
         FileSystem.writeString(dummyFileName, text, WriteX, (error, _) -> {
-            if (Assert.notNull(error)) {
-                Assert.equals(dummyFileName, error.path);
-                Assert.equals(IoErrorType.FileExists, error.type);
+            if (Assert.isOfType(error, FsException)) {
+                Assert.equals(dummyFileName, (cast error : FsException).path);
+                Assert.equals(IoErrorType.FileExists, (cast error : FsException).type);
             }
 
             async.done();
@@ -81,9 +82,9 @@ class TestFileSystemWriteX extends FileOpenTests {
 
     function test_writing_bytes_directory_as_file(async:Async) {
         FileSystem.writeBytes(emptyDirName, Bytes.ofString(dummyFileData), WriteX, (error, _) -> {
-            if (Assert.notNull(error)) {
-                Assert.equals(emptyDirName, error.path);
-                Assert.equals(IoErrorType.FileExists, error.type);
+            if (Assert.isOfType(error, FsException)) {
+                Assert.equals(emptyDirName, (cast error : FsException).path);
+                Assert.equals(IoErrorType.FileExists, (cast error : FsException).type);
             }
 
             async.done();
@@ -92,9 +93,9 @@ class TestFileSystemWriteX extends FileOpenTests {
 
     function test_writing_string_directory_as_file(async:Async) {
         FileSystem.writeString(emptyDirName, dummyFileData, WriteX, (error, _) -> {
-            if (Assert.notNull(error)) {
-                Assert.equals(emptyDirName, error.path);
-                Assert.equals(IoErrorType.FileExists, error.type);
+            if (Assert.isOfType(error, FsException)) {
+                Assert.equals(emptyDirName, (cast error : FsException).path);
+                Assert.equals(IoErrorType.FileExists, (cast error : FsException).type);
             }
 
             async.done();

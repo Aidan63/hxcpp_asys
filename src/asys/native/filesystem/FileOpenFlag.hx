@@ -1,6 +1,7 @@
 package asys.native.filesystem;
 
 import asys.native.filesystem.File;
+import haxe.Callback;
 import haxe.io.Bytes;
 
 enum abstract FileOpenFlag<T>(Int) {

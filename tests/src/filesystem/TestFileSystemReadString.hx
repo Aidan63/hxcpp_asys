@@ -1,5 +1,6 @@
 package filesystem;
 
+import asys.native.filesystem.FsException;
 import utest.Async;
 import utest.Assert;
 import asys.native.IoErrorType;
@@ -41,9 +42,9 @@ class TestFileSystemReadString extends FileOpenTests {
         FileSystem.readString("does_not_exist.txt", (error, bytes) -> {
             Assert.isNull(bytes);
 
-            if (Assert.notNull(error)) {
-                Assert.equals("does_not_exist.txt", error.path);
-                Assert.equals(IoErrorType.FileNotFound, error.type);
+            if (Assert.isOfType(error, FsException)) {
+                Assert.equals("does_not_exist.txt", (cast error : FsException).path);
+                Assert.equals(IoErrorType.FileNotFound, (cast error : FsException).type);
             }
 
             async.done();
@@ -54,9 +55,9 @@ class TestFileSystemReadString extends FileOpenTests {
         FileSystem.readString(emptyDirName, (error, bytes) -> {
             Assert.isNull(bytes);
 
-            if (Assert.notNull(error)) {
-                Assert.equals(emptyDirName, error.path);
-                Assert.equals(IoErrorType.IsDirectory, error.type);
+            if (Assert.isOfType(error, FsException)) {
+                Assert.equals(emptyDirName, (cast error : FsException).path);
+                Assert.equals(IoErrorType.IsDirectory, (cast error : FsException).type);
             }
 
             async.done();

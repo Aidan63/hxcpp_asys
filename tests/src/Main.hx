@@ -20,6 +20,7 @@ import filesystem.TestFileSystemOverwrite;
 import filesystem.TestFileSystemReadBytes;
 import filesystem.TestFileSystemReadString;
 import filesystem.TestFileModifyingBuffers;
+import filesystem.TestFileSystemDeleteFile;
 import filesystem.TestFileOpenOverwriteRead;
 import filesystem.TestFileSystemCreateDirectory;
 import filesystem.TestFileSystemUniqueDirectory;
@@ -53,6 +54,7 @@ function main() {
     runner.addCase(new TestFilePath());
     runner.addCase(new TestFilePathExtras());
     runner.addCase(new TestFileSystemMove());
+    runner.addCase(new TestFileSystemDeleteFile());
 
     Report.create(runner);
     

@@ -307,22 +307,30 @@ class FileSystem {
 		Remove a file or symbolic link.
 	**/
 	static public function deleteFile(path:FilePath, callback:Callback<NoData>):Void {
-		cpp.asys.Directory.deleteFile(
-			@:privateAccess Thread.current().events.context,
-			path,
-			() -> callback.success(null),
-			msg -> callback.fail(new FsException(msg, path)));
+		if (path == null) {
+			callback.fail(new ArgumentException("path", "null path"));
+		} else {
+			cpp.asys.Directory.deleteFile(
+				@:privateAccess Thread.current().events.context,
+				path,
+				() -> callback.success(null),
+				msg -> callback.fail(new FsException(msg, path)));
+		}
 	}
 
 	/**
 		Remove an empty directory.
 	**/
 	static public function deleteDirectory(path:FilePath, callback:Callback<NoData>):Void {
-		cpp.asys.Directory.deleteDirectory(
-			@:privateAccess Thread.current().events.context,
-			path,
-			() -> callback.success(null),
-			msg -> callback.fail(new FsException(msg, path)));
+		if (path == null) {
+			callback.fail(new ArgumentException("path", "null path"));
+		} else {
+			cpp.asys.Directory.deleteDirectory(
+				@:privateAccess Thread.current().events.context,
+				path,
+				() -> callback.success(null),
+				msg -> callback.fail(new FsException(msg, path)));
+		}
 	}
 
 	/**

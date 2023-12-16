@@ -5,7 +5,6 @@ import utils.Directory;
 import utest.Async;
 import utest.Assert;
 import asys.native.IoErrorType;
-import asys.native.filesystem.FilePath;
 import asys.native.filesystem.FileSystem;
 import asys.native.filesystem.FsException;
 

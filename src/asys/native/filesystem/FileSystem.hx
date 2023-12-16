@@ -1,5 +1,6 @@
 package asys.native.filesystem;
 
+import haxe.exceptions.ArgumentException;
 import sys.thread.Thread;
 import haxe.NoData;
 import haxe.Callback;
@@ -252,23 +253,54 @@ class FileSystem {
 		by that third-party process may be overwritten.
 	**/
 	static public function move(oldPath:FilePath, newPath:FilePath, overwrite:Bool = true, callback:Callback<NoData>):Void {
-		final ctx = @:privateAccess Thread.current().events.context;
+		if (oldPath == null) {
+			callback.fail(new ArgumentException("oldPath", "oldPath was null"));
 
-		if (overwrite) {
-			rename(ctx, oldPath, newPath, callback);
-		} else {
-			check(newPath, Exists, (error, ok) -> {
-				if (error != null) {
-					callback.fail(error);
-				} else {
-					if (ok) {
-						callback.fail(new FsException(FileExists, newPath));
-					} else {
-						rename(ctx, oldPath, newPath, callback);
-					}
-				}
-			});
+			return;
 		}
+
+		if (newPath == null) {
+			callback.fail(new ArgumentException("newPath", "newPath was null"));
+			
+			return;
+		}
+
+		isDirectory(oldPath, (error, isDir) -> {
+			if (error != null)
+			{
+				callback.fail(error);
+			}
+			else
+			{
+				if (isDir)
+				{
+					cpp.asys.Directory.rename(
+						@:privateAccess Thread.current().events.context,
+						oldPath,
+						newPath,
+						() -> callback.success(null),
+						msg -> callback.fail(new FsException(msg, oldPath))); // TODO : Custom exception for both paths?
+				}
+				else
+				{
+					cpp.asys.Directory.copyFile(
+						@:privateAccess Thread.current().events.context,
+						oldPath,
+						newPath,
+						overwrite,
+						() -> {
+							deleteFile(oldPath, (error, _) -> {
+								if (error != null) {
+									callback.fail(error);
+								} else {
+									callback.success(_);
+								}
+							});
+						},
+						msg -> callback.fail(new FsException(msg, oldPath)));
+				}
+			}
+		});
 	}
 
 	/**
@@ -569,14 +601,5 @@ class FileSystem {
 			path,
 			callback.success,
 			msg -> callback.fail(new FsException(msg, path)));
-	}
-
-	private static function rename(ctx:cpp.asys.Context, oldPath:FilePath, newPath:FilePath, callback:Callback<NoData>):Void {
-		cpp.asys.Directory.move(
-			ctx,
-			oldPath,
-			newPath,
-			() -> callback.success(null),
-			msg -> callback.fail(new FsException(msg, oldPath))); // TODO : Custom exception for both paths?
 	}
 }

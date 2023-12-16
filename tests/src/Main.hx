@@ -4,6 +4,7 @@ import filesystem.TestFileOpenRead;
 import filesystem.TestFileOpenWrite;
 import filesystem.TestDirectoryOpen;
 import filesystem.TestDirectoryList;
+import filesystem.TestFileSystemMove;
 import filesystem.TestFilePathExtras;
 import filesystem.TestFileOpenAppend;
 import filesystem.TestFileOpenWriteX;
@@ -51,6 +52,7 @@ function main() {
     runner.addCase(new TestFileSystemUniqueDirectory());
     runner.addCase(new TestFilePath());
     runner.addCase(new TestFilePathExtras());
+    runner.addCase(new TestFileSystemMove());
 
     Report.create(runner);
     

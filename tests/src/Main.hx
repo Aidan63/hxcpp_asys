@@ -24,6 +24,7 @@ import filesystem.TestFileSystemDeleteFile;
 import filesystem.TestFileOpenOverwriteRead;
 import filesystem.TestFileSystemCreateDirectory;
 import filesystem.TestFileSystemUniqueDirectory;
+import filesystem.TestFileSystemDeleteDirectory;
 import utest.ui.Report;
 import utest.Runner;
 
@@ -55,6 +56,7 @@ function main() {
     runner.addCase(new TestFilePathExtras());
     runner.addCase(new TestFileSystemMove());
     runner.addCase(new TestFileSystemDeleteFile());
+    runner.addCase(new TestFileSystemDeleteDirectory());
 
     Report.create(runner);
     

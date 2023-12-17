@@ -323,7 +323,7 @@ class FileSystem {
 	**/
 	static public function deleteDirectory(path:FilePath, callback:Callback<NoData>):Void {
 		if (path == null) {
-			callback.fail(new ArgumentException("path", "null path"));
+			callback.fail(new ArgumentException("path", "path was null"));
 		} else {
 			cpp.asys.Directory.deleteDirectory(
 				@:privateAccess Thread.current().events.context,
@@ -340,6 +340,12 @@ class FileSystem {
 		link itself.
 	**/
 	static public function info(path:FilePath, callback:Callback<FileInfo>):Void {
+		if (path == null) {
+			callback.fail(new ArgumentException("path", "path was null"));
+
+			return;
+		}
+
 		openFile(path, Read, (error, file) -> {
 			switch error {
 				case null:

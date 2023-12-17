@@ -11,6 +11,7 @@ import filesystem.TestFileOpenAppend;
 import filesystem.TestFileOpenWriteX;
 import filesystem.TestFileSystemWrite;
 import filesystem.TestFileDodgyAccess;
+import filesystem.TestFileSystemCheck;
 import filesystem.TestFileSystemAppend;
 import filesystem.TestFileSystemWriteX;
 import filesystem.TestFileOpenReadWrite;
@@ -59,6 +60,7 @@ function main() {
     runner.addCase(new TestFileSystemDeleteFile());
     runner.addCase(new TestFileSystemDeleteDirectory());
     runner.addCase(new TestFileSystemInfo());
+    runner.addCase(new TestFileSystemCheck());
 
     Report.create(runner);
     

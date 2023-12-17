@@ -378,6 +378,12 @@ class FileSystem {
 		```
 	**/
 	static public function check(path:FilePath, mode:FileAccessMode, callback:Callback<Bool>):Void {
+		if (path == null) {
+			callback.fail(new ArgumentException("path", "path was null"));
+
+			return;
+		}
+
 		cpp.asys.Directory.check(
 			@:privateAccess Thread.current().events.context,
 			path,

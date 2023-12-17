@@ -398,6 +398,12 @@ class FileSystem {
 		Returns `false` if `path` does not exist.
 	**/
 	static public function isDirectory(path:FilePath, callback:Callback<Bool>):Void {
+		if (path == null) {
+			callback.fail(new ArgumentException("path", "path was null"));
+
+			return;
+		}
+
 		cpp.asys.Directory.isDirectory(
 			@:privateAccess Thread.current().events.context,
 			path,
@@ -411,6 +417,12 @@ class FileSystem {
 		Returns `false` if `path` does not exist.
 	**/
 	static public function isFile(path:FilePath, callback:Callback<Bool>):Void {
+		if (path == null) {
+			callback.fail(new ArgumentException("path", "path was null"));
+
+			return;
+		}
+
 		cpp.asys.Directory.isFile(
 			@:privateAccess Thread.current().events.context,
 			path,

@@ -1,3 +1,5 @@
+import filesystem.TestFileSystemIsFile;
+import filesystem.TestFileSystemIsDirectory;
 import filesystem.TestFile;
 import filesystem.TestFilePath;
 import filesystem.TestFileOpenRead;
@@ -61,6 +63,8 @@ function main() {
     runner.addCase(new TestFileSystemDeleteDirectory());
     runner.addCase(new TestFileSystemInfo());
     runner.addCase(new TestFileSystemCheck());
+    runner.addCase(new TestFileSystemIsDirectory());
+    runner.addCase(new TestFileSystemIsFile());
 
     Report.create(runner);
     

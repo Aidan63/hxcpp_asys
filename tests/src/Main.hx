@@ -21,6 +21,7 @@ import filesystem.TestFileOpenReadWrite;
 import filesystem.TestFileOpenWriteRead;
 import filesystem.TestFileOpenOverwrite;
 import filesystem.TestFileSystemTempFile;
+import filesystem.TestFileSystemReadLink;
 import filesystem.TestFileSystemOverwrite;
 import filesystem.TestFileSystemReadBytes;
 import filesystem.TestFileSystemReadString;
@@ -69,6 +70,7 @@ function main() {
     runner.addCase(new TestFileSystemIsFile());
     runner.addCase(new TestFileSystemLink());
     runner.addCase(new TestFileSystemIsLink());
+    runner.addCase(new TestFileSystemReadLink());
 
     Report.create(runner);
     

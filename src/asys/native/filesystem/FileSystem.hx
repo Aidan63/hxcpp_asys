@@ -551,6 +551,12 @@ class FileSystem {
 		Get the value of a symbolic link.
 	**/
 	static public function readLink(path:FilePath, callback:Callback<String>):Void {
+		if (path == null) {
+			callback.fail(new ArgumentException("path", "path was null"));
+
+			return;
+		}
+
 		cpp.asys.Directory.readLink(
 			@:privateAccess Thread.current().events.context,
 			path,

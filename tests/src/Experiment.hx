@@ -1,5 +1,36 @@
+import asys.native.filesystem.FileSystem;
+import haxe.exceptions.NotImplementedException;
+import asys.native.filesystem.Directory;
+import asys.native.filesystem.FilePath;
+import asys.native.filesystem.File;
 import haxe.NoData;
-import asys.native.filesystem.Callback;
+import haxe.Callback;
+
+abstract Principal(String) {
+    public var name (get, never) : String;
+
+    function get_name():String {
+        throw new NotImplementedException();
+    }
+}
+
+abstract SystemUser(Principal) to Principal {
+    public static function current(callback:Callback<Principal>) {
+        throw new NotImplementedException();
+    }
+
+    public static function find(name:String, callback:Callback<SystemUser>) {
+        throw new NotImplementedException();
+    }
+}
+
+abstract SystemGroup(Principal) to Principal {
+    public static function find(name:String, callback:Callback<SystemGroup>) {
+        throw new NotImplementedException();
+    }
+}
+
+//
 
 enum abstract AceType(Int) {
     var Allow;
@@ -49,6 +80,8 @@ enum abstract AceFlag(Int) {
 }
 
 class Ace {
+    public var principal : Principal;
+
     public var type : AceType;
 
     public var permissions : Array<AcePermission>;
@@ -57,15 +90,56 @@ class Ace {
 }
 
 class Acl {
-    public function getEntries(callback:Callback<Array<Ace>>) {
+    public function getEntries(callback:Callback<Null<Array<Ace>>>) {
         //
     }
 
-    public function setEntries(entries:Array<Ace>, callback:Callback<NoData>) {
+    public function setEntries(entries:Null<Array<Ace>>, callback:Callback<NoData>) {
+        //
+    }
+
+    public static function fromSecurity(security:Security, callback:Callback<Acl>) {
         //
     }
 }
 
+class Security {
+    public var owner (get, set) : SystemUser;
+
+    function get_owner():SystemUser {
+        throw new NotImplementedException();
+    }
+
+    function set_owner(_:SystemUser):SystemUser {
+        throw new NotImplementedException();
+    }
+
+    public var group (get, set) : SystemGroup;
+
+    function get_group():SystemGroup {
+        throw new NotImplementedException();
+    }
+
+    function set_group(_:SystemGroup):SystemGroup {
+        throw new NotImplementedException();
+    }
+}
+
 class Experiment {
-    //
+    static function main() {
+
+        FileSystem.openFile("test.txt", Read, (error, file) -> {
+
+            Acl.fromSecurity(cast file, (error, acl) -> {
+
+                acl.getEntries((error, entries) -> {
+                    for (ace in entries) {
+                        //
+                    }
+                });
+                
+            });
+
+        });
+    }
 }

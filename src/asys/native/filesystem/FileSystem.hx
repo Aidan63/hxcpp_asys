@@ -508,6 +508,18 @@ class FileSystem {
 		absolute or relative to the current working directory.
 	**/
 	static public function link(target:FilePath, path:String, type:FileLink = SymLink, callback:Callback<NoData>):Void {
+		if (target == null) {
+			callback.fail(new ArgumentException("target", "target was null"));
+
+			return;
+		}
+
+		if (path == null) {
+			callback.fail(new ArgumentException("path", "path was null"));
+
+			return;
+		}
+
 		cpp.asys.Directory.link(
 			@:privateAccess Thread.current().events.context,
 			target,
@@ -522,6 +534,12 @@ class FileSystem {
 		Returns `false` if `path` does not exist.
 	**/
 	static public function isLink(path:FilePath, callback:Callback<Bool>):Void {
+		if (path == null) {
+			callback.fail(new ArgumentException("path", "path was null"));
+
+			return;
+		}
+
 		cpp.asys.Directory.isLink(
 			@:privateAccess Thread.current().events.context,
 			path,

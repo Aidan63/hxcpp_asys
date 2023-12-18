@@ -1,5 +1,3 @@
-import filesystem.TestFileSystemIsFile;
-import filesystem.TestFileSystemIsDirectory;
 import filesystem.TestFile;
 import filesystem.TestFilePath;
 import filesystem.TestFileOpenRead;
@@ -11,11 +9,14 @@ import filesystem.TestFileSystemMove;
 import filesystem.TestFilePathExtras;
 import filesystem.TestFileOpenAppend;
 import filesystem.TestFileOpenWriteX;
+import filesystem.TestFileSystemLink;
 import filesystem.TestFileSystemWrite;
 import filesystem.TestFileDodgyAccess;
 import filesystem.TestFileSystemCheck;
 import filesystem.TestFileSystemAppend;
+import filesystem.TestFileSystemIsFile;
 import filesystem.TestFileSystemWriteX;
+import filesystem.TestFileSystemIsLink;
 import filesystem.TestFileOpenReadWrite;
 import filesystem.TestFileOpenWriteRead;
 import filesystem.TestFileOpenOverwrite;
@@ -25,6 +26,7 @@ import filesystem.TestFileSystemReadBytes;
 import filesystem.TestFileSystemReadString;
 import filesystem.TestFileModifyingBuffers;
 import filesystem.TestFileSystemDeleteFile;
+import filesystem.TestFileSystemIsDirectory;
 import filesystem.TestFileOpenOverwriteRead;
 import filesystem.TestFileSystemCreateDirectory;
 import filesystem.TestFileSystemUniqueDirectory;
@@ -65,6 +67,8 @@ function main() {
     runner.addCase(new TestFileSystemCheck());
     runner.addCase(new TestFileSystemIsDirectory());
     runner.addCase(new TestFileSystemIsFile());
+    runner.addCase(new TestFileSystemLink());
+    runner.addCase(new TestFileSystemIsLink());
 
     Report.create(runner);
     

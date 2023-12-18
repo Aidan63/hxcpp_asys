@@ -54,10 +54,13 @@ class TestFileSystemIsLink extends DirectoryTests {
                     if (Assert.isNull(error)) {
                         Assert.isTrue(result);
                     }
+
+                    async.done();
                 });
             }
-
-            async.done();
+            else {
+                async.done();
+            }
         });
     }
 
@@ -68,10 +71,12 @@ class TestFileSystemIsLink extends DirectoryTests {
                     if (Assert.isNull(error)) {
                         Assert.isTrue(result);
                     }
-                });
-            }
 
-            async.done();
+                    async.done();
+                });
+            } else {
+                async.done();
+            }
         });
     }
 
@@ -82,10 +87,12 @@ class TestFileSystemIsLink extends DirectoryTests {
                     if (Assert.isNull(error)) {
                         Assert.isTrue(result);
                     }
-                });
-            }
 
-            async.done();
+                    async.done();
+                });
+            } else {
+                async.done();
+            }
         });
     }
 }

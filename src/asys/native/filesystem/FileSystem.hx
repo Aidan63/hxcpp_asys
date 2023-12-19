@@ -585,6 +585,18 @@ class FileSystem {
 		Copy a file from `source` path to `destination` path.
 	**/
 	static public function copyFile(source:FilePath, destination:FilePath, overwrite:Bool = true, callback:Callback<NoData>):Void {
+		if (source == null) {
+			callback.fail(new ArgumentException("source", "source was null"));
+
+			return;
+		}
+
+		if (destination == null) {
+			callback.fail(new ArgumentException("destination", "destination was null"));
+
+			return;
+		}
+
 		cpp.asys.Directory.copyFile(
 			@:privateAccess Thread.current().events.context,
 			source,

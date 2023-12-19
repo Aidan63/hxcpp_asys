@@ -23,6 +23,7 @@ import filesystem.TestFileOpenOverwrite;
 import filesystem.TestFileSystemTempFile;
 import filesystem.TestFileSystemReadLink;
 import filesystem.TestFileSystemLinkInfo;
+import filesystem.TestFileSystemCopyFile;
 import filesystem.TestFileSystemOverwrite;
 import filesystem.TestFileSystemReadBytes;
 import filesystem.TestFileSystemReadString;
@@ -73,6 +74,7 @@ function main() {
     runner.addCase(new TestFileSystemIsLink());
     runner.addCase(new TestFileSystemReadLink());
     runner.addCase(new TestFileSystemLinkInfo());
+    runner.addCase(new TestFileSystemCopyFile());
     
     Report.create(runner);
     

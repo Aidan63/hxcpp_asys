@@ -568,6 +568,12 @@ class FileSystem {
 		Get information at the given path without following symbolic links.
 	**/
 	static public function linkInfo(path:FilePath, callback:Callback<FileInfo>):Void {
+		if (path == null) {
+			callback.fail(new ArgumentException("path", "path was null"));
+
+			return;
+		}
+
 		cpp.asys.Directory.linkInfo(
 			@:privateAccess Thread.current().events.context,
 			path,

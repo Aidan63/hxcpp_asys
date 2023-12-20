@@ -653,6 +653,24 @@ class FileSystem {
 		TODO: Decide on type for `accessTime` and `modificationTime` - see TODO in `asys.native.filesystem.FileInfo.FileStat`
 	**/
 	static public function setTimes(path:FilePath, accessTime:Int, modificationTime:Int, callback:Callback<NoData>):Void {
+		if (path == null) {
+			callback.fail(new ArgumentException("path", "path was null"));
+
+			return;
+		}
+
+		if (accessTime < 0) {
+			callback.fail(new ArgumentException("accessTime", "time was less than 0"));
+
+			return;
+		}
+
+		if (modificationTime < 0) {
+			callback.fail(new ArgumentException("modificationTime", "time was less than 0"));
+
+			return;
+		}
+
 		openFile(path, Write, (error, file) -> {
 			switch error {
 				case null:

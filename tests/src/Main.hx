@@ -1,4 +1,3 @@
-import filesystem.TestFileSystemResize;
 import filesystem.TestFile;
 import filesystem.TestFilePath;
 import filesystem.TestFileOpenRead;
@@ -18,6 +17,7 @@ import filesystem.TestFileSystemAppend;
 import filesystem.TestFileSystemIsFile;
 import filesystem.TestFileSystemWriteX;
 import filesystem.TestFileSystemIsLink;
+import filesystem.TestFileSystemResize;
 import filesystem.TestFileOpenReadWrite;
 import filesystem.TestFileOpenWriteRead;
 import filesystem.TestFileOpenOverwrite;
@@ -25,6 +25,7 @@ import filesystem.TestFileSystemTempFile;
 import filesystem.TestFileSystemReadLink;
 import filesystem.TestFileSystemLinkInfo;
 import filesystem.TestFileSystemCopyFile;
+import filesystem.TestFileSystemSetTimes;
 import filesystem.TestFileSystemOverwrite;
 import filesystem.TestFileSystemReadBytes;
 import filesystem.TestFileSystemReadString;
@@ -35,8 +36,8 @@ import filesystem.TestFileOpenOverwriteRead;
 import filesystem.TestFileSystemCreateDirectory;
 import filesystem.TestFileSystemUniqueDirectory;
 import filesystem.TestFileSystemDeleteDirectory;
-import utest.ui.Report;
 import utest.Runner;
+import utest.ui.Report;
 
 function main() {
     final runner = new Runner();
@@ -77,6 +78,7 @@ function main() {
     runner.addCase(new TestFileSystemLinkInfo());
     runner.addCase(new TestFileSystemCopyFile());
     runner.addCase(new TestFileSystemResize());
+    runner.addCase(new TestFileSystemSetTimes());
     
     Report.create(runner);
     

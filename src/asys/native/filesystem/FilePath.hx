@@ -83,29 +83,33 @@ abstract FilePath(NativeFilePath) to String {
 		This method does not resolve special names like `.` and `..`.
 		That is the parent of `some/..` is `some`.
 	**/
-	public function parent():Null<FilePath> {
-		if (this == null) {
-			return null;
+	public function parent():FilePath {
+		if (abstract.empty()) {
+			return "";
 		}
 
-		final s = this.trimSlashes();
+		if (!this.hasRelativePath()) {
+			return abstract;
+		}
+
+		final s = this.getRelativePath().trimSlashes();
 
 		switch s.length {
 			case 0:
-				return null;
+				return "";
 			case 1 if (s.fastCodeAt(0).isSeparator()):
-				return null;
+				return "";
 			case 2 | 3 if (s.fastCodeAt(1) == ':'.code):
-				return null;
+				return "";
 			case (_ - 1) => i:
 				while (!s.fastCodeAt(i).isSeparator()) {
 					--i;
 					if (i < 0) {
-						return null;
+						return "";
 					}
 				}
 
-				return new FilePath(s.substr(0, i + 1));
+				return new FilePath(s.substr(0, i + 1).trimSlashes());
 		}
 	}
 

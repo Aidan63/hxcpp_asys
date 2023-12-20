@@ -32,24 +32,24 @@ class TestFilePath extends Test {
         Assert.isFalse(FilePath.ofString('C:something').isAbsolute());
     }
 
-    // function test_parent() {
-    //     Assert.equals(null, FilePath.ofString(null).parent());
-    //     Assert.equals(null, FilePath.ofString('file').parent());
-    //     Assert.equals('/', FilePath.ofString('/file').parent());
-    //     Assert.equals('./', FilePath.ofString('.').parent());
-    //     Assert.equals('path/to', FilePath.ofString('path/to/file').parent());
-    //     Assert.equals('path/to', FilePath.ofString('path/to/dir/').parent());
-    //     Assert.equals('path/to', FilePath.ofString('path/to///dir/').parent());
-    //     Assert.equals('path/to', FilePath.ofString('path/to/dir////').parent());
-    //     Assert.equals('path/to/..', FilePath.ofString('path/to/../file').parent());
-    //     Assert.equals('path/to', FilePath.ofString('path/to/..').parent());
-    //     Assert.equals('path/to', FilePath.ofString('path/to/.').parent());
-    //     Assert.equals(null, FilePath.ofString('.hidden').parent());
-    //     Assert.equals(null, FilePath.ofString('.').parent());
-    //     Assert.equals(null, FilePath.ofString('').parent());
-    //     Assert.equals(null, FilePath.ofString('/').parent());
-    //     Assert.equals(null, FilePath.ofString('//').parent());
-    // }
+    function test_parent() {
+        Assert.equals("", FilePath.ofString(null).parent());
+        Assert.equals("", FilePath.ofString('file').parent());
+        Assert.equals("", FilePath.ofString('/file').parent());
+        Assert.equals("", FilePath.ofString('.').parent());
+        Assert.equals('path/to', FilePath.ofString('path/to/file').parent());
+        Assert.equals('path/to', FilePath.ofString('path/to/dir/').parent());
+        Assert.equals('path/to', FilePath.ofString('path/to///dir/').parent());
+        Assert.equals('path/to', FilePath.ofString('path/to/dir////').parent());
+        Assert.equals('path/to/..', FilePath.ofString('path/to/../file').parent());
+        Assert.equals('path/to', FilePath.ofString('path/to/..').parent());
+        Assert.equals('path/to', FilePath.ofString('path/to/.').parent());
+        Assert.equals("", FilePath.ofString('.hidden').parent());
+        Assert.equals("", FilePath.ofString('.').parent());
+        Assert.equals("", FilePath.ofString('').parent());
+        Assert.equals("/", FilePath.ofString('/').parent());
+        Assert.equals("//", FilePath.ofString('//').parent());
+    }
 
     function test_filename() {
         Assert.equals("file.ext", FilePath.ofString("file.ext").name());

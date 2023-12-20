@@ -116,21 +116,7 @@ abstract FilePath(NativeFilePath) to String {
 		E.g. for `dir/to/path/` this method returns `path`.
 	**/
 	public function name():FilePath {
-		final s = this.trimSlashes();
-		
-		var i = s.length - 1;
-		if (i < 0) {
-			return s;
-		}
-
-		while (!s.fastCodeAt(i).isSeparator()) {
-			--i;
-			if (i < 0) {
-				return s;
-			}
-		}
-
-		return new FilePath(s.substr(i + 1));
+		return this.trimSlashes().getFilename();
 	}
 
 	public function absolute():FilePath {

@@ -2,11 +2,7 @@ package filesystem;
 
 import asys.native.filesystem.FilePath;
 import utest.Test;
-import haxe.io.Bytes;
-import utest.Async;
 import utest.Assert;
-import asys.native.IoErrorType;
-import asys.native.filesystem.FileSystem;
 
 using StringTools;
 
@@ -54,6 +50,20 @@ class TestFilePath extends Test {
     //     Assert.equals(null, FilePath.ofString('/').parent());
     //     Assert.equals(null, FilePath.ofString('//').parent());
     // }
+
+    function test_filename() {
+        Assert.equals("file.ext", FilePath.ofString("file.ext").name());
+        Assert.equals("file.ext", FilePath.ofString("path/to/file.ext").name());
+        Assert.equals("file.ext", FilePath.ofString("./file.ext").name());
+        Assert.equals("dir", FilePath.ofString("path/to/dir/").name());
+        Assert.equals(".", FilePath.ofString("path/to/.").name());
+        Assert.equals("", FilePath.ofString("").name());
+        Assert.equals("", FilePath.ofString("/").name());
+        Assert.equals("", FilePath.ofString("C:\\").name());
+        Assert.equals("file.ext", FilePath.ofString("C:\\file.ext").name());
+        Assert.equals("dir", FilePath.ofString("C:\\dir\\").name());
+        Assert.equals("dir", FilePath.ofString("C:dir").name());
+    }
 
     function test_add() {
         Assert.equals('file', FilePath.ofString("file").add(""));

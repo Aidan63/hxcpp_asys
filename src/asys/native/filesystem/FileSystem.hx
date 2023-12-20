@@ -700,6 +700,12 @@ class FileSystem {
 		Resolves symbolic links on all targets except C#.
 	**/
 	static public function realPath(path:FilePath, callback:Callback<String>):Void {
+		if (path == null) {
+			callback.fail(new ArgumentException("path"));
+
+			return;
+		}
+
 		cpp.asys.Directory.realPath(
 			@:privateAccess Thread.current().events.context,
 			path,

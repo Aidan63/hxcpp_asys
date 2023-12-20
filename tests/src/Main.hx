@@ -26,6 +26,7 @@ import filesystem.TestFileSystemReadLink;
 import filesystem.TestFileSystemLinkInfo;
 import filesystem.TestFileSystemCopyFile;
 import filesystem.TestFileSystemSetTimes;
+import filesystem.TestFileSystemRealPath;
 import filesystem.TestFileSystemOverwrite;
 import filesystem.TestFileSystemReadBytes;
 import filesystem.TestFileSystemReadString;
@@ -79,6 +80,7 @@ function main() {
     runner.addCase(new TestFileSystemCopyFile());
     runner.addCase(new TestFileSystemResize());
     runner.addCase(new TestFileSystemSetTimes());
+    runner.addCase(new TestFileSystemRealPath());
     
     Report.create(runner);
     

@@ -613,7 +613,19 @@ class FileSystem {
 		If the file is shorter, zero bytes are used to fill the added length.
 	**/
 	static public function resize(path:FilePath, newSize:Int, callback:Callback<NoData>):Void {
-		openFile(path, Write, (error, file) -> {
+		if (path == null) {
+			callback.fail(new ArgumentException("path", "path was null"));
+
+			return;
+		}
+
+		if (newSize < 0) {
+			callback.fail(new ArgumentException("newSize", "newSize was less than zero"));
+
+			return;
+		}
+
+		openFile(path, Overwrite, (error, file) -> {
 			switch error {
 				case null:
 					file.resize(newSize, (error, _) -> {

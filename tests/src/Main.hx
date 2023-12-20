@@ -1,3 +1,4 @@
+import filesystem.TestFileSystemResize;
 import filesystem.TestFile;
 import filesystem.TestFilePath;
 import filesystem.TestFileOpenRead;
@@ -75,6 +76,7 @@ function main() {
     runner.addCase(new TestFileSystemReadLink());
     runner.addCase(new TestFileSystemLinkInfo());
     runner.addCase(new TestFileSystemCopyFile());
+    runner.addCase(new TestFileSystemResize());
     
     Report.create(runner);
     

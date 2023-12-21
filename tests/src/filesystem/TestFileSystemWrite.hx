@@ -1,13 +1,54 @@
 package filesystem;
 
-import asys.native.filesystem.FsException;
 import haxe.io.Bytes;
+import haxe.exceptions.ArgumentException;
 import utest.Async;
 import utest.Assert;
 import asys.native.IoErrorType;
 import asys.native.filesystem.FileSystem;
+import asys.native.filesystem.FsException;
 
 class TestFileSystemWrite extends FileOpenTests {   
+    function test_bytes_null_path(async:Async) {
+        FileSystem.writeBytes(null, null, Write, (error, _) -> {
+            if (Assert.isOfType(error, ArgumentException)) {
+                Assert.equals("path", (cast error : ArgumentException).argument);
+            }
+
+            async.done();
+        });
+    }
+
+    function test_bytes_null_data(async:Async) {
+        FileSystem.writeBytes(emptyFileName, null, Write, (error, _) -> {
+            if (Assert.isOfType(error, ArgumentException)) {
+                Assert.equals("data", (cast error : ArgumentException).argument);
+            }
+
+            async.done();
+        });
+    }
+
+    function test_string_null_path(async:Async) {
+        FileSystem.writeString(null, dummyFileData, Write, (error, _) -> {
+            if (Assert.isOfType(error, ArgumentException)) {
+                Assert.equals("path", (cast error : ArgumentException).argument);
+            }
+
+            async.done();
+        });
+    }
+
+    function test_string_null_data(async:Async) {
+        FileSystem.writeString(emptyFileName, null, Write, (error, _) -> {
+            if (Assert.isOfType(error, ArgumentException)) {
+                Assert.equals("text", (cast error : ArgumentException).argument);
+            }
+
+            async.done();
+        });
+    }
+
     function test_write_bytes_to_empty_file(async:Async) {
         final bytes = Bytes.ofString(dummyFileData);
 

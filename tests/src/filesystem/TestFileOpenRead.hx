@@ -25,67 +25,70 @@ class TestFileOpenRead extends FileOpenTests {
     function test_can_read_empty_file(async:Async) {
         FileSystem.openFile(emptyFileName, FileOpenFlag.Read, (error, file) -> {
             Assert.isNull(error);
-            Assert.notNull(file);
 
-            final size   = 8;
-            final buffer = Bytes.alloc(size);
-
-            file.read(0, buffer, 0, buffer.length, (error, count) -> {
-                Assert.isNull(error);
-                Assert.equals(0, count);
-                Assert.equals(0, buffer.compare(Bytes.alloc(size)));
-                
-                file.close((error, _) -> {
+            if (Assert.notNull(file)) {
+                final size   = 8;
+                final buffer = Bytes.alloc(size);
+    
+                file.read(0, buffer, 0, buffer.length, (error, count) -> {
                     Assert.isNull(error);
-
-                    async.done();
+                    Assert.equals(0, count);
+                    Assert.equals(0, buffer.compare(Bytes.alloc(size)));
+                    
+                    file.close((error, _) -> {
+                        Assert.isNull(error);
+    
+                        async.done();
+                    });
                 });
-            });
+            }
         });
     }
 
     function test_can_read_file_contents(async:Async) {
         FileSystem.openFile(dummyFileName, FileOpenFlag.Read, (error, file) -> {
             Assert.isNull(error);
-            Assert.notNull(file);
 
-            final size   = 32;
-            final buffer = Bytes.alloc(size);
-
-            file.read(0, buffer, 0, buffer.length, (error, count) -> {
-                Assert.isNull(error);
-                Assert.equals(dummyFileData.length, count);
-                Assert.equals(0, buffer.sub(0, count).compare(Bytes.ofString(dummyFileData)));
-                
-                file.close((error, _) -> {
+            if (Assert.notNull(file)) {
+                final size   = 32;
+                final buffer = Bytes.alloc(size);
+    
+                file.read(0, buffer, 0, buffer.length, (error, count) -> {
                     Assert.isNull(error);
-
-                    async.done();
+                    Assert.equals(dummyFileData.length, count);
+                    Assert.equals(0, buffer.sub(0, count).compare(Bytes.ofString(dummyFileData)));
+                    
+                    file.close((error, _) -> {
+                        Assert.isNull(error);
+    
+                        async.done();
+                    });
                 });
-            });
+            }
         });
     }
 
     function test_reading_directory_as_file(async:Async) {
         FileSystem.openFile(emptyDirName, FileOpenFlag.Read, (error, file) -> {
             Assert.isNull(error);
-            Assert.notNull(file);
 
-            final size   = 32;
-            final buffer = Bytes.alloc(size);
-
-            file.read(0, buffer, 0, buffer.length, (error, count) -> {
-                if (Assert.isOfType(error, FsException)) {
-                    Assert.equals(emptyDirName, (cast error : FsException).path);
-                    Assert.equals(IoErrorType.IsDirectory, (cast error : FsException).type);
-                }
-                
-                file.close((error, _) -> {
-                    Assert.isNull(error);
-
-                    async.done();
+            if (Assert.notNull(file)) {
+                final size   = 32;
+                final buffer = Bytes.alloc(size);
+    
+                file.read(0, buffer, 0, buffer.length, (error, count) -> {
+                    if (Assert.isOfType(error, FsException)) {
+                        Assert.equals(emptyDirName, (cast error : FsException).path);
+                        Assert.equals(IoErrorType.IsDirectory, (cast error : FsException).type);
+                    }
+                    
+                    file.close((error, _) -> {
+                        Assert.isNull(error);
+    
+                        async.done();
+                    });
                 });
-            });
+            }
         });
     }
 }

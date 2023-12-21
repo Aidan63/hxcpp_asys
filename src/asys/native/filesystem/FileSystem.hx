@@ -20,6 +20,12 @@ class FileSystem {
 		@see asys.native.filesystem.FileOpenFlag for more details.
 	**/
     static public function openFile<T>(path:FilePath, flag:FileOpenFlag<T>, callback:Callback<T>) {
+		if (path == null) {
+			callback.fail(new ArgumentException("path", "path was null"));
+
+			return;
+		}
+
         cpp.asys.File.open(
             @:privateAccess Thread.current().events.context,
             path,
@@ -48,6 +54,12 @@ class FileSystem {
 		Read the contents of a file specified by `path`.
 	**/
 	static public function readBytes(path:FilePath, callback:Callback<Bytes>):Void {
+		if (path == null) {
+			callback.fail(new ArgumentException("path", "path was null"));
+
+			return;
+		}
+
 		openFile(path, Read, (error, file) -> {
 			switch error {
 				case null:
@@ -91,6 +103,12 @@ class FileSystem {
 		Should this return an error if the file does not contain a valid unicode string?
 	**/
 	static public function readString(path:FilePath, callback:Callback<String>):Void {
+		if (path == null) {
+			callback.fail(new ArgumentException("path", "path was null"));
+
+			return;
+		}
+
 		readBytes(path, (error, bytes) -> {
 			switch error {
 				case null:
@@ -108,6 +126,18 @@ class FileSystem {
 		@see asys.native.filesystem.FileOpenFlag for more details.
 	**/
 	static public function writeBytes(path:FilePath, data:Bytes, flag:FileOpenFlag<Dynamic> = Write, callback:Callback<NoData>):Void {
+		if (path == null) {
+			callback.fail(new ArgumentException("path", "path was null"));
+
+			return;
+		}
+
+		if (data == null) {
+			callback.fail(new ArgumentException("data", "data was null"));
+
+			return;
+		}
+
 		openFile(path, flag, (error, file) -> {
 			switch error {
 				case null:
@@ -138,6 +168,12 @@ class FileSystem {
 		@see asys.native.filesystem.FileOpenFlag for more details.
 	**/
 	static public function writeString(path:FilePath, text:String, flag:FileOpenFlag<Dynamic> = Write, callback:Callback<NoData>):Void {
+		if (text == null) {
+			callback.fail(new ArgumentException("text", "text was null"));
+
+			return;
+		}
+
 		writeBytes(path, Bytes.ofString(text), flag, callback);
 	}
 
@@ -149,6 +185,18 @@ class FileSystem {
 		@see asys.native.filesystem.Directory.next
 	**/
 	static public function openDirectory(path:FilePath, maxBatchSize:Int = 64, callback:Callback<Directory>):Void {
+		if (path == null) {
+			callback.fail(new ArgumentException("path", "path was null"));
+
+			return;
+		}
+
+		if (maxBatchSize <= 0) {
+			callback.fail(new ArgumentException("maxBatchSize", "batch size was less than or equal to 0"));
+
+			return;
+		}
+
 		cpp.asys.Directory.open(
             @:privateAccess Thread.current().events.context,
             path,
@@ -162,6 +210,12 @@ class FileSystem {
 		Entries are provided as paths relative to the directory.
 	**/
 	static public function listDirectory(path:FilePath, callback:Callback<Array<String>>):Void {
+		if (path == null) {
+			callback.fail(new ArgumentException("path", "path was null"));
+
+			return;
+		}
+
 		function read(dir:Directory, accumulated:Array<String>, callback:Callback<Array<String>>) {
 			dir.next((error, entries) -> {
 				switch error {
@@ -208,6 +262,12 @@ class FileSystem {
 		[cs] `permissions` parameter is ignored when targeting C#
 	**/
 	static public function createDirectory(path:FilePath, ?permissions:FilePermissions, recursive:Bool = false, callback:Callback<NoData>):Void {
+		if (path == null) {
+			callback.fail(new ArgumentException("path", "path was null"));
+
+			return;
+		}
+
 		cpp.asys.Directory.create(
             @:privateAccess Thread.current().events.context,
 			path,
@@ -228,6 +288,12 @@ class FileSystem {
 		[cs] `permissions` parameter is ignored when targeting C#
 	**/
 	static public function uniqueDirectory(parentDirectory:FilePath, ?prefix:String, ?permissions:FilePermissions, recursive:Bool = false, callback:Callback<String>):Void {
+		if (parentDirectory == null) {
+			callback.fail(new ArgumentException("parentDirectory", "parent directory was null"));
+
+			return;
+		}
+
 		final rndIntValue = Std.random(2147483647);
 		final finalPrefix = if (prefix == null) Std.string(rndIntValue) else '$prefix$rndIntValue';
 		final finalPath   = FilePath.createPath(parentDirectory, finalPrefix);
@@ -435,6 +501,12 @@ class FileSystem {
 		If `path` is a symbolic link it is dereferenced.
 	**/
 	static public function setPermissions(path:FilePath, permissions:FilePermissions, callback:Callback<NoData>):Void {
+		if (path == null) {
+			callback.fail(new ArgumentException("path", "path was null"));
+
+			return;
+		}
+
 		openFile(path, Read, (error, file) -> {
 			switch error {
 				case null:
@@ -463,6 +535,12 @@ class FileSystem {
 		If `path` is a symbolic link it is dereferenced.
 	**/
 	static public function setOwner(path:FilePath, user:SystemUser, group:SystemGroup, callback:Callback<NoData>):Void {
+		if (path == null) {
+			callback.fail(new ArgumentException("path", "path was null"));
+
+			return;
+		}
+
 		openFile(path, Read, (error, file) -> {
 			switch error {
 				case null:
@@ -490,6 +568,12 @@ class FileSystem {
 		Set symbolic link owner and group.
 	**/
 	static public function setLinkOwner(path:FilePath, user:SystemUser, group:SystemGroup, callback:Callback<NoData>):Void {
+		if (path == null) {
+			callback.fail(new ArgumentException("path", "path was null"));
+
+			return;
+		}
+
 		cpp.asys.Directory.setLinkOwner(
 			@:privateAccess Thread.current().events.context,
 			path,

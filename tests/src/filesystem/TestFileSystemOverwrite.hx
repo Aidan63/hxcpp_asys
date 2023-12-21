@@ -1,15 +1,56 @@
 package filesystem;
 
-import asys.native.filesystem.FsException;
+import haxe.exceptions.ArgumentException;
 import haxe.io.Bytes;
 import utest.Async;
 import utest.Assert;
 import asys.native.IoErrorType;
 import asys.native.filesystem.FileSystem;
+import asys.native.filesystem.FsException;
 
 using StringTools;
 
-class TestFileSystemOverwrite extends FileOpenTests {   
+class TestFileSystemOverwrite extends FileOpenTests {
+    function test_bytes_null_path(async:Async) {
+        FileSystem.writeBytes(null, null, Overwrite, (error, _) -> {
+            if (Assert.isOfType(error, ArgumentException)) {
+                Assert.equals("path", (cast error : ArgumentException).argument);
+            }
+
+            async.done();
+        });
+    }
+
+    function test_bytes_null_data(async:Async) {
+        FileSystem.writeBytes(emptyFileName, null, Overwrite, (error, _) -> {
+            if (Assert.isOfType(error, ArgumentException)) {
+                Assert.equals("data", (cast error : ArgumentException).argument);
+            }
+
+            async.done();
+        });
+    }
+
+    function test_string_null_path(async:Async) {
+        FileSystem.writeString(null, dummyFileData, Overwrite, (error, _) -> {
+            if (Assert.isOfType(error, ArgumentException)) {
+                Assert.equals("path", (cast error : ArgumentException).argument);
+            }
+
+            async.done();
+        });
+    }
+
+    function test_string_null_data(async:Async) {
+        FileSystem.writeString(emptyFileName, null, Overwrite, (error, _) -> {
+            if (Assert.isOfType(error, ArgumentException)) {
+                Assert.equals("text", (cast error : ArgumentException).argument);
+            }
+
+            async.done();
+        });
+    }
+
     function test_write_bytes_to_empty_file(async:Async) {
         final bytes = Bytes.ofString(dummyFileData);
 

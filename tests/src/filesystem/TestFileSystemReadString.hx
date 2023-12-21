@@ -1,12 +1,23 @@
 package filesystem;
 
-import asys.native.filesystem.FsException;
+import haxe.exceptions.ArgumentException;
 import utest.Async;
 import utest.Assert;
 import asys.native.IoErrorType;
 import asys.native.filesystem.FileSystem;
+import asys.native.filesystem.FsException;
 
 class TestFileSystemReadString extends FileOpenTests {
+    function test_null_path(async:Async) {
+        FileSystem.readString(null, (error, string) -> {
+            if (Assert.isOfType(error, ArgumentException)) {
+                Assert.equals("path", (cast error : ArgumentException).argument);
+            }
+
+            async.done();
+        });
+    }
+
     function test_reading_file(async:Async) {
         FileSystem.readString(dummyFileName, (error, string) -> {
             Assert.isNull(error);

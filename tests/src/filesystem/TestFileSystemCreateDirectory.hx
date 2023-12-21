@@ -1,11 +1,12 @@
 package filesystem;
 
-import asys.native.filesystem.FsException;
+import haxe.exceptions.ArgumentException;
 import utest.Async;
 import utest.Assert;
 import asys.native.IoErrorType;
 import asys.native.filesystem.FilePath;
 import asys.native.filesystem.FileSystem;
+import asys.native.filesystem.FsException;
 
 import utils.Directory;
 
@@ -14,6 +15,16 @@ class TestFileSystemCreateDirectory extends DirectoryTests {
         ensureDirectoryIsEmpty(directoryName);
 
         sys.FileSystem.deleteDirectory(directoryName);
+    }
+
+    function test_null_path(async:Async) {
+        FileSystem.createDirectory(null, null, true, (error, _) -> {
+            if (Assert.isOfType(error, ArgumentException)) {
+                Assert.equals("path", (cast error : ArgumentException).argument);
+            }
+
+            async.done();
+        });
     }
 
     function test_create_single_dir_recursive(async:Async) {

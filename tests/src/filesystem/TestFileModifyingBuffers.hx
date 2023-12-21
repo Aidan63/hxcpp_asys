@@ -16,24 +16,27 @@ class TestFileModifyingBuffers extends FileOpenTests {
     function test_expanding_buffer_after_sending(async:Async) {
         FileSystem.openFile(emptyFileName, FileOpenFlag.Append, (error, file) -> {
             Assert.isNull(error);
-            Assert.notNull(file);
 
-            final text   = "lorem ipsum";
-            final buffer = Bytes.ofString(text);
-
-            file.write(buffer, 0, buffer.length, (error, count) -> {
-                Assert.isNull(error);
-                Assert.equals(text.length, count);
-
-                file.close((error, _) -> {
+            if (Assert.notNull(file)) {
+                final text   = "lorem ipsum";
+                final buffer = Bytes.ofString(text);
+    
+                file.write(buffer, 0, buffer.length, (error, count) -> {
                     Assert.isNull(error);
-                    Assert.equals(0, sys.io.File.getBytes(emptyFileName).compare(Bytes.ofString(text)));
-
-                    async.done();
+                    Assert.equals(text.length, count);
+    
+                    file.close((error, _) -> {
+                        Assert.isNull(error);
+                        Assert.equals(0, sys.io.File.getBytes(emptyFileName).compare(Bytes.ofString(text)));
+    
+                        async.done();
+                    });
                 });
-            });
-
-            buffer.getData().resize(text.length * 2);
+    
+                buffer.getData().resize(text.length * 2);
+            } else {
+                async.done();
+            }
         });
     }
 
@@ -43,24 +46,27 @@ class TestFileModifyingBuffers extends FileOpenTests {
     function test_expanding_big_buffer_after_sending(async:Async) {
         FileSystem.openFile(emptyFileName, FileOpenFlag.Append, (error, file) -> {
             Assert.isNull(error);
-            Assert.notNull(file);
 
-            final buffer = haxe.Resource.getBytes("long_ipsum");
-            final length = buffer.length;
-
-            file.write(buffer, 0, buffer.length, (error, count) -> {
-                Assert.isNull(error);
-                Assert.equals(length, count);
-
-                file.close((error, _) -> {
+            if (Assert.notNull(file)) {
+                final buffer = haxe.Resource.getBytes("long_ipsum");
+                final length = buffer.length;
+    
+                file.write(buffer, 0, buffer.length, (error, count) -> {
                     Assert.isNull(error);
-                    Assert.equals(0, sys.io.File.getBytes(emptyFileName).compare(haxe.Resource.getBytes("long_ipsum")));
-
-                    async.done();
+                    Assert.equals(length, count);
+    
+                    file.close((error, _) -> {
+                        Assert.isNull(error);
+                        Assert.equals(0, sys.io.File.getBytes(emptyFileName).compare(haxe.Resource.getBytes("long_ipsum")));
+    
+                        async.done();
+                    });
                 });
-            });
-
-            buffer.getData().resize(length * 2);
+    
+                buffer.getData().resize(length * 2);
+            } else {
+                async.done();
+            }
         });
     }
 
@@ -70,48 +76,54 @@ class TestFileModifyingBuffers extends FileOpenTests {
     function test_shrinking_buffer_after_sending(async:Async) {
         FileSystem.openFile(emptyFileName, FileOpenFlag.Append, (error, file) -> {
             Assert.isNull(error);
-            Assert.notNull(file);
 
-            final text   = "lorem ipsum";
-            final buffer = Bytes.ofString(text);
-
-            file.write(buffer, 0, buffer.length, (error, count) -> {
-                Assert.isNull(error);
-                Assert.equals(text.length, count);
-
-                file.close((error, _) -> {
+            if (Assert.notNull(file)) {
+                final text   = "lorem ipsum";
+                final buffer = Bytes.ofString(text);
+    
+                file.write(buffer, 0, buffer.length, (error, count) -> {
                     Assert.isNull(error);
-                    Assert.equals(0, sys.io.File.getBytes(emptyFileName).compare(Bytes.ofString(text)));
-
-                    async.done();
+                    Assert.equals(text.length, count);
+    
+                    file.close((error, _) -> {
+                        Assert.isNull(error);
+                        Assert.equals(0, sys.io.File.getBytes(emptyFileName).compare(Bytes.ofString(text)));
+    
+                        async.done();
+                    });
                 });
-            });
-
-            buffer.getData().resize(text.length - 5);
+    
+                buffer.getData().resize(text.length - 5);
+            } else {
+                async.done();
+            }
         });
     }
 
     function test_shrinking_big_buffer_after_sending(async:Async) {
         FileSystem.openFile(emptyFileName, FileOpenFlag.Append, (error, file) -> {
             Assert.isNull(error);
-            Assert.notNull(file);
-
-            final buffer = haxe.Resource.getBytes("long_ipsum");
-            final length = buffer.length;
-
-            file.write(buffer, 0, buffer.length, (error, count) -> {
-                Assert.isNull(error);
-                Assert.equals(length, count);
-
-                file.close((error, _) -> {
+            
+            if (Assert.notNull(file)) {
+                final buffer = haxe.Resource.getBytes("long_ipsum");
+                final length = buffer.length;
+    
+                file.write(buffer, 0, buffer.length, (error, count) -> {
                     Assert.isNull(error);
-                    Assert.equals(0, sys.io.File.getBytes(emptyFileName).compare(haxe.Resource.getBytes("long_ipsum")));
-
-                    async.done();
+                    Assert.equals(length, count);
+    
+                    file.close((error, _) -> {
+                        Assert.isNull(error);
+                        Assert.equals(0, sys.io.File.getBytes(emptyFileName).compare(haxe.Resource.getBytes("long_ipsum")));
+    
+                        async.done();
+                    });
                 });
-            });
-
-            buffer.getData().resize(length - Std.int(length / 2));
+    
+                buffer.getData().resize(length - Std.int(length / 2));
+            } else {
+                async.done();
+            }
         });
     }
 }

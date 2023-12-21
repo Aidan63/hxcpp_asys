@@ -1,11 +1,8 @@
 package filesystem;
 
 import haxe.exceptions.ArgumentException;
-import asys.native.filesystem.FsException;
-import haxe.io.Bytes;
 import utest.Async;
 import utest.Assert;
-import asys.native.IoErrorType;
 import asys.native.filesystem.FileSystem;
 
 class TestFileSystemCheck extends DirectoryTests {

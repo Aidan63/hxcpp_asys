@@ -37,6 +37,8 @@ class TestFileOpenAppend extends FileOpenTests
                         async.done();
                     });
                 });
+            } else {
+                async.done();
             }
         });
     }
@@ -60,6 +62,8 @@ class TestFileOpenAppend extends FileOpenTests
                         async.done();
                     });
                 });
+            } else {
+                async.done();
             }
         });
     }
@@ -83,6 +87,8 @@ class TestFileOpenAppend extends FileOpenTests
                         async.done();
                     });
                 });
+            } else {
+                async.done();
             }
         });
     }
@@ -107,6 +113,8 @@ class TestFileOpenAppend extends FileOpenTests
                         async.done();
                     });
                 });
+            } else {
+                async.done();
             }
         });
     }

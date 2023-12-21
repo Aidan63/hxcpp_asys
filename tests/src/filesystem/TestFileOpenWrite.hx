@@ -36,6 +36,8 @@ class TestFileOpenWrite extends FileOpenTests {
                         async.done();
                     });
                 });
+            } else {
+                async.done();
             }
         });
     }
@@ -59,6 +61,8 @@ class TestFileOpenWrite extends FileOpenTests {
                         async.done();
                     });
                 });
+            } else {
+                async.done();
             }
         });
     }
@@ -82,6 +86,8 @@ class TestFileOpenWrite extends FileOpenTests {
                         async.done();
                     });
                 });
+            } else {
+                async.done();
             }
         });
     }

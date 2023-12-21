@@ -36,6 +36,8 @@ class TestFileOpenWriteX extends FileOpenTests {
                         async.done();
                     });
                 });
+            } else {
+                async.done();
             }
         });
     }

@@ -41,6 +41,8 @@ class TestFileOpenReadWrite extends FileOpenTests {
                         async.done();
                     });
                 });
+            } else {
+                async.done();
             }
         });
     }
@@ -64,6 +66,8 @@ class TestFileOpenReadWrite extends FileOpenTests {
                         async.done();
                     });
                 });
+            } else {
+                async.done();
             }
         });
     }
@@ -87,6 +91,8 @@ class TestFileOpenReadWrite extends FileOpenTests {
                         async.done();
                     });
                 });
+            } else {
+                async.done();
             }
         });
     }
@@ -110,6 +116,8 @@ class TestFileOpenReadWrite extends FileOpenTests {
                         async.done();
                     });
                 });
+            } else {
+                async.done();
             }
         });
     }
@@ -134,6 +142,8 @@ class TestFileOpenReadWrite extends FileOpenTests {
                         async.done();
                     });
                 });
+            } else {
+                async.done();
             }
         });
     }
@@ -158,6 +168,8 @@ class TestFileOpenReadWrite extends FileOpenTests {
                         async.done();
                     });
                 });
+            } else {
+                async.done();
             }
         });
     }

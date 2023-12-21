@@ -59,9 +59,9 @@ class TestFilePath extends Test {
         Assert.equals(".", FilePath.ofString("path/to/.").name());
         Assert.equals("", FilePath.ofString("").name());
         Assert.equals("", FilePath.ofString("/").name());
-        Assert.equals("", FilePath.ofString("C:\\").name());
-        Assert.equals("file.ext", FilePath.ofString("C:\\file.ext").name());
-        Assert.equals("dir", FilePath.ofString("C:\\dir\\").name());
+        Assert.equals("", FilePath.ofString("C:/").name());
+        Assert.equals("file.ext", FilePath.ofString("C:/file.ext").name());
+        Assert.equals("dir", FilePath.ofString("C:/dir/").name());
         Assert.equals("dir", FilePath.ofString("C:dir").name());
     }
 

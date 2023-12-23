@@ -7,14 +7,65 @@ import haxe.NoData;
 import haxe.Callback;
 import haxe.io.Bytes;
 
+private class WriteRequest {
+	/**
+	 * Current offset into the bytes buffer.
+	 * This may differ from the bytes offset if multiple smaller chunks are needed to complete the overall request.
+	 */
+	public var currentOffset:Int;
+
+	/**
+	 * The starting offset into the bytes for the overall request.
+	 */
+	public final bytesOffset:Int;
+
+	/**
+	 * The total length for the overall request.
+	 */
+	public final bytesLength:Int;
+
+	/**
+	 * The starting position into the file for the overall request.
+	 */
+	public final filePos:Int64;
+
+	/**
+	 * Bytes to copy into the file.
+	 */
+	public final bytes:Bytes;
+
+	/**
+	 * Callback to invoke once the overall request has completed.
+	 */
+	public final callback:Callback<Int>;
+
+	public function new(_bytesOffset:Int, _bytesLength:Int, _filePos:Int64, _bytes:Bytes, _callback:Callback<Int>) {
+		currentOffset = _bytesOffset;
+		bytesOffset   = _bytesOffset;
+		bytesLength   = _bytesLength;
+		filePos       = _filePos;
+		bytes         = _bytes;
+		callback      = _callback;
+	}
+}
+
+private enum QueuedOperation {
+	Write(request:WriteRequest);
+	Flush(callback:Callback<NoData>);
+}
+
 class File {
 	final native : cpp.asys.File;
+
+	final queue : Array<QueuedOperation>;
 
 	public final path : FilePath;
 
 	function new(native:cpp.asys.File) {
 		this.native = native;
 		this.path   = native.path;
+
+		queue = [];
 	}
 
 	/**
@@ -45,21 +96,25 @@ class File {
 			return;
 		}
 
-		if (length < 0) {
+		final actualLength = (cast Math.min(length, buffer.length - offset) : Int);
+
+		if (actualLength < 0) {
 			callback.fail(new FsException(IoErrorType.CustomError("Invalid length"), path));
 
 			return;
 		}
 
-		final actualLength = (cast Math.min(length, buffer.length - offset) : Int);
+		if (actualLength == 0) {
+			callback.success(0);
 
-		native.write(
-			position,
-			buffer.getData(),
-			offset,
-			actualLength,
-			callback.success,
-			err -> callback.fail(new FsException(err, path)));
+			return;
+		}
+
+		queue.push(QueuedOperation.Write(new WriteRequest(offset, actualLength, position, buffer, callback)));
+
+		if (queue.length == 1) {
+			consumeQueue();
+		}
 	}
 
 	/**
@@ -144,14 +199,69 @@ class File {
 	}
 
 	public function flush(callback:Callback<NoData>):Void {
-		native.flush(
-			() -> callback.success(null),
-			err -> callback.fail(new FsException(err, path)));
+		queue.push(QueuedOperation.Flush(callback));
+
+		if (queue.length == 1) {
+			consumeQueue();
+		}
 	}
 
     public function close(callback:Callback<NoData>):Void {
 		native.close(
 			() -> callback.success(null),
 			err -> callback.fail(new FsException(err, path)));
+	}
+
+	function consumeQueue() {
+		if (queue.length == 0) {
+			return;
+		}
+
+		switch queue[0] {
+			case Write(request):
+				doWrite(0, request);
+			case Flush(callback):
+				native.flush(
+					() -> {
+						queue.shift();
+
+						callback.success(null);
+					},
+					err -> {
+						callback.fail(new FsException(err, path));
+
+						callback.success(null);
+					});
+		}
+	}
+
+	function doWrite(progress:Int, request:WriteRequest) {
+		if (progress >= request.bytesLength) {
+			queue.shift();
+
+			consumeQueue();
+
+			request.callback.success(progress);
+		} else {
+			final batchSize      = (cast Math.min(65535, request.bytesLength - progress) : Int);
+			final newFilePos     = request.filePos + progress;
+			final newBytesOffset = request.bytesOffset + progress;
+
+			native.write(
+				newFilePos,
+				request.bytes.getData(),
+				newBytesOffset,
+				batchSize,
+				count -> {
+					doWrite(progress + count, request);
+				},
+				err -> {
+					queue.shift();
+
+					consumeQueue();
+	
+					request.callback.fail(new FsException(err, path));
+				});
+		}
 	}
 }

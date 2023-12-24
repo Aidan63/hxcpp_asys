@@ -18,18 +18,18 @@ class TestFileOpenWriteX extends FileOpenTests {
     }
 
     function test_write_to_non_existing_file(async:Async) {
-        FileSystem.openFile(nonExistingFile, flags, (error, file) -> {
+        FileSystem.openFile(nonExistingFile, flags, (file, error) -> {
             Assert.isNull(error);
 
             if (Assert.notNull(file)) {
                 final text   = "lorem ipsum";
                 final buffer = Bytes.ofString(text);
     
-                file.write(0, buffer, 0, buffer.length, (error, count) -> {
+                file.write(0, buffer, 0, buffer.length, (count, error) -> {
                     Assert.isNull(error);
                     Assert.equals(buffer.length, count);
                     
-                    file.close((error, _) -> {
+                    file.close((_, error) -> {
                         Assert.isNull(error);
                         Assert.equals(text, sys.io.File.getContent(nonExistingFile));
     
@@ -43,7 +43,7 @@ class TestFileOpenWriteX extends FileOpenTests {
     }
 
     function test_fails_to_write_to_empty_file(async:Async) {
-        FileSystem.openFile(emptyFileName, flags, (error, file) -> {
+        FileSystem.openFile(emptyFileName, flags, (file, error) -> {
             Assert.isNull(file);
 
             if (Assert.isOfType(error, FsException)) {
@@ -56,7 +56,7 @@ class TestFileOpenWriteX extends FileOpenTests {
     }
 
     function test_fails_to_write_to_existing_file(async:Async) {
-        FileSystem.openFile(dummyFileName, flags, (error, file) -> {
+        FileSystem.openFile(dummyFileName, flags, (file, error) -> {
             Assert.isNull(file);
 
             if (Assert.isOfType(error, FsException)) {
@@ -69,7 +69,7 @@ class TestFileOpenWriteX extends FileOpenTests {
     }
 
     function test_writing_directory_as_file(async:Async) {
-        FileSystem.openFile(emptyDirName, flags, (error, file) -> {
+        FileSystem.openFile(emptyDirName, flags, (file, error) -> {
             Assert.isNull(file);
 
             if (Assert.isOfType(error, FsException)) {

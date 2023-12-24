@@ -14,18 +14,18 @@ class TestFileModifyingBuffers extends FileOpenTests {
      * I'm not sure if getData is suppose to return the underlying array on every target, it does on cpp atleast.
      */
     function test_expanding_buffer_after_sending(async:Async) {
-        FileSystem.openFile(emptyFileName, FileOpenFlag.Append, (error, file) -> {
+        FileSystem.openFile(emptyFileName, FileOpenFlag.Append, (file, error) -> {
             Assert.isNull(error);
 
             if (Assert.notNull(file)) {
                 final text   = "lorem ipsum";
                 final buffer = Bytes.ofString(text);
     
-                file.write(buffer, 0, buffer.length, (error, count) -> {
+                file.write(buffer, 0, buffer.length, (count, error) -> {
                     Assert.isNull(error);
                     Assert.equals(text.length, count);
     
-                    file.close((error, _) -> {
+                    file.close((_, error) -> {
                         Assert.isNull(error);
                         Assert.equals(0, sys.io.File.getBytes(emptyFileName).compare(Bytes.ofString(text)));
     
@@ -44,18 +44,18 @@ class TestFileModifyingBuffers extends FileOpenTests {
      * Using the long_ipsum bytes we can test how resizing works with the internal chunking of the cpp implementation.
      */
     function test_expanding_big_buffer_after_sending(async:Async) {
-        FileSystem.openFile(emptyFileName, FileOpenFlag.Append, (error, file) -> {
+        FileSystem.openFile(emptyFileName, FileOpenFlag.Append, (file, error) -> {
             Assert.isNull(error);
 
             if (Assert.notNull(file)) {
                 final buffer = haxe.Resource.getBytes("long_ipsum");
                 final length = buffer.length;
     
-                file.write(buffer, 0, buffer.length, (error, count) -> {
+                file.write(buffer, 0, buffer.length, (count, error) -> {
                     Assert.isNull(error);
                     Assert.equals(length, count);
     
-                    file.close((error, _) -> {
+                    file.close((_, error) -> {
                         Assert.isNull(error);
                         Assert.equals(0, sys.io.File.getBytes(emptyFileName).compare(haxe.Resource.getBytes("long_ipsum")));
     
@@ -74,18 +74,18 @@ class TestFileModifyingBuffers extends FileOpenTests {
      * Very similar to above cases, except we shrink the buffer instead of expanding!
      */
     function test_shrinking_buffer_after_sending(async:Async) {
-        FileSystem.openFile(emptyFileName, FileOpenFlag.Append, (error, file) -> {
+        FileSystem.openFile(emptyFileName, FileOpenFlag.Append, (file, error) -> {
             Assert.isNull(error);
 
             if (Assert.notNull(file)) {
                 final text   = "lorem ipsum";
                 final buffer = Bytes.ofString(text);
     
-                file.write(buffer, 0, buffer.length, (error, count) -> {
+                file.write(buffer, 0, buffer.length, (count, error) -> {
                     Assert.isNull(error);
                     Assert.equals(text.length, count);
     
-                    file.close((error, _) -> {
+                    file.close((_, error) -> {
                         Assert.isNull(error);
                         Assert.equals(0, sys.io.File.getBytes(emptyFileName).compare(Bytes.ofString(text)));
     
@@ -101,18 +101,18 @@ class TestFileModifyingBuffers extends FileOpenTests {
     }
 
     function test_shrinking_big_buffer_after_sending(async:Async) {
-        FileSystem.openFile(emptyFileName, FileOpenFlag.Append, (error, file) -> {
+        FileSystem.openFile(emptyFileName, FileOpenFlag.Append, (file, error) -> {
             Assert.isNull(error);
             
             if (Assert.notNull(file)) {
                 final buffer = haxe.Resource.getBytes("long_ipsum");
                 final length = buffer.length;
     
-                file.write(buffer, 0, buffer.length, (error, count) -> {
+                file.write(buffer, 0, buffer.length, (count, error) -> {
                     Assert.isNull(error);
                     Assert.equals(length, count);
     
-                    file.close((error, _) -> {
+                    file.close((_, error) -> {
                         Assert.isNull(error);
                         Assert.equals(0, sys.io.File.getBytes(emptyFileName).compare(haxe.Resource.getBytes("long_ipsum")));
     

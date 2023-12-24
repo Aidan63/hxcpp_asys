@@ -9,7 +9,7 @@ import asys.native.filesystem.FsException;
 
 class TestDirectoryOpen extends DirectoryTests {
     function test_null_path(async:Async) {
-        FileSystem.openDirectory(null, (error, dir) -> {
+        FileSystem.openDirectory(null, (dir, error) -> {
             Assert.isNull(dir);
 
             if (Assert.isOfType(error, ArgumentException)) {
@@ -21,7 +21,7 @@ class TestDirectoryOpen extends DirectoryTests {
     }
 
     function test_invalid_batch_size(async:Async) {
-        FileSystem.openDirectory(directoryName, 0, (error, dir) -> {
+        FileSystem.openDirectory(directoryName, 0, (dir, error) -> {
             Assert.isNull(dir);
 
             if (Assert.isOfType(error, ArgumentException)) {
@@ -33,7 +33,7 @@ class TestDirectoryOpen extends DirectoryTests {
     }
 
     function test_opening_directory(async:Async) {
-        FileSystem.openDirectory(directoryName, 64, (error, dir) -> {
+        FileSystem.openDirectory(directoryName, 64, (dir, error) -> {
             Assert.isNull(error);
 
             if (Assert.notNull(dir)) {
@@ -49,10 +49,10 @@ class TestDirectoryOpen extends DirectoryTests {
     }
 
     function test_reading_directory_in_single_batch(async:Async) {
-        FileSystem.openDirectory(directoryName, 64, (error, dir) -> {
+        FileSystem.openDirectory(directoryName, 64, (dir, error) -> {
             Assert.isNull(error);
             if (Assert.notNull(dir)) {
-                dir.next((error, entries) -> {
+                dir.next((entries, error) -> {
                     Assert.isNull(error);
     
                     if (Assert.notNull(entries)) {
@@ -75,14 +75,14 @@ class TestDirectoryOpen extends DirectoryTests {
     }
 
     function test_reading_directory_after_reading_all(async:Async) {
-        FileSystem.openDirectory(directoryName, 64, (error, dir) -> {
+        FileSystem.openDirectory(directoryName, 64, (dir, error) -> {
             Assert.isNull(error);
 
             if (Assert.notNull(dir)) {
-                dir.next((error, _) -> {
+                dir.next((_, error) -> {
                     Assert.isNull(error);
     
-                    dir.next((error, entries) -> {
+                    dir.next((entries, error) -> {
                         Assert.isNull(error);
                         if (Assert.notNull(entries)) {
                             Assert.equals(0, entries.length);
@@ -102,13 +102,13 @@ class TestDirectoryOpen extends DirectoryTests {
     }
 
     function test_reading_directory_batching(async:Async) {
-        FileSystem.openDirectory(directoryName, 2, (error, dir) -> {
+        FileSystem.openDirectory(directoryName, 2, (dir, error) -> {
             Assert.isNull(error);
 
             if (Assert.notNull(dir)) {
                 final accumulated = [];
     
-                dir.next((error, entries) -> {
+                dir.next((entries, error) -> {
                     Assert.isNull(error);
     
                     if (Assert.notNull(entries)) {
@@ -119,7 +119,7 @@ class TestDirectoryOpen extends DirectoryTests {
                         }
                     }
     
-                    dir.next((error, entries) -> {
+                    dir.next((entries, error) -> {
                         Assert.isNull(error);
         
                         if (Assert.notNull(entries)) {
@@ -148,7 +148,7 @@ class TestDirectoryOpen extends DirectoryTests {
     }
 
     function test_reading_file_as_directory(async:Async) {
-        FileSystem.openDirectory(dummyFileName, 64, (error, dir) -> {
+        FileSystem.openDirectory(dummyFileName, 64, (dir, error) -> {
             Assert.isNull(dir);
 
             if (Assert.isOfType(error, FsException)) {
@@ -160,7 +160,7 @@ class TestDirectoryOpen extends DirectoryTests {
     }
 
     function test_reading_non_existing_directory(async:Async) {
-        FileSystem.openDirectory("does_not_exist", 64, (error, dir) -> {
+        FileSystem.openDirectory("does_not_exist", 64, (dir, error) -> {
             Assert.isNull(dir);
 
             if (Assert.isOfType(error, FsException)) {
@@ -172,11 +172,11 @@ class TestDirectoryOpen extends DirectoryTests {
     }
 
     function test_reading_empty_directory(async:Async) {
-        FileSystem.openDirectory(emptyDirName, 64, (error, dir) -> {
+        FileSystem.openDirectory(emptyDirName, 64, (dir, error) -> {
             Assert.isNull(error);
             
             if (Assert.notNull(dir)) {
-                dir.next((error, entries) -> {
+                dir.next((entries, error) -> {
                     Assert.isNull(error);
     
                     if (Assert.notNull(entries)) {

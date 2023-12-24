@@ -16,7 +16,7 @@ class TestFile extends FileOpenTests {
     static inline var PATH_MAX = 4096;
 
     function test_null_path(async:Async) {
-        FileSystem.openFile(null, FileOpenFlag.Read, (error, file) -> {
+        FileSystem.openFile(null, FileOpenFlag.Read, (file, error) -> {
             Assert.isNull(file);
 
             if (Assert.isOfType(error, ArgumentException)) {
@@ -34,7 +34,7 @@ class TestFile extends FileOpenTests {
 
         final path = bytes.toString();
 
-        FileSystem.openFile(path, FileOpenFlag.Read, (error, file) -> {
+        FileSystem.openFile(path, FileOpenFlag.Read, (file, error) -> {
             Assert.isNull(file);
             if (Assert.isOfType(error, FsException)) {
                 Assert.equals(path, (cast error : FsException).path);
@@ -46,14 +46,14 @@ class TestFile extends FileOpenTests {
     }
 
     function test_resize_shrink_file(async:Async) {
-        FileSystem.openFile(dummyFileName, FileOpenFlag.ReadWrite, (error, file) -> {
+        FileSystem.openFile(dummyFileName, FileOpenFlag.ReadWrite, (file, error) -> {
             Assert.isNull(error);
 
             if (Assert.notNull(file)) {
-                file.resize(5, (error, _) -> {
+                file.resize(5, (_, error) -> {
                     Assert.isNull(error);
     
-                    file.close((error, _) -> {
+                    file.close((_, error) -> {
                         Assert.isNull(error);
                         Assert.equals(dummyFileData.substr(0, 5), sys.io.File.getContent(dummyFileName));
     
@@ -67,14 +67,14 @@ class TestFile extends FileOpenTests {
     }
 
     function test_resize_expand_file(async:Async) {
-        FileSystem.openFile(dummyFileName, FileOpenFlag.ReadWrite, (error, file) -> {
+        FileSystem.openFile(dummyFileName, FileOpenFlag.ReadWrite, (file, error) -> {
             Assert.isNull(error);
             
             if (Assert.notNull(file)) {
-                file.resize(dummyFileData.length * 2, (error, _) -> {
+                file.resize(dummyFileData.length * 2, (_, error) -> {
                     Assert.isNull(error);
     
-                    file.close((error, _) -> {
+                    file.close((_, error) -> {
                         Assert.isNull(error);
     
                         final found = sys.io.File.getContent(dummyFileName);
@@ -92,22 +92,22 @@ class TestFile extends FileOpenTests {
     }
 
     function test_flush_writes(async:Async) {
-        FileSystem.openFile(emptyFileName, FileOpenFlag.Append, (error, file) -> {
+        FileSystem.openFile(emptyFileName, FileOpenFlag.Append, (file, error) -> {
             Assert.isNull(error);
 
             if (Assert.notNull(file)) {
                 final data = haxe.Resource.getBytes("long_ipsum");
     
-                file.write(data, 0, data.length, (error, count) -> {
+                file.write(data, 0, data.length, (count, error) -> {
                     Assert.isNull(error);
                     Assert.equals(data.length, count);
                 });
     
-                file.flush((error, _) -> {
+                file.flush((_, error) -> {
                     Assert.isNull(error);
                     Assert.equals(0, sys.io.File.getBytes(emptyFileName).compare(data));
     
-                    file.close((error, _) -> {
+                    file.close((_, error) -> {
                         Assert.isNull(error);
     
                         async.done();
@@ -120,11 +120,11 @@ class TestFile extends FileOpenTests {
     }
 
     function test_info(async:Async) {
-        FileSystem.openFile(dummyFileName, FileOpenFlag.Read, (error, file) -> {
+        FileSystem.openFile(dummyFileName, FileOpenFlag.Read, (file, error) -> {
             Assert.isNull(error);
 
             if (Assert.notNull(file)) {
-                file.info((error, stat) -> {
+                file.info((stat, error) -> {
                     Assert.isNull(error);
                     Assert.notNull(stat);
     
@@ -141,7 +141,7 @@ class TestFile extends FileOpenTests {
                     Assert.equals(expected.mtime.getTime() / 1000, stat.modificationTime);
                     Assert.equals(expected.mode, stat.mode);
     
-                    file.close((error, _) -> {
+                    file.close((_, error) -> {
                         Assert.isNull(error);
     
                         async.done();
@@ -154,14 +154,14 @@ class TestFile extends FileOpenTests {
     }
 
     function test_setting_times(async:Async) {
-        FileSystem.openFile(dummyFileName, FileOpenFlag.ReadWrite, (error, file) -> {
+        FileSystem.openFile(dummyFileName, FileOpenFlag.ReadWrite, (file, error) -> {
             Assert.isNull(error);
 
             if (Assert.notNull(file)) {
                 final access   = 1234;
                 final modified = 5678;
     
-                file.setTimes(access, modified, (error, _) -> {
+                file.setTimes(access, modified, (_, error) -> {
                     Assert.isNull(error);
     
                     final stat = sys.FileSystem.stat(dummyFileName);
@@ -169,7 +169,7 @@ class TestFile extends FileOpenTests {
                     Assert.equals(access, stat.atime.getTime() / 1000);
                     Assert.equals(modified, stat.mtime.getTime() / 1000);
     
-                    file.close((error, _) -> {
+                    file.close((_, error) -> {
                         Assert.isNull(error);
     
                         async.done();
@@ -182,17 +182,17 @@ class TestFile extends FileOpenTests {
     }
 
     function test_writing_bigger_data(async:Async) {
-        FileSystem.openFile(emptyFileName, FileOpenFlag.Append, (error, file) -> {
+        FileSystem.openFile(emptyFileName, FileOpenFlag.Append, (file, error) -> {
             Assert.isNull(error);
 
             if (Assert.notNull(file)) {
                 final data = haxe.Resource.getBytes("long_ipsum");
     
-                file.write(data, 0, data.length, (error, count) -> {
+                file.write(data, 0, data.length, (count, error) -> {
                     Assert.isNull(error);
                     Assert.equals(data.length, count);
     
-                    file.close((error, _) -> {
+                    file.close((_, error) -> {
                         Assert.isNull(error);
                         Assert.equals(0, sys.io.File.getBytes(emptyFileName).compare(data));
     
@@ -210,17 +210,17 @@ class TestFile extends FileOpenTests {
 
         sys.io.File.saveBytes(emptyFileName, data);
 
-        FileSystem.openFile(emptyFileName, FileOpenFlag.Read, (error, file) -> {
+        FileSystem.openFile(emptyFileName, FileOpenFlag.Read, (file, error) -> {
             Assert.isNull(error);
             if (Assert.notNull(file)) {
                 final buffer = Bytes.alloc(data.length);
     
-                file.read(0, buffer, 0, buffer.length, (error, count) -> {
+                file.read(0, buffer, 0, buffer.length, (count, error) -> {
                     Assert.isNull(error);
                     Assert.equals(data.length, count);
                     Assert.equals(0, buffer.compare(data));
     
-                    file.close((error, _) -> {
+                    file.close((_, error) -> {
                         Assert.isNull(error);
     
                         async.done();
@@ -233,14 +233,14 @@ class TestFile extends FileOpenTests {
     }
 
     function test_write_order(async:Async) {
-        FileSystem.openFile(emptyFileName, FileOpenFlag.Append, (error, file) -> {
+        FileSystem.openFile(emptyFileName, FileOpenFlag.Append, (file, error) -> {
             Assert.isNull(error);
 
             if (Assert.notNull(file)) {
                 {
                     final data = Bytes.ofString(dummyFileData.substr(0, 5));
     
-                    file.write(data, 0, data.length, (error, count) -> {
+                    file.write(data, 0, data.length, (count, error) -> {
                         Assert.isNull(error);
                         Assert.equals(data.length, count);
                     });
@@ -249,11 +249,11 @@ class TestFile extends FileOpenTests {
                 {
                     final data = Bytes.ofString(dummyFileData.substr(5, 8));
     
-                    file.write(data, 0, data.length, (error, count) -> {
+                    file.write(data, 0, data.length, (count, error) -> {
                         Assert.isNull(error);
                         Assert.equals(data.length, count);
         
-                        file.close((error, _) -> {
+                        file.close((_, error) -> {
                             Assert.isNull(error);
                             Assert.equals(dummyFileData, sys.io.File.getContent(emptyFileName));
         
@@ -268,7 +268,7 @@ class TestFile extends FileOpenTests {
     }
 
     function test_read_order(async:Async) {
-        FileSystem.openFile(dummyFileName, FileOpenFlag.Read, (error, file) -> {
+        FileSystem.openFile(dummyFileName, FileOpenFlag.Read, (file, error) -> {
             Assert.isNull(error);
 
             if (Assert.notNull(file)) {
@@ -276,18 +276,18 @@ class TestFile extends FileOpenTests {
     
                 read.fill(0, read.length, 'a'.code);
     
-                file.read(0, read, 0, 5, (error, count) -> {
+                file.read(0, read, 0, 5, (count, error) -> {
                     Assert.isNull(error);
                     Assert.equals(5, count);
                     Assert.equals(0, Bytes.ofString(dummyFileData.substr(0, 5).rpad('a', dummyFileData.length)).compare(read));
                 });
     
-                file.read(5, read, 5, 8, (error, count) -> {
+                file.read(5, read, 5, 8, (count, error) -> {
                     Assert.isNull(error);
                     Assert.equals(8, count);
                     Assert.equals(dummyFileData, read.toString());
     
-                    file.close((error, _) -> {
+                    file.close((_, error) -> {
                         Assert.isNull(error);
     
                         async.done();
@@ -300,7 +300,7 @@ class TestFile extends FileOpenTests {
     }
 
     function test_write_offset_buffer(async:Async) {
-        FileSystem.openFile(emptyFileName, FileOpenFlag.Append, (error, file) -> {
+        FileSystem.openFile(emptyFileName, FileOpenFlag.Append, (file, error) -> {
             Assert.isNull(error);
 
             if (Assert.notNull(file)) {
@@ -308,11 +308,11 @@ class TestFile extends FileOpenTests {
                 final offset = 2;
                 final length = 5;
     
-                file.write(data, offset, length, (error, count) -> {
+                file.write(data, offset, length, (count, error) -> {
                     Assert.isNull(error);
                     Assert.equals(length, count);
     
-                    file.close((error, _) -> {
+                    file.close((_, error) -> {
                         Assert.isNull(error);
                         Assert.equals(dummyFileData.substr(offset, length), sys.io.File.getContent(emptyFileName));
     
@@ -326,18 +326,18 @@ class TestFile extends FileOpenTests {
     }
 
     function test_write_pads_empty_file_when_position_is_non_zero(async:Async) {
-        FileSystem.openFile(emptyFileName, FileOpenFlag.Write, (error, file) -> {
+        FileSystem.openFile(emptyFileName, FileOpenFlag.Write, (file, error) -> {
             Assert.isNull(error);
 
             if (Assert.notNull(file)) {
                 final data = Bytes.ofString(dummyFileData);
                 final pos  = 2;
     
-                file.write(pos, data, 0, data.length, (error, count) -> {
+                file.write(pos, data, 0, data.length, (count, error) -> {
                     Assert.isNull(error);
                     Assert.equals(data.length, count);
     
-                    file.close((error, _) -> {
+                    file.close((_, error) -> {
                         final found = sys.io.File.getBytes(emptyFileName);
                         final built = Bytes.alloc(data.length + pos);
                         
@@ -356,7 +356,7 @@ class TestFile extends FileOpenTests {
     }
 
     function test_write_pads_empty_file_when_position_is_non_zero_and_offset_buffer(async:Async) {
-        FileSystem.openFile(emptyFileName, FileOpenFlag.Write, (error, file) -> {
+        FileSystem.openFile(emptyFileName, FileOpenFlag.Write, (file, error) -> {
             Assert.isNull(error);
 
             if (Assert.notNull(file)) {
@@ -365,11 +365,11 @@ class TestFile extends FileOpenTests {
                 final length = 5;
                 final offset = 3;
     
-                file.write(pos, data, offset, length, (error, count) -> {
+                file.write(pos, data, offset, length, (count, error) -> {
                     Assert.isNull(error);
                     Assert.equals(length, count);
     
-                    file.close((error, _) -> {
+                    file.close((_, error) -> {
                         final found = sys.io.File.getBytes(emptyFileName);
                         final built = Bytes.alloc(pos + length);
     
@@ -388,7 +388,7 @@ class TestFile extends FileOpenTests {
     }
 
     function test_read_into_offset_buffer(async:Async) {
-        FileSystem.openFile(dummyFileName, FileOpenFlag.Read, (error, file) -> {
+        FileSystem.openFile(dummyFileName, FileOpenFlag.Read, (file, error) -> {
             Assert.isNull(error);
 
             if (Assert.notNull(file)) {
@@ -398,11 +398,11 @@ class TestFile extends FileOpenTests {
                 
                 buffer.fill(0, buffer.length, 'a'.code);
     
-                file.read(0, buffer, offset, length, (error, count) -> {
+                file.read(0, buffer, offset, length, (count, error) -> {
                     Assert.isNull(error);
                     Assert.equals(length, count);
     
-                    file.close((error, _) -> {
+                    file.close((_, error) -> {
                         final expected = Bytes.alloc(16);
     
                         expected.fill(0, buffer.length, 'a'.code);
@@ -421,7 +421,7 @@ class TestFile extends FileOpenTests {
     }
 
     function test_read_from_file_non_zero_position(async:Async) {
-        FileSystem.openFile(dummyFileName, FileOpenFlag.Read, (error, file) -> {
+        FileSystem.openFile(dummyFileName, FileOpenFlag.Read, (file, error) -> {
             Assert.isNull(error);
 
             if (Assert.notNull(file)) {
@@ -431,11 +431,11 @@ class TestFile extends FileOpenTests {
                 
                 buffer.fill(0, buffer.length, 'a'.code);
     
-                file.read(pos, buffer, 0, length, (error, count) -> {
+                file.read(pos, buffer, 0, length, (count, error) -> {
                     Assert.isNull(error);
                     Assert.equals(length, count);
     
-                    file.close((error, _) -> {
+                    file.close((_, error) -> {
                         final expected = Bytes.alloc(16);
     
                         expected.fill(0, buffer.length, 'a'.code);
@@ -454,7 +454,7 @@ class TestFile extends FileOpenTests {
     }
 
     function test_read_from_file_non_zero_position_into_offset_buffer(async:Async) {
-        FileSystem.openFile(dummyFileName, FileOpenFlag.Read, (error, file) -> {
+        FileSystem.openFile(dummyFileName, FileOpenFlag.Read, (file, error) -> {
             Assert.isNull(error);
             
             if (Assert.notNull(file)) {
@@ -465,11 +465,11 @@ class TestFile extends FileOpenTests {
                 
                 buffer.fill(0, buffer.length, 'a'.code);
     
-                file.read(pos, buffer, offset, length, (error, count) -> {
+                file.read(pos, buffer, offset, length, (count, error) -> {
                     Assert.isNull(error);
                     Assert.equals(length, count);
     
-                    file.close((error, _) -> {
+                    file.close((_, error) -> {
                         final expected = Bytes.alloc(16);
     
                         expected.fill(0, buffer.length, 'a'.code);

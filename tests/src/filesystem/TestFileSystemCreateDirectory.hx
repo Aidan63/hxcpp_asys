@@ -18,7 +18,7 @@ class TestFileSystemCreateDirectory extends DirectoryTests {
     }
 
     function test_null_path(async:Async) {
-        FileSystem.createDirectory(null, null, true, (error, _) -> {
+        FileSystem.createDirectory(null, null, true, (_, error) -> {
             if (Assert.isOfType(error, ArgumentException)) {
                 Assert.equals("path", (cast error : ArgumentException).argument);
             }
@@ -28,7 +28,7 @@ class TestFileSystemCreateDirectory extends DirectoryTests {
     }
 
     function test_create_single_dir_recursive(async:Async) {
-        FileSystem.createDirectory(directoryName, null, true, (error, _) -> {
+        FileSystem.createDirectory(directoryName, null, true, (_, error) -> {
             if (Assert.isNull(error)) {
                 Assert.isTrue(sys.FileSystem.isDirectory(directoryName));
             }
@@ -38,7 +38,7 @@ class TestFileSystemCreateDirectory extends DirectoryTests {
     }
 
     function test_create_single_dir_non_recursive(async:Async) {
-        FileSystem.createDirectory(directoryName, null, false, (error, _) -> {
+        FileSystem.createDirectory(directoryName, null, false, (_, error) -> {
             if (Assert.isNull(error)) {
                 Assert.isTrue(sys.FileSystem.isDirectory(directoryName));
             }
@@ -50,7 +50,7 @@ class TestFileSystemCreateDirectory extends DirectoryTests {
     function test_create_nested_dir_recursive(async:Async) {
         final target = FilePath.createPath(directoryName, "sub_dir");
 
-        FileSystem.createDirectory(target, null, true, (error, _) -> {
+        FileSystem.createDirectory(target, null, true, (_, error) -> {
             if (Assert.isNull(error)) {
                 Assert.isTrue(sys.FileSystem.isDirectory(target));
             }
@@ -62,7 +62,7 @@ class TestFileSystemCreateDirectory extends DirectoryTests {
     function test_create_nested_dir_non_recursive(async:Async) {
         final target = FilePath.createPath(directoryName, "sub_dir");
 
-        FileSystem.createDirectory(target, null, false, (error, _) -> {
+        FileSystem.createDirectory(target, null, false, (_, error) -> {
             if (Assert.isOfType(error, FsException)) {
                 Assert.equals(target, (cast error : FsException).path);
                 Assert.equals(IoErrorType.FileNotFound, (cast error : FsException).type);
@@ -76,7 +76,7 @@ class TestFileSystemCreateDirectory extends DirectoryTests {
     function test_creating_already_existing_directory(async:Async) {
         sys.FileSystem.createDirectory(directoryName);
 
-        FileSystem.createDirectory(directoryName, null, true, (error, _) -> {
+        FileSystem.createDirectory(directoryName, null, true, (_, error) -> {
             Assert.isNull(error);
 
             async.done();
@@ -88,7 +88,7 @@ class TestFileSystemCreateDirectory extends DirectoryTests {
 
         final target = FilePath.createPath(directoryName, "some", "sub_dir");
 
-        FileSystem.createDirectory(target, null, false, (error, _) -> {
+        FileSystem.createDirectory(target, null, false, (_, error) -> {
             if (Assert.isOfType(error, FsException)) {
                 Assert.equals(target, (cast error : FsException).path);
                 Assert.equals(IoErrorType.FileNotFound, (cast error : FsException).type);
@@ -103,7 +103,7 @@ class TestFileSystemCreateDirectory extends DirectoryTests {
 
         final target = FilePath.createPath(directoryName, "some", "sub_dir");
 
-        FileSystem.createDirectory(target, null, true, (error, _) -> {
+        FileSystem.createDirectory(target, null, true, (_, error) -> {
             if (Assert.isNull(error)) {
                 Assert.isTrue(sys.FileSystem.isDirectory(target));
             }

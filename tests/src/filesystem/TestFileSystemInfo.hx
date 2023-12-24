@@ -11,7 +11,7 @@ import asys.native.filesystem.FsException;
 
 class TestFileSystemInfo extends DirectoryTests {
     function test_null_path(async:Async) {
-        FileSystem.info(null, (error, info) -> {
+        FileSystem.info(null, (info, error) -> {
             if (Assert.isOfType(error, ArgumentException)) {
                 Assert.equals("path", (cast error : ArgumentException).argument);
             }
@@ -21,7 +21,7 @@ class TestFileSystemInfo extends DirectoryTests {
     }
 
     function test_info_file(async:Async) {
-        FileSystem.info(dummyFileName, (error, info) -> {
+        FileSystem.info(dummyFileName, (info, error) -> {
             if (Assert.isNull(error)) {
                 Assert.isTrue(info.mode.isFile());
                 Assert.isFalse(info.mode.isDirectory());
@@ -41,7 +41,7 @@ class TestFileSystemInfo extends DirectoryTests {
     }
 
     function test_info_directory(async:Async) {
-        FileSystem.info(directoryName, (error, info) -> {
+        FileSystem.info(directoryName, (info, error) -> {
             if (Assert.isNull(error)) {
                 Assert.isFalse(info.mode.isFile());
                 Assert.isTrue(info.mode.isDirectory());
@@ -65,7 +65,7 @@ class TestFileSystemInfo extends DirectoryTests {
     }
 
     function test_info_non_existing(async:Async) {
-        FileSystem.info(nonExistingFile, (error, info) -> {
+        FileSystem.info(nonExistingFile, (info, error) -> {
             if (Assert.isOfType(error, FsException)) {
                 Assert.equals(nonExistingFile, (cast error : FsException).path);
                 Assert.equals(IoErrorType.FileNotFound, (cast error : FsException).type);

@@ -4,7 +4,7 @@ import haxe.ds.ReadOnlyArray;
 import sys.thread.Thread;
 import haxe.NoData;
 import haxe.io.Bytes;
-import asys.native.filesystem.Callback;
+import haxe.Callback;
 import haxe.exceptions.NotImplementedException;
 
 class Process {

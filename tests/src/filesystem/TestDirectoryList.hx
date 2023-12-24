@@ -9,7 +9,7 @@ import asys.native.filesystem.FileSystem;
 
 class TestDirectoryList extends DirectoryTests {
     function test_null_path(async:Async) {
-        FileSystem.listDirectory(null, (error, entries) -> {
+        FileSystem.listDirectory(null, (entries, error) -> {
             Assert.isNull(entries);
 
             if (Assert.isOfType(error, ArgumentException)) {
@@ -21,7 +21,7 @@ class TestDirectoryList extends DirectoryTests {
     }
     
     function test_reading_all_entries(async:Async) {
-        FileSystem.listDirectory(directoryName, (error, entries) -> {
+        FileSystem.listDirectory(directoryName, (entries, error) -> {
             Assert.isNull(error);
 
             if (Assert.notNull(entries)) {
@@ -36,7 +36,7 @@ class TestDirectoryList extends DirectoryTests {
     }
 
     function test_reading_file_as_directory(async:Async) {
-        FileSystem.listDirectory(dummyFileName, (error, entries) -> {
+        FileSystem.listDirectory(dummyFileName, (entries, error) -> {
             Assert.isNull(entries);
 
             if (Assert.isOfType(error, FsException)) {
@@ -48,7 +48,7 @@ class TestDirectoryList extends DirectoryTests {
     }
 
     function test_reading_non_existing_directory(async:Async) {
-        FileSystem.listDirectory("does_not_exist", (error, entries) -> {
+        FileSystem.listDirectory("does_not_exist", (entries, error) -> {
             Assert.isNull(entries);
 
             if (Assert.isOfType(error, FsException)) {
@@ -60,7 +60,7 @@ class TestDirectoryList extends DirectoryTests {
     }
 
     function test_reading_empty_directory(async:Async) {
-        FileSystem.listDirectory(emptyDirName, (error, entries) -> {
+        FileSystem.listDirectory(emptyDirName, (entries, error) -> {
             Assert.isNull(error);
             
             if (Assert.notNull(entries)) {

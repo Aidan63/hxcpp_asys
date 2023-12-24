@@ -10,7 +10,7 @@ import utest.Assert;
 
 class TestFileSystemResize extends DirectoryTests {
     function test_null_path(async:Async) {
-        FileSystem.resize(null, 10, (error, _) -> {
+        FileSystem.resize(null, 10, (_, error) -> {
             if (Assert.isOfType(error, ArgumentException)) {
                 Assert.equals("path", (cast error : ArgumentException).argument);
             }
@@ -20,7 +20,7 @@ class TestFileSystemResize extends DirectoryTests {
     }
 
     function test_negative_size(async:Async) {
-        FileSystem.resize(dummyFileName, -10, (error, _) -> {
+        FileSystem.resize(dummyFileName, -10, (_, error) -> {
             if (Assert.isOfType(error, ArgumentException)) {
                 Assert.equals("newSize", (cast error : ArgumentException).argument);
             }
@@ -32,7 +32,7 @@ class TestFileSystemResize extends DirectoryTests {
     function test_non_existing_file(async:Async) {
         final size = 10;
 
-        FileSystem.resize(nonExistingFile, size, (error, _) -> {
+        FileSystem.resize(nonExistingFile, size, (_, error) -> {
             if (Assert.isNull(error)) {
                 Assert.equals(0, sys.io.File.getBytes(nonExistingFile).compare(Bytes.alloc(size)));
             }
@@ -42,7 +42,7 @@ class TestFileSystemResize extends DirectoryTests {
     }
 
     function test_directory(async:Async) {
-        FileSystem.resize(directoryName, 10, (error, _) -> {
+        FileSystem.resize(directoryName, 10, (_, error) -> {
             if (Assert.isOfType(error, FsException)) {
                 Assert.equals(directoryName, (cast error : FsException).path);
                 Assert.equals(IoErrorType.IsDirectory, (cast error : FsException).type);
@@ -53,7 +53,7 @@ class TestFileSystemResize extends DirectoryTests {
     }
 
     function test_resize_to_zero(async:Async) {
-        FileSystem.resize(dummyFileName, 0, (error, _) -> {
+        FileSystem.resize(dummyFileName, 0, (_, error) -> {
             if (Assert.isNull(error)) {
                 Assert.equals(0, sys.FileSystem.stat(dummyFileName).size);
             }
@@ -66,7 +66,7 @@ class TestFileSystemResize extends DirectoryTests {
         final newSize  = 5;
         final expected = Bytes.ofString(dummyFileData.substr(0, newSize));
 
-        FileSystem.resize(dummyFileName, newSize, (error, _) -> {
+        FileSystem.resize(dummyFileName, newSize, (_, error) -> {
             if (Assert.isNull(error)) {
                 Assert.equals(0, sys.io.File.getBytes(dummyFileName).compare(expected));
             }
@@ -81,7 +81,7 @@ class TestFileSystemResize extends DirectoryTests {
 
         expected.blit(0, Bytes.ofString(dummyFileData), 0, dummyFileData.length);
 
-        FileSystem.resize(dummyFileName, newSize, (error, _) -> {
+        FileSystem.resize(dummyFileName, newSize, (_, error) -> {
             if (Assert.isNull(error)) {
                 Assert.equals(0, sys.io.File.getBytes(dummyFileName).compare(expected));
             }

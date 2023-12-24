@@ -26,7 +26,7 @@ class TestFileSystemMove extends DirectoryTests {
     }
 
     function test_null_src(async:Async) {
-        FileSystem.move(null, dummyFileName, false, (error, _) -> {
+        FileSystem.move(null, dummyFileName, false, (_, error) -> {
             if (Assert.isOfType(error, ArgumentException)) {
                 Assert.equals("oldPath", (cast error : ArgumentException).argument);
             }
@@ -36,7 +36,7 @@ class TestFileSystemMove extends DirectoryTests {
     }
 
     function test_null_dst(async:Async) {
-        FileSystem.move(dummyFileName, null, false, (error, _) -> {
+        FileSystem.move(dummyFileName, null, false, (_, error) -> {
             if (Assert.isOfType(error, ArgumentException)) {
                 Assert.equals("newPath", (cast error : ArgumentException).argument);
             }
@@ -46,7 +46,7 @@ class TestFileSystemMove extends DirectoryTests {
     }
 
     function test_moving_non_existing_object(async:Async) {
-        FileSystem.move(nonExistingFile, dummyFileName, true, (error, _) -> {
+        FileSystem.move(nonExistingFile, dummyFileName, true, (_, error) -> {
             if (Assert.isOfType(error, FsException)) {
                 Assert.equals(nonExistingFile, (cast error : FsException).path);
                 Assert.equals(IoErrorType.FileNotFound, (cast error : FsException).type);
@@ -57,7 +57,7 @@ class TestFileSystemMove extends DirectoryTests {
     }
 
     function test_moving_same_src_and_dst(async:Async) {
-        FileSystem.move(dummyFileName, dummyFileName, false, (error, _) -> {
+        FileSystem.move(dummyFileName, dummyFileName, false, (_, error) -> {
             Assert.notNull(error);
 
             async.done();
@@ -65,7 +65,7 @@ class TestFileSystemMove extends DirectoryTests {
     }
 
     function test_moving_file_to_new_file_overwrite(async:Async) {
-        FileSystem.move(dummyFileName, nonExistingFile, true, (error, _) -> {
+        FileSystem.move(dummyFileName, nonExistingFile, true, (_, error) -> {
             if (Assert.isNull(error)) {
                 Assert.isFalse(sys.FileSystem.exists(dummyFileName));
 
@@ -79,7 +79,7 @@ class TestFileSystemMove extends DirectoryTests {
     }
 
     function test_moving_file_to_new_file_no_overwrite(async:Async) {
-        FileSystem.move(dummyFileName, nonExistingFile, false, (error, _) -> {
+        FileSystem.move(dummyFileName, nonExistingFile, false, (_, error) -> {
             if (Assert.isNull(error) && Assert.isTrue(sys.FileSystem.exists(nonExistingFile))) {
                 Assert.equals(dummyFileData, sys.io.File.getContent(nonExistingFile));
             }
@@ -89,7 +89,7 @@ class TestFileSystemMove extends DirectoryTests {
     }
 
     function test_moving_file_to_existing_file_overwrite(async:Async) {
-        FileSystem.move(emptyFileName, dummyFileName, true, (error, _) -> {
+        FileSystem.move(emptyFileName, dummyFileName, true, (_, error) -> {
             if (Assert.isNull(error)) {
                 Assert.equals("", sys.io.File.getContent(dummyFileName));
             }
@@ -99,7 +99,7 @@ class TestFileSystemMove extends DirectoryTests {
     }
 
     function test_moving_file_to_existing_file_no_overwrite(async:Async) {
-        FileSystem.move(emptyFileName, dummyFileName, false, (error, _) -> {
+        FileSystem.move(emptyFileName, dummyFileName, false, (_, error) -> {
             if (Assert.isOfType(error, FsException)) {
                 Assert.equals(emptyFileName, (cast error : FsException).path);
                 Assert.equals(IoErrorType.FileExists, (cast error : FsException).type);
@@ -113,7 +113,7 @@ class TestFileSystemMove extends DirectoryTests {
     //
 
     function test_moving_directory_to_non_existing_directory_no_overwrite(async:Async) {
-        FileSystem.move(directoryName, newDirectoryName, false, (error, _) -> {
+        FileSystem.move(directoryName, newDirectoryName, false, (_, error) -> {
             Assert.isNull(error);
             Assert.isFalse(sys.FileSystem.exists(directoryName));
 
@@ -131,7 +131,7 @@ class TestFileSystemMove extends DirectoryTests {
     }
 
     function test_moving_directory_to_non_existing_directory_overwrite(async:Async) {
-        FileSystem.move(directoryName, newDirectoryName, true, (error, _) -> {
+        FileSystem.move(directoryName, newDirectoryName, true, (_, error) -> {
             Assert.isNull(error);
             Assert.isFalse(sys.FileSystem.exists(directoryName));
 
@@ -151,7 +151,7 @@ class TestFileSystemMove extends DirectoryTests {
     function test_moving_directory_to_existing_empty_directory_no_overwrite(async:Async) {
         sys.FileSystem.createDirectory(newDirectoryName);
 
-        FileSystem.move(directoryName, newDirectoryName, false, (error, _) -> {
+        FileSystem.move(directoryName, newDirectoryName, false, (_, error) -> {
             if (Assert.isOfType(error, FsException)) {
                 Assert.equals(directoryName, (cast error : FsException).path);
                 Assert.equals(IoErrorType.AccessDenied, (cast error : FsException).type);
@@ -165,7 +165,7 @@ class TestFileSystemMove extends DirectoryTests {
     function test_moving_directory_to_existing_empty_directory_overwrite(async:Async) {
         sys.FileSystem.createDirectory(newDirectoryName);
 
-        FileSystem.move(directoryName, newDirectoryName, true, (error, _) -> {
+        FileSystem.move(directoryName, newDirectoryName, true, (_, error) -> {
             if (Assert.isNull(error)) {
                 Assert.isFalse(sys.FileSystem.exists(directoryName));
     
@@ -185,7 +185,7 @@ class TestFileSystemMove extends DirectoryTests {
         sys.FileSystem.createDirectory(newDirectoryName);
         sys.io.File.saveContent(haxe.io.Path.join([ newDirectoryName, "file.txt" ]), dummyFileData);
 
-        FileSystem.move(directoryName, newDirectoryName, true, (error, _) -> {
+        FileSystem.move(directoryName, newDirectoryName, true, (_, error) -> {
             if (Assert.isOfType(error, FsException)) {
                 Assert.equals(directoryName, (cast error : FsException).path);
                 Assert.equals(IoErrorType.AccessDenied, (cast error : FsException).type);

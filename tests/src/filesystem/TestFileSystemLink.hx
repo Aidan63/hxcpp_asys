@@ -10,7 +10,7 @@ import asys.native.filesystem.FileSystem;
 @:depends(filesystem.TestFileSystemInfo)
 class TestFileSystemLink extends DirectoryTests {   
     function test_null_target(async:Async) {
-        FileSystem.link(null, dummyFileName, SymLink, (error, _) -> {
+        FileSystem.link(null, dummyFileName, SymLink, (_, error) -> {
             if (Assert.isOfType(error, ArgumentException)) {
                 Assert.equals("target", (cast error : ArgumentException).argument);
             }
@@ -20,7 +20,7 @@ class TestFileSystemLink extends DirectoryTests {
     }
 
     function test_null_path(async:Async) {
-        FileSystem.link(dummyFileName, null, SymLink, (error, _) -> {
+        FileSystem.link(dummyFileName, null, SymLink, (_, error) -> {
             if (Assert.isOfType(error, ArgumentException)) {
                 Assert.equals("path", (cast error : ArgumentException).argument);
             }
@@ -30,7 +30,7 @@ class TestFileSystemLink extends DirectoryTests {
     }
 
     function test_symlink_to_non_existing_target(async:Async) {
-        FileSystem.link(nonExistingFile, linkName, SymLink, (error, _) -> {
+        FileSystem.link(nonExistingFile, linkName, SymLink, (_, error) -> {
             if (Assert.isNull(error)) {
                 Assert.isTrue(sys.FileSystem.exists(linkName));
             }
@@ -40,7 +40,7 @@ class TestFileSystemLink extends DirectoryTests {
     }
 
     function test_symlink_to_file(async:Async) {
-        FileSystem.link(dummyFileName, linkName, SymLink, (error, _) -> {
+        FileSystem.link(dummyFileName, linkName, SymLink, (_, error) -> {
             if (Assert.isNull(error)) {
                 Assert.isTrue(sys.FileSystem.exists(linkName));
             }
@@ -50,7 +50,7 @@ class TestFileSystemLink extends DirectoryTests {
     }
 
     function test_symlink_to_directory(async:Async) {
-        FileSystem.link(directoryName, linkName, SymLink, (error, _) -> {
+        FileSystem.link(directoryName, linkName, SymLink, (_, error) -> {
             if (Assert.isNull(error)) {
                 Assert.isTrue(sys.FileSystem.exists(linkName));
             }
@@ -60,7 +60,7 @@ class TestFileSystemLink extends DirectoryTests {
     }
 
     function test_hardlink_to_non_existing_target(async:Async) {
-        FileSystem.link(nonExistingFile, linkName, HardLink, (error, _) -> {
+        FileSystem.link(nonExistingFile, linkName, HardLink, (_, error) -> {
             if (Assert.isOfType(error, FsException)) {
                 Assert.equals(linkName, (cast error : FsException).path);
                 Assert.equals(IoErrorType.FileNotFound, (cast error : FsException).type);
@@ -73,7 +73,7 @@ class TestFileSystemLink extends DirectoryTests {
     }
 
     function test_hardlink_to_file(async:Async) {
-        FileSystem.link(dummyFileName, linkName, HardLink, (error, _) -> {
+        FileSystem.link(dummyFileName, linkName, HardLink, (_, error) -> {
             if (Assert.isNull(error)) {
                 Assert.isTrue(sys.FileSystem.exists(linkName));
             }
@@ -83,9 +83,9 @@ class TestFileSystemLink extends DirectoryTests {
     }
 
     function test_hardlink_stat_links(async:Async) {
-        FileSystem.link(dummyFileName, linkName, HardLink, (error, _) -> {
+        FileSystem.link(dummyFileName, linkName, HardLink, (_, error) -> {
             if (Assert.isNull(error)) {
-                FileSystem.info(linkName, (error, info) -> {
+                FileSystem.info(linkName, (info, error) -> {
                     if (Assert.isNull(error)) {
                         Assert.equals(2, info.links);
                     }
@@ -99,11 +99,11 @@ class TestFileSystemLink extends DirectoryTests {
     }
 
     function test_hardlink_stat_inode_number(async:Async) {
-        FileSystem.link(dummyFileName, linkName, HardLink, (error, _) -> {
+        FileSystem.link(dummyFileName, linkName, HardLink, (_, error) -> {
             if (Assert.isNull(error)) {
-                FileSystem.info(linkName, (error, linkInfo) -> {
+                FileSystem.info(linkName, (linkInfo, error) -> {
                     if (Assert.isNull(error)) {
-                        FileSystem.info(dummyFileName, (error, dummyInfo) -> {
+                        FileSystem.info(dummyFileName, (dummyInfo, error) -> {
                             if (Assert.isNull(error)) {
                                 Assert.equals(linkInfo.inodeNumber, dummyInfo.inodeNumber);
                             }
@@ -122,7 +122,7 @@ class TestFileSystemLink extends DirectoryTests {
     }
 
     function test_hardlink_to_directory(async:Async) {
-        FileSystem.link(directoryName, linkName, HardLink, (error, _) -> {
+        FileSystem.link(directoryName, linkName, HardLink, (_, error) -> {
             if (Assert.isOfType(error, FsException)) {
                 Assert.equals(linkName, (cast error : FsException).path);
                 Assert.equals(IoErrorType.AccessDenied, (cast error : FsException).type);

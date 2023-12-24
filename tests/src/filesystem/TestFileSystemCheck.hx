@@ -7,7 +7,7 @@ import asys.native.filesystem.FileSystem;
 
 class TestFileSystemCheck extends DirectoryTests {
     function test_check_file_exists(async:Async) {
-        FileSystem.check(dummyFileName, Exists, (error, result) -> {
+        FileSystem.check(dummyFileName, Exists, (result, error) -> {
             Assert.isNull(error);
             Assert.isTrue(result);
 
@@ -16,7 +16,7 @@ class TestFileSystemCheck extends DirectoryTests {
     }
 
     function test_check_directory_exists(async:Async) {
-        FileSystem.check(directoryName, Exists, (error, result) -> {
+        FileSystem.check(directoryName, Exists, (result, error) -> {
             Assert.isNull(error);
             Assert.isTrue(result);
 
@@ -25,7 +25,7 @@ class TestFileSystemCheck extends DirectoryTests {
     }
 
     function test_check_non_existing_file_exists(async:Async) {
-        FileSystem.check(nonExistingFile, Exists, (error, result) -> {
+        FileSystem.check(nonExistingFile, Exists, (result, error) -> {
             Assert.isNull(error);
             Assert.isFalse(result);
 
@@ -34,7 +34,7 @@ class TestFileSystemCheck extends DirectoryTests {
     }
 
     function test_check_file_is_readable_and_writable(async:Async) {
-        FileSystem.check(dummyFileName, Readable | Writable, (error, result) -> {
+        FileSystem.check(dummyFileName, Readable | Writable, (result, error) -> {
             Assert.isNull(error);
             Assert.isTrue(result);
 
@@ -43,7 +43,7 @@ class TestFileSystemCheck extends DirectoryTests {
     }
 
     function test_check_file_is_executable(async:Async) {
-        FileSystem.check(dummyFileName, Executable, (error, result) -> {
+        FileSystem.check(dummyFileName, Executable, (result, error) -> {
             Assert.isNull(error);
             Assert.isTrue(result);
 
@@ -52,7 +52,7 @@ class TestFileSystemCheck extends DirectoryTests {
     }
 
     function test_check_directory_is_not_executable(async:Async) {
-        FileSystem.check(directoryName, Executable, (error, result) -> {
+        FileSystem.check(directoryName, Executable, (result, error) -> {
             Assert.isNull(error);
             Assert.isFalse(result);
 
@@ -61,7 +61,7 @@ class TestFileSystemCheck extends DirectoryTests {
     }
 
     function test_null_path(async:Async) {
-        FileSystem.check(null, Executable, (error, result) -> {
+        FileSystem.check(null, Executable, (result, error) -> {
             if (Assert.isOfType(error, ArgumentException)) {
                 Assert.equals("path", (cast error : ArgumentException).argument);
             }
@@ -71,7 +71,7 @@ class TestFileSystemCheck extends DirectoryTests {
     }
 
     function test_zero_check(async:Async) {
-        FileSystem.check(dummyFileName, cast 0, (error, result) -> {
+        FileSystem.check(dummyFileName, cast 0, (result, error) -> {
             Assert.isNull(error);
             Assert.isTrue(result);
 

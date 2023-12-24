@@ -11,7 +11,7 @@ using StringTools;
 
 class TestFileSystemUniqueDirectory extends DirectoryTests {
     function test_create_single_dir_recursive(async:Async) {
-        FileSystem.uniqueDirectory(directoryName, null, null, true, (error, path) -> {
+        FileSystem.uniqueDirectory(directoryName, null, null, true, (path, error) -> {
             if (Assert.isNull(error)) {
                 Assert.isTrue(sys.FileSystem.isDirectory(path));
             }
@@ -21,7 +21,7 @@ class TestFileSystemUniqueDirectory extends DirectoryTests {
     }
 
     function test_create_single_dir_non_recursive(async:Async) {
-        FileSystem.uniqueDirectory(directoryName, null, null, false, (error, path) -> {
+        FileSystem.uniqueDirectory(directoryName, null, null, false, (path, error) -> {
             if (Assert.isNull(error)) {
                 Assert.isTrue(sys.FileSystem.isDirectory(path));
             }
@@ -33,7 +33,7 @@ class TestFileSystemUniqueDirectory extends DirectoryTests {
     function test_create_nested_dir_recursive(async:Async) {
         final target = FilePath.createPath(directoryName, "other_dir");
 
-        FileSystem.uniqueDirectory(target, null, null, true, (error, path) -> {
+        FileSystem.uniqueDirectory(target, null, null, true, (path, error) -> {
             if (Assert.isNull(error)) {
                 Assert.isTrue(sys.FileSystem.isDirectory(path));
             }
@@ -45,7 +45,7 @@ class TestFileSystemUniqueDirectory extends DirectoryTests {
     function test_create_nested_dir_non_recursive(async:Async) {
         final target = FilePath.createPath(directoryName, "other_dir");
 
-        FileSystem.uniqueDirectory(target, null, null, false, (error, path) -> {
+        FileSystem.uniqueDirectory(target, null, null, false, (path, error) -> {
             Assert.isNull(path);
             if (Assert.isOfType(error, FsException)) {
                 Assert.equals(target, (cast error : FsException).path.substr(0, target.toString().length));
@@ -59,7 +59,7 @@ class TestFileSystemUniqueDirectory extends DirectoryTests {
     function test_create_with_prefix(async:Async) {
         final prefix = "HelloWorld";
 
-        FileSystem.uniqueDirectory(directoryName, prefix, null, true, (error, path) -> {
+        FileSystem.uniqueDirectory(directoryName, prefix, null, true, (path, error) -> {
             if (Assert.isNull(error)) {
                 Assert.isTrue(sys.FileSystem.isDirectory(path));
                 Assert.isTrue(new haxe.io.Path(path).file.startsWith(prefix));
@@ -70,9 +70,9 @@ class TestFileSystemUniqueDirectory extends DirectoryTests {
     }
 
     function test_create_multiple_unique_dirs(async:Async) {
-        FileSystem.uniqueDirectory(directoryName, null, null, true, (error, path1) -> {
+        FileSystem.uniqueDirectory(directoryName, null, null, true, (path1, error) -> {
             if (Assert.isNull(error)) {
-                FileSystem.uniqueDirectory(directoryName, null, null, true, (error, path2) -> {
+                FileSystem.uniqueDirectory(directoryName, null, null, true, (path2, error) -> {
                     if (Assert.isNull(error)) {
                         Assert.notEquals(path1, path2);
                     }

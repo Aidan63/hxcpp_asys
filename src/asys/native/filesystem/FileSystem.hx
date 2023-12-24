@@ -60,15 +60,15 @@ class FileSystem {
 			return;
 		}
 
-		openFile(path, Read, (error, file) -> {
+		openFile(path, Read, (file, error) -> {
 			switch error {
 				case null:
-					file.info((error, stat) -> {
+					file.info((stat, error) -> {
 						switch error {
 							case null:
 								final buffer = Bytes.alloc(stat.size);
 
-								file.read(0, buffer, 0, buffer.length, (error, read) -> {
+								file.read(0, buffer, 0, buffer.length, (read, error) -> {
 									file.close((_, _) -> {
 										// TODO : What should we do if closing fails?
 										// create a composite exception?
@@ -109,7 +109,7 @@ class FileSystem {
 			return;
 		}
 
-		readBytes(path, (error, bytes) -> {
+		readBytes(path, (bytes, error) -> {
 			switch error {
 				case null:
 					callback.success(bytes.toString());
@@ -138,10 +138,10 @@ class FileSystem {
 			return;
 		}
 
-		openFile(path, flag, (error, file) -> {
+		openFile(path, flag, (file, error) -> {
 			switch error {
 				case null:
-					file.write(0, data, 0, data.length, (error, _) -> {
+					file.write(0, data, 0, data.length, (_, error) -> {
 						file.close((_, _) -> {
 							// TODO : What should we do if closing fails?
 							// create a composite exception?
@@ -217,7 +217,7 @@ class FileSystem {
 		}
 
 		function read(dir:Directory, accumulated:Array<String>, callback:Callback<Array<String>>) {
-			dir.next((error, entries) -> {
+			dir.next((entries, error) -> {
 				switch error {
 					case null:
 						if (entries.length == 0) {
@@ -231,10 +231,10 @@ class FileSystem {
 			});
 		}
 
-		openDirectory(path, (error, dir) -> {
+		openDirectory(path, (dir, error) -> {
 			switch error {
 				case null:
-					read(dir, [], (error, entries) -> {
+					read(dir, [], (entries, error) -> {
 						dir.close((_, _) -> {
 							// TODO : What should we do if closing fails?
 							// create a composite exception?
@@ -298,7 +298,7 @@ class FileSystem {
 		final finalPrefix = if (prefix == null) Std.string(rndIntValue) else '$prefix$rndIntValue';
 		final finalPath   = FilePath.createPath(parentDirectory, finalPrefix);
 
-		createDirectory(finalPath, permissions, recursive, (error, _) -> {
+		createDirectory(finalPath, permissions, recursive, (_, error) -> {
 			if (error != null) {
 				callback.fail(error);
 			}
@@ -331,7 +331,7 @@ class FileSystem {
 			return;
 		}
 
-		isDirectory(oldPath, (error, isDir) -> {
+		isDirectory(oldPath, (isDir, error) -> {
 			if (error != null)
 			{
 				callback.fail(error);
@@ -355,7 +355,7 @@ class FileSystem {
 						newPath,
 						overwrite,
 						() -> {
-							deleteFile(oldPath, (error, _) -> {
+							deleteFile(oldPath, (_, error) -> {
 								if (error != null) {
 									callback.fail(error);
 								} else {
@@ -412,10 +412,10 @@ class FileSystem {
 			return;
 		}
 
-		openFile(path, Read, (error, file) -> {
+		openFile(path, Read, (file, error) -> {
 			switch error {
 				case null:
-					file.info((error, info) -> {
+					file.info((info, error) -> {
 						file.close((_, _) -> {
 							// TODO : What should we do if closing fails?
 							// create a composite exception?
@@ -507,10 +507,10 @@ class FileSystem {
 			return;
 		}
 
-		openFile(path, Read, (error, file) -> {
+		openFile(path, Read, (file, error) -> {
 			switch error {
 				case null:
-					file.setPermissions(permissions, (error, info) -> {
+					file.setPermissions(permissions, (info, error) -> {
 						file.close((_, _) -> {
 							// TODO : What should we do if closing fails?
 							// create a composite exception?
@@ -541,10 +541,10 @@ class FileSystem {
 			return;
 		}
 
-		openFile(path, Read, (error, file) -> {
+		openFile(path, Read, (file, error) -> {
 			switch error {
 				case null:
-					file.setOwner(user, group, (error, info) -> {
+					file.setOwner(user, group, (info, error) -> {
 						file.close((_, _) -> {
 							// TODO : What should we do if closing fails?
 							// create a composite exception?
@@ -709,10 +709,10 @@ class FileSystem {
 			return;
 		}
 
-		openFile(path, Overwrite, (error, file) -> {
+		openFile(path, Overwrite, (file, error) -> {
 			switch error {
 				case null:
-					file.resize(newSize, (error, _) -> {
+					file.resize(newSize, (_, error) -> {
 						file.close((_, _) -> {
 							// TODO : What should we do if closing fails?
 							// create a composite exception?
@@ -755,10 +755,10 @@ class FileSystem {
 			return;
 		}
 
-		openFile(path, Write, (error, file) -> {
+		openFile(path, Write, (file, error) -> {
 			switch error {
 				case null:
-					file.setTimes(accessTime, modificationTime, (error, _) -> {
+					file.setTimes(accessTime, modificationTime, (_, error) -> {
 						file.close((_, _) -> {
 							// TODO : What should we do if closing fails?
 							// create a composite exception?

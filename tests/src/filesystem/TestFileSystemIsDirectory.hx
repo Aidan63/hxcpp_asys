@@ -7,7 +7,7 @@ import asys.native.filesystem.FileSystem;
 
 class TestFileSystemIsDirectory extends DirectoryTests {
     function test_null_path(async:Async) {
-        FileSystem.isDirectory(null, (error, result) -> {
+        FileSystem.isDirectory(null, (result, error) -> {
             if (Assert.isOfType(error, ArgumentException)) {
                 Assert.equals("path", (cast error : ArgumentException).argument);
             }
@@ -17,7 +17,7 @@ class TestFileSystemIsDirectory extends DirectoryTests {
     }
 
     function test_directory(async:Async) {
-        FileSystem.isDirectory(directoryName, (error, result) -> {
+        FileSystem.isDirectory(directoryName, (result, error) -> {
             if (Assert.isNull(error)) {
                 Assert.isTrue(result);
             }
@@ -27,7 +27,7 @@ class TestFileSystemIsDirectory extends DirectoryTests {
     }
 
     function test_file(async:Async) {
-        FileSystem.isDirectory(dummyFileName, (error, result) -> {
+        FileSystem.isDirectory(dummyFileName, (result, error) -> {
             if (Assert.isNull(error)) {
                 Assert.isFalse(result);
             }
@@ -37,7 +37,7 @@ class TestFileSystemIsDirectory extends DirectoryTests {
     }
 
     function test_non_existing_file(async:Async) {
-        FileSystem.isDirectory(nonExistingFile, (error, result) -> {
+        FileSystem.isDirectory(nonExistingFile, (result, error) -> {
             if (Assert.isNull(error)) {
                 Assert.isFalse(result);
             }

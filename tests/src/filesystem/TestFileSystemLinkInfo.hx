@@ -10,7 +10,7 @@ import asys.native.filesystem.FileSystem;
 @:depends(filesystem.TestFileSystemInfo)
 class TestFileSystemLinkInfo extends DirectoryTests {
     function test_null_path(async:Async) {
-        FileSystem.linkInfo(null, (error, _) -> {
+        FileSystem.linkInfo(null, (_, error) -> {
             if (Assert.isOfType(error, ArgumentException)) {
                 Assert.equals("path", (cast error : ArgumentException).argument);
             }
@@ -20,7 +20,7 @@ class TestFileSystemLinkInfo extends DirectoryTests {
     }
 
     function test_non_existing_file(async:Async) {
-        FileSystem.linkInfo(nonExistingFile, (error, _) -> {
+        FileSystem.linkInfo(nonExistingFile, (_, error) -> {
             if (Assert.isOfType(error, FsException)) {
                 Assert.equals(nonExistingFile, (cast error : FsException).path);
                 Assert.equals(IoErrorType.FileNotFound, (cast error : FsException).type);
@@ -31,7 +31,7 @@ class TestFileSystemLinkInfo extends DirectoryTests {
     }
 
     function test_linkInfo_on_non_link(async:Async) {
-        FileSystem.linkInfo(dummyFileName, (error, info) -> {
+        FileSystem.linkInfo(dummyFileName, (info, error) -> {
             if (Assert.isNull(error)) {
                 Assert.isTrue(info.mode.isFile());
                 Assert.isFalse(info.mode.isDirectory());
@@ -51,9 +51,9 @@ class TestFileSystemLinkInfo extends DirectoryTests {
     }
 
     function test_linkInfo(async:Async) {
-        FileSystem.link(dummyFileName, linkName, (error, _) -> {
+        FileSystem.link(dummyFileName, linkName, (_, error) -> {
             if (Assert.isNull(error)) {
-                FileSystem.linkInfo(linkName, (error, info) -> {
+                FileSystem.linkInfo(linkName, (info, error) -> {
                     if (Assert.isNull(error)) {
                         Assert.isTrue(info.mode.isFile());
                         Assert.isFalse(info.mode.isDirectory());

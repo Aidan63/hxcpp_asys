@@ -9,7 +9,7 @@ import asys.native.filesystem.FileSystem;
 
 class TestFileSystemReadBytes extends FileOpenTests {
     function test_null_path(async:Async) {
-        FileSystem.readBytes(null, (error, _) -> {
+        FileSystem.readBytes(null, (_, error) -> {
             if (Assert.isOfType(error, ArgumentException)) {
                 Assert.equals("path", (cast error : ArgumentException).argument);
             }
@@ -19,7 +19,7 @@ class TestFileSystemReadBytes extends FileOpenTests {
     }
 
     function test_reading_file(async:Async) {
-        FileSystem.readBytes(dummyFileName, (error, bytes) -> {
+        FileSystem.readBytes(dummyFileName, (bytes, error) -> {
             Assert.isNull(error);
 
             if (Assert.notNull(bytes)) {
@@ -31,7 +31,7 @@ class TestFileSystemReadBytes extends FileOpenTests {
     }
 
     function test_reading_empty_file(async:Async) {
-        FileSystem.readBytes(emptyFileName, (error, bytes) -> {
+        FileSystem.readBytes(emptyFileName, (bytes, error) -> {
             Assert.isNull(error);
 
             if (Assert.notNull(bytes)) {
@@ -47,7 +47,7 @@ class TestFileSystemReadBytes extends FileOpenTests {
 
         sys.io.File.saveBytes(emptyFileName, data);
 
-        FileSystem.readBytes(emptyFileName, (error, bytes) -> {
+        FileSystem.readBytes(emptyFileName, (bytes, error) -> {
             Assert.isNull(error);
 
             if (Assert.notNull(bytes)) {
@@ -59,7 +59,7 @@ class TestFileSystemReadBytes extends FileOpenTests {
     }
 
     function test_reading_non_existant_file(async:Async) {
-        FileSystem.readBytes("does_not_exist.txt", (error, bytes) -> {
+        FileSystem.readBytes("does_not_exist.txt", (bytes, error) -> {
             Assert.isNull(bytes);
 
             if (Assert.isOfType(error, FsException)) {
@@ -72,7 +72,7 @@ class TestFileSystemReadBytes extends FileOpenTests {
     }
 
     function test_reading_directory_as_file(async:Async) {
-        FileSystem.readBytes(emptyDirName, (error, bytes) -> {
+        FileSystem.readBytes(emptyDirName, (bytes, error) -> {
             Assert.isNull(bytes);
 
             if (Assert.isOfType(error, FsException)) {

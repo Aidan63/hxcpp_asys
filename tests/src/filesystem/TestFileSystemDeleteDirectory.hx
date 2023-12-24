@@ -10,7 +10,7 @@ import asys.native.filesystem.FsException;
 
 class TestFileSystemDeleteDirectory extends DirectoryTests {
     function test_null_path(async:Async) {
-        FileSystem.deleteDirectory(null, (error, _) -> {
+        FileSystem.deleteDirectory(null, (_, error) -> {
             if (Assert.isOfType(error, ArgumentException)) {
                 Assert.equals("path", (cast error : ArgumentException).argument);
             }
@@ -22,7 +22,7 @@ class TestFileSystemDeleteDirectory extends DirectoryTests {
     function test_deleting_directory(async:Async) {
         ensureDirectoryIsEmpty(directoryName);
 
-        FileSystem.deleteDirectory(directoryName, (error, _) -> {
+        FileSystem.deleteDirectory(directoryName, (_, error) -> {
             if (Assert.isNull(error)) {
                 Assert.isFalse(sys.FileSystem.exists(directoryName));
             }
@@ -32,7 +32,7 @@ class TestFileSystemDeleteDirectory extends DirectoryTests {
     }
 
     function test_deleting_populated_directory(async:Async) {
-        FileSystem.deleteDirectory(directoryName, (error, _) -> {
+        FileSystem.deleteDirectory(directoryName, (_, error) -> {
             if (Assert.isOfType(error, FsException)) {
                 Assert.equals(directoryName, (cast error : FsException).path);
                 Assert.equals(IoErrorType.NotEmpty, (cast error : FsException).type);
@@ -44,7 +44,7 @@ class TestFileSystemDeleteDirectory extends DirectoryTests {
     }
 
     function test_deleting_non_existing_directory(async:Async) {
-        FileSystem.deleteDirectory(nonExistingFile, (error, _) -> {
+        FileSystem.deleteDirectory(nonExistingFile, (_, error) -> {
             if (Assert.isOfType(error, FsException)) {
                 Assert.equals(nonExistingFile, (cast error : FsException).path);
                 Assert.equals(IoErrorType.FileNotFound, (cast error : FsException).type);
@@ -55,7 +55,7 @@ class TestFileSystemDeleteDirectory extends DirectoryTests {
     }
 
     function test_deleting_file(async:Async) {
-        FileSystem.deleteDirectory(dummyFileName, (error, _) -> {
+        FileSystem.deleteDirectory(dummyFileName, (_, error) -> {
             if (Assert.isOfType(error, FsException)) {
                 Assert.equals(dummyFileName, (cast error : FsException).path);
                 Assert.equals(IoErrorType.FileNotFound, (cast error : FsException).type);

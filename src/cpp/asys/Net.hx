@@ -1,7 +1,7 @@
 package cpp.asys;
 
 import haxe.io.BytesData;
-import asys.native.system.AsysError;
+import cpp.asys.AsysError;
 
 extern class Net
 {

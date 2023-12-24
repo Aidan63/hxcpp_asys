@@ -1,6 +1,6 @@
 package cpp.asys;
 
-import asys.native.system.AsysError;
+import cpp.asys.AsysError;
 
 @:native('::hx::asys::filesystem::FileAccessMode')
 private extern class FileAccessMode {

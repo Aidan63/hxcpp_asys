@@ -1,4 +1,6 @@
-package asys.native.system;
+package cpp.asys;
+
+import asys.native.IoErrorType;
 
 abstract AsysError(cpp.EnumBase) {
     @:to public function toIoErrorType() {

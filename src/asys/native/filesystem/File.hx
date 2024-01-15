@@ -57,15 +57,11 @@ private enum QueuedOperation {
 class File {
 	final native : cpp.asys.File;
 
-	final queue : Array<QueuedOperation>;
-
 	public final path : FilePath;
 
 	function new(native:cpp.asys.File) {
 		this.native = native;
 		this.path   = native.path;
-
-		queue = [];
 	}
 
 	/**
@@ -110,11 +106,13 @@ class File {
 			return;
 		}
 
-		queue.push(QueuedOperation.Write(new WriteRequest(offset, actualLength, position, buffer, callback)));
-
-		if (queue.length == 1) {
-			consumeQueue();
-		}
+		native.write(
+			position,
+			buffer.getData(),
+			offset,
+			actualLength,
+			callback.success,
+			err -> callback.fail(new FsException(err, path)));
 	}
 
 	/**
@@ -199,69 +197,14 @@ class File {
 	}
 
 	public function flush(callback:Callback<NoData>):Void {
-		queue.push(QueuedOperation.Flush(callback));
-
-		if (queue.length == 1) {
-			consumeQueue();
-		}
+		native.flush(
+			() -> callback.success(null),
+			err -> callback.fail(new FsException(err, path)));
 	}
 
     public function close(callback:Callback<NoData>):Void {
 		native.close(
 			() -> callback.success(null),
 			err -> callback.fail(new FsException(err, path)));
-	}
-
-	function consumeQueue() {
-		if (queue.length == 0) {
-			return;
-		}
-
-		switch queue[0] {
-			case Write(request):
-				doWrite(0, request);
-			case Flush(callback):
-				native.flush(
-					() -> {
-						queue.shift();
-
-						callback.success(null);
-					},
-					err -> {
-						callback.fail(new FsException(err, path));
-
-						callback.success(null);
-					});
-		}
-	}
-
-	function doWrite(progress:Int, request:WriteRequest) {
-		if (progress >= request.bytesLength) {
-			queue.shift();
-
-			consumeQueue();
-
-			request.callback.success(progress);
-		} else {
-			final batchSize      = (cast Math.min(65535, request.bytesLength - progress) : Int);
-			final newFilePos     = request.filePos + progress;
-			final newBytesOffset = request.bytesOffset + progress;
-
-			native.write(
-				newFilePos,
-				request.bytes.getData(),
-				newBytesOffset,
-				batchSize,
-				count -> {
-					doWrite(progress + count, request);
-				},
-				err -> {
-					queue.shift();
-
-					consumeQueue();
-	
-					request.callback.fail(new FsException(err, path));
-				});
-		}
 	}
 }

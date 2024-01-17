@@ -1,3 +1,4 @@
+import net.DnsTests;
 import filesystem.TestFile;
 import filesystem.TestFilePath;
 import filesystem.TestFileOpenRead;
@@ -42,6 +43,8 @@ import utest.ui.Report;
 
 function main() {
     final runner = new Runner();
+    
+    // Fs
     runner.addCase(new TestFileOpenRead());
     runner.addCase(new TestFileOpenReadWrite());
     runner.addCase(new TestFileOpenAppend());
@@ -81,6 +84,9 @@ function main() {
     runner.addCase(new TestFileSystemResize());
     runner.addCase(new TestFileSystemSetTimes());
     runner.addCase(new TestFileSystemRealPath());
+
+    // Net
+    runner.addCase(new DnsTests());
     
     Report.create(runner);
     

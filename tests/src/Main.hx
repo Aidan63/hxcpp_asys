@@ -1,3 +1,4 @@
+import net.IpTests;
 import net.DnsTests;
 import filesystem.TestFile;
 import filesystem.TestFilePath;
@@ -87,7 +88,8 @@ function main() {
 
     // Net
     runner.addCase(new DnsTests());
-    
+    runner.addCase(new IpTests());
+     
     Report.create(runner);
     
     runner.run();

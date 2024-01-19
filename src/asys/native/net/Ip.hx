@@ -1,5 +1,6 @@
 package asys.native.net;
 
+import haxe.exceptions.ArgumentException;
 import haxe.Exception;
 import haxe.io.Bytes;
 
@@ -31,6 +32,8 @@ class IpTools {
 	**/
 	static public function toString(ip:Ip):String {
 		return switch ip {
+			case null:
+				throw new ArgumentException("ip", "argument was null");
 			case Ipv4(raw):
 				cpp.asys.Net.ipName(raw);
 			case Ipv6(raw):
@@ -46,6 +49,8 @@ class IpTools {
 	**/
 	static public function toFullString(ip:Ip):String {
 		return switch ip {
+			case null:
+				throw new ArgumentException("ip", "argument was null");
 			case Ipv4(raw):
 				cpp.asys.Net.ipName(raw);
 			case Ipv6(raw):
@@ -58,6 +63,10 @@ class IpTools {
 		Throws an exception if provided string does not represent a valid IP address.
 	**/
 	static public function parseIp(ip:String):Ip {
+		if (ip == null) {
+			throw new ArgumentException("ip", "argument was null");
+		}
+
 		return switch cpp.asys.Net.parse(ip) {
 			case null:
 				throw new Exception('Unable to parse address');
@@ -77,6 +86,10 @@ class IpTools {
 		Check if `str` contains a valid IPv6 or IPv4 address.
 	**/
 	static public function isIp(str:String):Bool {
+		if (str == null) {
+			throw new ArgumentException("str", "argument was null");
+		}
+
 		return cpp.asys.Net.parse(str) != null;
 	}
 
@@ -84,6 +97,10 @@ class IpTools {
 		Check if `str` contains a valid IPv4 address.
 	**/
 	static public function isIpv4(str:String):Bool {
+		if (str == null) {
+			throw new ArgumentException("str", "argument was null");
+		}
+
 		return switch cpp.asys.Net.parse(str) {
 			case null:
 				false;
@@ -96,6 +113,10 @@ class IpTools {
 		Check if `str` contains a valid IPv6 address.
 	**/
 	static public function isIpv6(str:String):Bool {
+		if (str == null) {
+			throw new ArgumentException("str", "argument was null");
+		}
+
 		return switch cpp.asys.Net.parse(str) {
 			case null:
 				false;
@@ -108,6 +129,10 @@ class IpTools {
 		Convert any IP address to IPv6 format.
 	**/
 	static public function toIpv6(ip:Ip):Ip {
+		if (ip == null) {
+			throw new ArgumentException("ip", "argument was null");
+		}
+
 		return switch ip {
 			case Ipv4(_):
 				final name = ip.toFullString();
@@ -127,6 +152,14 @@ class IpTools {
 		Check if `a` and `b` contain the same IP address.
 	**/
 	static public function equals(a:Ip, b:Ip):Bool {
+		if (a == null) {
+			throw new ArgumentException("a", "argument was null");
+		}
+
+		if (b == null) {
+			throw new ArgumentException("b", "argument was null");
+		}
+
 		return switch a {
 			case Ipv4(v4a):
 				switch b {

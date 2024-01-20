@@ -72,10 +72,21 @@ class IpTests extends Test {
 
     function test_isIp_ipv4() {
         Assert.isTrue(IpTools.isIp("127.0.0.1"));
+        Assert.isTrue(IpTools.isIp("127.255.255.255"));
+        Assert.isFalse(IpTools.isIp("255.255.255*000"));
+        Assert.isFalse(IpTools.isIp("255.255.255.256"));
+        Assert.isFalse(IpTools.isIp("2555.0.0.0"));
+        Assert.isFalse(IpTools.isIp("255"));
     }
 
     function test_isIp_ipv6() {
         Assert.isTrue(IpTools.isIp("::1"));
+        Assert.isFalse(IpTools.isIp(":::1"));
+        Assert.isFalse(IpTools.isIp("abcde::1"));
+        Assert.isFalse(IpTools.isIp("fe80:0:0:0:2acf:daff:fedd:342a:5678"));
+        Assert.isFalse(IpTools.isIp("fe80:0:0:0:2acf:daff:abcd:1.2.3.4"));
+        Assert.isFalse(IpTools.isIp("fe80:0:0:2acf:daff:1.2.3.4.5"));
+        Assert.isFalse(IpTools.isIp("ffff:ffff:ffff:ffff:ffff:ffff:255.255.255.255.255"));
     }
 
     function test_isIp_full_ipv6() {

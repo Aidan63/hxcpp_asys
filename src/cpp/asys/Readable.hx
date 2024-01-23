@@ -1,13 +1,12 @@
 package cpp.asys;
 
+import cpp.asys.AsysError;
 import haxe.NoData;
-import asys.native.IoException;
-import haxe.Exception;
 import haxe.Callback;
-import asys.native.system.AsysError;
 import haxe.io.Bytes;
-import asys.native.IReadable;
 import haxe.io.BytesData;
+import asys.native.IReadable;
+import asys.native.IoException;
 
 @:native('::hx::asys::Readable')
 extern class Readable {
@@ -22,7 +21,7 @@ class ReadableWrapper implements IReadable {
         readable = _readable;
     }
 
-    public function read(buffer:Bytes, offset:Int, length:Int, callback:Callback<Exception, Int>)
+    public function read(buffer:Bytes, offset:Int, length:Int, callback:Callback<Int>)
     {
         readable.read(
             buffer.getData(),
@@ -32,7 +31,7 @@ class ReadableWrapper implements IReadable {
             err -> callback.fail(new IoException(err.toIoErrorType())));
     }
 
-    public function close(callback:Callback<Exception, NoData>)
+    public function close(callback:Callback<NoData>)
     {
         readable.close(
             () -> callback.success(null),

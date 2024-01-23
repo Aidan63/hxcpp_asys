@@ -1,7 +1,5 @@
 package cpp.asys;
 
-import asys.native.system.AsysError;
-
 @:native('::hx::asys::net::Server')
 extern class Server {
     @:native('::hx::asys::net::Server_obj::open_ipv4')

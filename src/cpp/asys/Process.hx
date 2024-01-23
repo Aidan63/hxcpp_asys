@@ -1,7 +1,5 @@
 package cpp.asys;
 
-import asys.native.system.AsysError;
-
 @:native('::hx::asys::system::Process')
 extern class Process {
     @:native('::hx::asys::system::Process_obj::open')

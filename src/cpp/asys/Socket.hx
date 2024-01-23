@@ -1,7 +1,6 @@
 package cpp.asys;
 
 import haxe.io.BytesData;
-import asys.native.system.AsysError;
 
 @:native('::hx::asys::net::Socket')
 extern class Socket {

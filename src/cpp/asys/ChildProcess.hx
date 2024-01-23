@@ -1,7 +1,5 @@
 package cpp.asys;
 
-import asys.native.system.AsysError;
-
 @:native('::hx::asys::system::ChildProcess')
 extern class ChildProcess extends Process {
     final stdio_in : Writable;

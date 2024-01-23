@@ -1,13 +1,12 @@
 package cpp.asys;
 
 import haxe.NoData;
-import asys.native.IoException;
-import haxe.Exception;
 import haxe.Callback;
-import asys.native.system.AsysError;
 import haxe.io.Bytes;
-import asys.native.IWritable;
 import haxe.io.BytesData;
+import asys.native.IWritable;
+import asys.native.IoException;
+import cpp.asys.AsysError;
 
 @:native('::hx::asys::Writable')
 extern class Writable {
@@ -23,7 +22,7 @@ class WritableWrapper implements IWritable {
         writable = _writable;
     }
 
-    public function write(buffer:Bytes, offset:Int, length:Int, callback:Callback<Exception, Int>)
+    public function write(buffer:Bytes, offset:Int, length:Int, callback:Callback<Int>)
     {
         writable.write(
             buffer.getData(),
@@ -33,14 +32,14 @@ class WritableWrapper implements IWritable {
             err -> callback.fail(new IoException(err.toIoErrorType())));
     }
 
-    public function flush(callback:Callback<Exception, NoData>)
+    public function flush(callback:Callback<NoData>)
     {
         writable.flush(
             () -> callback.success(null),
             err -> callback.fail(new IoException(err.toIoErrorType())));
     }
 
-    public function close(callback:Callback<Exception, NoData>)
+    public function close(callback:Callback<NoData>)
     {
         writable.close(
             () -> callback.success(null),

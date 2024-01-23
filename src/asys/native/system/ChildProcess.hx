@@ -4,7 +4,7 @@ import haxe.ds.ReadOnlyArray;
 import cpp.asys.Writable.WritableWrapper;
 import cpp.asys.Readable.ReadableWrapper;
 import haxe.NoData;
-import asys.native.net.Callback;
+import haxe.Callback;
 
 /**
 	Additional API for child processes spawned by the current process.
@@ -46,7 +46,7 @@ class ChildProcess extends Process {
 	public var stderr(get,never):IReadable;
 	function get_stderr():IReadable return stderrReader;
 
-	override function sendSignal(signal:Signal, callback:asys.native.filesystem.Callback<NoData>) {
+	override function sendSignal(signal:Signal, callback:Callback<NoData>) {
 		native.sendSignal(
 			cast signal,
 			() -> callback.success(null),

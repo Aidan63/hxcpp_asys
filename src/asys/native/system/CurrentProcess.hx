@@ -4,6 +4,7 @@ import haxe.ds.ReadOnlyArray;
 import cpp.asys.Writable.WritableWrapper;
 import cpp.asys.Readable.ReadableWrapper;
 import haxe.NoData;
+import haxe.Callback;
 
 /**
 	Additional API for the current process.
@@ -48,7 +49,7 @@ class CurrentProcess extends Process {
 		native.setSignalAction(cast signal, cast action);
 	}
 
-	override function sendSignal(signal:Signal, callback:asys.native.filesystem.Callback<NoData>) {
+	override function sendSignal(signal:Signal, callback:Callback<NoData>) {
 		native.sendSignal(
 			cast signal,
 			() -> callback.success(null),

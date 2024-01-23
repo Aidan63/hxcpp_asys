@@ -1,6 +1,6 @@
 package asys.native.net;
 
-import cpp.asys.SocketAddressTools.makeSocketAddress;
+import cpp.asys.SocketAddressTools;
 import haxe.Exception;
 import asys.native.net.Ip.IpTools;
 import sys.thread.Thread;

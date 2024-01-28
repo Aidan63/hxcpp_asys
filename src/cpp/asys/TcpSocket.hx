@@ -2,20 +2,20 @@ package cpp.asys;
 
 import haxe.io.BytesData;
 
-@:native('::hx::asys::net::Socket')
-extern class Socket {
-    final name : Null<cpp.EnumBase>;
+@:native('::hx::asys::net::TcpSocket')
+extern class TcpSocket {
+    final localAddress : { host : String, port : Int };
 
-    final peer : Null<cpp.EnumBase>;
+    final remoteAddress : { host : String, port : Int };
 
-    @:native('::hx::asys::net::Socket_obj::connect_ipv4')
-    static function connect_ipv4(ctx : Context, host : String, port : Int, options : Dynamic, onSuccess : Socket->Void, onFailure : AsysError->Void) : Void;
+    @:native('::hx::asys::net::TcpSocket_obj::connect_ipv4')
+    static function connect_ipv4(ctx : Context, host : String, port : Int, options : Dynamic, onSuccess : TcpSocket->Void, onFailure : AsysError->Void) : Void;
 
-    @:native('::hx::asys::net::Socket_obj::connect_ipv6')
-    static function connect_ipv6(ctx : Context, host : String, port : Int, options : Dynamic, onSuccess : Socket->Void, onFailure : AsysError->Void) : Void;
+    @:native('::hx::asys::net::TcpSocket_obj::connect_ipv6')
+    static function connect_ipv6(ctx : Context, host : String, port : Int, options : Dynamic, onSuccess : TcpSocket->Void, onFailure : AsysError->Void) : Void;
 
-    @:native('::hx::asys::net::Socket_obj::connect_ipc')
-    static function connect_ipc(ctx : Context, host : String, options : Dynamic, onSuccess : Socket->Void, onFailure : AsysError->Void) : Void;
+    // @:native('::hx::asys::net::TcpSocket_obj::connect_ipc')
+    // static function connect_ipc(ctx : Context, host : String, options : Dynamic, onSuccess : Socket->Void, onFailure : AsysError->Void) : Void;
 
     function write(input : BytesData, offset : Int, length : Int, cbSuccess : Void->Void, cbFailure : AsysError->Void) : Void;
 

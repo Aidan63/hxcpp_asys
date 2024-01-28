@@ -11,14 +11,14 @@ import haxe.io.Bytes;
 import haxe.exceptions.NotImplementedException;
 
 class Socket implements IDuplex {
-	final native : cpp.asys.Socket;
+	final native : cpp.asys.TcpSocket;
 	final iSocketAddress : Null<SocketAddress>;
 	final iRemoteAddress : Null<SocketAddress>;
 
 	function new(native) {
 		this.native = native;
-		this.iSocketAddress = makeSocketAddress(native.name);
-		this.iRemoteAddress = makeSocketAddress(native.peer);
+		this.iSocketAddress = SocketAddress.Net(native.localAddress.host, native.localAddress.port);
+		this.iRemoteAddress = SocketAddress.Net(native.remoteAddress.host, native.remoteAddress.port);
 	}
 
 	/**
@@ -54,7 +54,7 @@ class Socket implements IDuplex {
 				try {
 					switch IpTools.parseIp(host) {
 						case Ipv4(_):
-							cpp.asys.Socket.connect_ipv4(
+							cpp.asys.TcpSocket.connect_ipv4(
 								@:privateAccess Thread.current().events.context,
 								host,
 								port,
@@ -62,7 +62,7 @@ class Socket implements IDuplex {
 								socket -> callback.success(new Socket(socket)),
 								msg -> callback.fail(new IoException(msg)));
 						case Ipv6(_):
-							cpp.asys.Socket.connect_ipv6(
+							cpp.asys.TcpSocket.connect_ipv6(
 								@:privateAccess Thread.current().events.context,
 								host,
 								port,
@@ -75,12 +75,12 @@ class Socket implements IDuplex {
 					callback.fail(exn);
 				}
 			case Ipc(path):
-				cpp.asys.Socket.connect_ipc(
-					@:privateAccess Thread.current().events.context,
-					path,
-					options,
-					socket -> callback.success(new Socket(socket)),
-					msg -> callback.fail(new IoException(msg)));
+				// cpp.asys.Socket.connect_ipc(
+				// 	@:privateAccess Thread.current().events.context,
+				// 	path,
+				// 	options,
+				// 	socket -> callback.success(new Socket(socket)),
+				// 	msg -> callback.fail(new IoException(msg)));
 		}
 	}
 

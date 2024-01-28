@@ -18,15 +18,15 @@ typedef ServerOptions = SocketOptions & {
 }
 
 class Server {
-    final native : cpp.asys.Server;
+    final native : cpp.asys.TcpServer;
     final address : SocketAddress;
 
     public var localAddress(get,never):SocketAddress;
     function get_localAddress():SocketAddress return address;
 
     function new(native) {
-        this.native = native;
-        this.address = makeSocketAddress(native.name);
+        this.native  = native;
+        this.address = SocketAddress.Net(native.localAddress.host, native.localAddress.port);
     }
 
     public function accept(callback:Callback<Socket>) {
@@ -41,7 +41,7 @@ class Server {
             msg -> callback.fail(new IoException(msg)));
     }
 
-    	/**
+	/**
 		Get the value of a specified socket option.
 	**/
 	public function getOption<T>(option:SocketOptionKind<T>, callback:Callback<T>) {
@@ -94,7 +94,7 @@ class Server {
                 try {
                     switch IpTools.parseIp(host) {
 						case Ipv4(_):
-                            cpp.asys.Server.open_ipv4(
+                            cpp.asys.TcpServer.open_ipv4(
                                 @:privateAccess Thread.current().events.context,
                                 host,
                                 port,
@@ -102,7 +102,7 @@ class Server {
                                 server -> callback.success(new Server(server)),
                                 msg -> callback.fail(new IoException(msg)));
 						case Ipv6(_):
-							cpp.asys.Server.open_ipv6(
+							cpp.asys.TcpServer.open_ipv6(
                                 @:privateAccess Thread.current().events.context,
                                 host,
                                 port,
@@ -114,12 +114,12 @@ class Server {
                     callback.fail(exn);
                 }
             case Ipc(path):
-                cpp.asys.Server.open_ipc(
-                    @:privateAccess Thread.current().events.context,
-                    path,
-                    options,
-                    server -> callback.success(new Server(server)),
-                    msg -> callback.fail(new IoException(msg)));
+                // cpp.asys.Server.open_ipc(
+                //     @:privateAccess Thread.current().events.context,
+                //     path,
+                //     options,
+                //     server -> callback.success(new Server(server)),
+                //     msg -> callback.fail(new IoException(msg)));
         }
     }
 }

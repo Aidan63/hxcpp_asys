@@ -1,5 +1,7 @@
+import net.SocketTests;
 import net.IpTests;
 import net.DnsTests;
+import system.TestProcessOpen;
 import filesystem.TestFile;
 import filesystem.TestFilePath;
 import filesystem.TestFileOpenRead;
@@ -89,8 +91,91 @@ function main() {
     // Net
     runner.addCase(new DnsTests());
     runner.addCase(new IpTests());
+    runner.addCase(new SocketTests());
+
+    // System
+    // runner.addCase(new TestProcessOpen());
      
     Report.create(runner);
     
     runner.run();
+
+    // Socket.connect(Net("127.0.0.1", 7777), null, (socket, error) -> {
+    //     switch error {
+    //         case null:
+    //             final buffer = Bytes.ofString("Hello, Server");
+
+    //             trace(socket.localAddress);
+    //             trace(socket.remoteAddress);
+
+    //             socket.write(buffer, 0, buffer.length, (count, error) -> {
+    //                 switch error {
+    //                     case null:
+    //                         trace('sent $count');
+    //                     case exn:
+    //                         trace(exn);
+    //                 }
+
+    //                 socket.close((_, error) -> {
+    //                     switch error {
+    //                         case null:
+    //                             trace('client closed');
+    //                         case exn:
+    //                             trace(exn);
+    //                     }
+    //                 });
+    //             });
+    //         case exn:
+    //             trace(exn);
+    //     }
+    // });
+
+    // Server.open(Net("0.0.0.0", 7777), null, (server, error) -> {
+    //     switch error {
+    //         case null:
+    //             trace(server.localAddress);
+
+    //             server.accept((client, error) -> {
+    //                 switch error {
+    //                     case null:
+    //                         trace('client connected');
+    //                         trace(client.localAddress);
+    //                         trace(client.remoteAddress);
+
+    //                         final buffer = Bytes.ofString("Hello, Server");
+
+    //                         client.write(buffer, 0, buffer.length, (count, error) -> {
+    //                             switch error {
+    //                                 case null:
+    //                                     trace('sent $count');
+    //                                 case exn:
+    //                                     trace(exn);
+    //                             }
+
+    //                             client.close((_, error) -> {
+    //                                 switch error {
+    //                                     case null:
+    //                                         trace('client closed');
+
+    //                                         server.close((_, error) -> {
+    //                                             switch error {
+    //                                                 case null:
+    //                                                     trace('server closed');         
+    //                                                 case exn:
+    //                                                     trace(exn);
+    //                                             }
+    //                                         });
+    //                                     case exn:
+    //                                         trace(exn);
+    //                                 }
+    //                             });
+    //                         });
+    //                     case exn:
+    //                         trace(exn);
+    //                 }
+    //             });
+    //         case exn:
+    //             trace(exn);
+    //     }
+    // });
 }

@@ -1,5 +1,6 @@
 package net;
 
+import sys.thread.Lock;
 import asys.native.IoErrorType;
 import asys.native.IoException;
 import haxe.io.Bytes;
@@ -11,14 +12,18 @@ import utest.Test;
 
 class SocketTests extends Test {
     function test_connection_disconnection(async:Async) {
-        Thread.createWithEventLoop(() -> {
-            final server = new sys.net.Socket();
-            server.bind(new sys.net.Host("127.0.0.1"), 7777);
-            server.listen(1);
+        final lock   = new Lock();
+        final server = new sys.net.Socket();
 
-            final socket = server.accept();
-            socket.close();
-            server.close();
+        Thread.createWithEventLoop(() -> {
+            try {
+                server.bind(new sys.net.Host("127.0.0.1"), 7777);
+                server.listen(1);
+                server.accept().close();
+                server.close();
+            } catch (_) {}
+
+            lock.release();
         });
 
         Socket.connect(Net("127.0.0.1", 7777), {}, (socket, error) -> {
@@ -27,28 +32,37 @@ class SocketTests extends Test {
             if (Assert.notNull(socket)) {
                 socket.close((_, error) -> {
                     Assert.isNull(error);
+                    
+                    lock.wait();
 
                     async.done();
                 });
             } else {
+                server.close();
+
                 async.done();
             }
         });
     }
 
     function test_socket_reading(async:Async) {
-        final text = "Hello, client";
+        final text   = "Hello, client";
+        final lock   = new Lock();
+        final server = new sys.net.Socket();
 
         Thread.create(() -> {
-            final server = new sys.net.Socket();
-            server.bind(new sys.net.Host("127.0.0.1"), 7777);
-            server.listen(1);
+            try {
+                server.bind(new sys.net.Host("127.0.0.1"), 7777);
+                server.listen(1);
 
-            final socket = server.accept();
-            socket.write(text);
-            socket.close();
+                final socket = server.accept();
+                socket.write(text);
+                socket.close();
 
-            server.close();
+                server.close();
+            } catch (_) {}
+
+            lock.release();
         });
 
         Socket.connect(Net("127.0.0.1", 7777), {}, (socket, error) -> {
@@ -66,29 +80,38 @@ class SocketTests extends Test {
 
                     socket.close((_, error) -> {
                         Assert.isNull(error);
+
+                        lock.release();
     
                         async.done();
                     });
                 });
             } else {
+                server.close();
+
                 async.done();
             }
         });
     }
 
     function test_socket_write(async:Async) {
-        final text = "Hello, server";
+        final text   = "Hello, server";
+        final lock   = new Lock();
+        final server = new sys.net.Socket();
 
         Thread.create(() -> {
-            final server = new sys.net.Socket();
-            server.bind(new sys.net.Host("127.0.0.1"), 7777);
-            server.listen(1);
+            try {
+                server.bind(new sys.net.Host("127.0.0.1"), 7777);
+                server.listen(1);
 
-            final socket = server.accept();
-            final _      = socket.read();
+                final socket = server.accept();
+                final _      = socket.read();
 
-            socket.close();
-            server.close();
+                socket.close();
+                server.close();
+            } catch (_) {}
+
+            lock.release();
         });
 
         Socket.connect(Net("127.0.0.1", 7777), {}, (socket, error) -> {
@@ -104,86 +127,113 @@ class SocketTests extends Test {
 
                     socket.close((_, error) -> {
                         Assert.isNull(error);
+
+                        lock.wait();
     
                         async.done();
                     });
                 });
             } else {
+                server.close();
+
                 async.done();
             }
         });
     }
 
-    // function test_socket_read_disconnection(async:Async) {
-    //     Thread.create(() -> {
-    //         final server = new sys.net.Socket();
-    //         server.bind(new sys.net.Host("127.0.0.1"), 7777);
-    //         server.listen(1);
+    function test_socket_read_disconnection(async:Async) {
+        final server = new sys.net.Socket();
+        final lock   = new Lock();
 
-    //         final socket = server.accept();
+        Thread.create(() -> {
+            try {
+                server.bind(new sys.net.Host("127.0.0.1"), 7777);
+                server.listen(1);
 
-    //         socket.close();
-    //         server.close();
-    //     });
+                final socket = server.accept();
 
-    //     Socket.connect(Net("127.0.0.1", 7777), {}, (socket, error) -> {
-    //         Assert.isNull(error);
+                socket.close();
+                server.close();
+            } catch (_) {}
 
-    //         if (Assert.notNull(socket)) {
-    //             final buffer = Bytes.alloc(1024);
+            lock.release();
+        });
 
-    //             socket.read(buffer, 0, buffer.length, (count, error) -> {
-    //                 if (Assert.isOfType(error, IoException)) {
-    //                     Assert.equals(IoErrorType.CustomError("EOF"), (cast error : IoException).type);
-    //                 }
+        Socket.connect(Net("127.0.0.1", 7777), {}, (socket, error) -> {
+            Assert.isNull(error);
 
-    //                 socket.close((_, error) -> {
-    //                     Assert.isNull(error);
+            if (Assert.notNull(socket)) {
+                final buffer = Bytes.alloc(1024);
+
+                socket.read(buffer, 0, buffer.length, (count, error) -> {
+                    if (Assert.isOfType(error, IoException)) {
+                        Assert.equals(IoErrorType.CustomError("EOF"), (cast error : IoException).type);
+                    }
+
+                    socket.close((_, error) -> {
+                        Assert.isNull(error);
+
+                        lock.wait();
     
-    //                     async.done();
-    //                 });
-    //             });
-    //         } else {
-    //             async.done();
-    //         }
-    //     });
-    // }
+                        async.done();
+                    });
+                });
+            } else {
+                server.close();
 
-    // function test_socket_write_disconnection(async:Async) {
-    //     Thread.create(() -> {
-    //         final server = new sys.net.Socket();
-    //         server.bind(new sys.net.Host("127.0.0.1"), 7777);
-    //         server.listen(1);
+                async.done();
+            }
+        });
+    }
 
-    //         final socket = server.accept();
+    function test_socket_write_disconnection(async:Async) {
+        final server = new sys.net.Socket();
+        final lock   = new Lock();
+        final closed = new Lock();
 
-    //         socket.close();
-    //         server.close();
-    //     });
+        Thread.create(() -> {
+            try {
+                server.bind(new sys.net.Host("127.0.0.1"), 7777);
+                server.listen(1);
+                server.accept().close();
 
-    //     Socket.connect(Net("127.0.0.1", 7777), {}, (socket, error) -> {
-    //         Assert.isNull(error);
+                closed.release();
 
-    //         if (Assert.notNull(socket)) {
-    //             final text = "Hello, server";
-    //             final buffer = Bytes.ofString(text);
+                server.close();
+            } catch (_) {}
 
-    //             socket.write(buffer, 0, buffer.length, (count, error) -> {
-    //                 if (Assert.isOfType(error, IoException)) {
-    //                     Assert.equals(IoErrorType.CustomError("EOF"), (cast error : IoException).type);
-    //                 }
+            lock.release();
+        });
 
-    //                 socket.close((_, error) -> {
-    //                     Assert.isNull(error);
+        Socket.connect(Net("127.0.0.1", 7777), {}, (socket, error) -> {
+            Assert.isNull(error);
+
+            if (Assert.notNull(socket)) {
+                final text   = "Hello, server";
+                final buffer = Bytes.ofString(text);
+
+                closed.wait();
+
+                socket.write(buffer, 0, buffer.length, (count, error) -> {
+                    if (Assert.isOfType(error, IoException)) {
+                        Assert.equals(IoErrorType.CustomError("EOF"), (cast error : IoException).type);
+                    }
+
+                    socket.close((_, error) -> {
+                        Assert.isNull(error);
+
+                        lock.wait();
     
-    //                     async.done();
-    //                 });
-    //             });
-    //         } else {
-    //             async.done();
-    //         }
-    //     });
-    // }
+                        async.done();
+                    });
+                });
+            } else {
+                server.close();
+
+                async.done();
+            }
+        });
+    }
 
     function test_socket_connect_timeout(async:Async) {
         Socket.connect(Net("127.0.0.1", 7777), {}, (socket, error) -> {

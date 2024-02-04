@@ -11,13 +11,23 @@ import utest.Async;
 import utest.Test;
 
 class SocketTests extends Test {
+    final address : String;
+    final port : Int;
+
+    public function new() {
+        super();
+
+        address = "127.0.0.1";
+        port    = 7000;
+    }
+
     function test_connection_disconnection(async:Async) {
         final lock   = new Lock();
         final server = new sys.net.Socket();
 
         Thread.createWithEventLoop(() -> {
             try {
-                server.bind(new sys.net.Host("127.0.0.1"), 7777);
+                server.bind(new sys.net.Host(address), port);
                 server.listen(1);
                 server.accept().close();
                 server.close();
@@ -26,7 +36,7 @@ class SocketTests extends Test {
             lock.release();
         });
 
-        Socket.connect(Net("127.0.0.1", 7777), {}, (socket, error) -> {
+        Socket.connect(Net(address, port), {}, (socket, error) -> {
             Assert.isNull(error);
 
             if (Assert.notNull(socket)) {
@@ -52,7 +62,7 @@ class SocketTests extends Test {
 
         Thread.create(() -> {
             try {
-                server.bind(new sys.net.Host("127.0.0.1"), 7777);
+                server.bind(new sys.net.Host(address), port);
                 server.listen(1);
 
                 final socket = server.accept();
@@ -65,7 +75,7 @@ class SocketTests extends Test {
             lock.release();
         });
 
-        Socket.connect(Net("127.0.0.1", 7777), {}, (socket, error) -> {
+        Socket.connect(Net(address, port), {}, (socket, error) -> {
             Assert.isNull(error);
 
             if (Assert.notNull(socket)) {
@@ -101,7 +111,7 @@ class SocketTests extends Test {
 
         Thread.create(() -> {
             try {
-                server.bind(new sys.net.Host("127.0.0.1"), 7777);
+                server.bind(new sys.net.Host(address), port);
                 server.listen(1);
 
                 final socket = server.accept();
@@ -114,7 +124,7 @@ class SocketTests extends Test {
             lock.release();
         });
 
-        Socket.connect(Net("127.0.0.1", 7777), {}, (socket, error) -> {
+        Socket.connect(Net(address, port), {}, (socket, error) -> {
             Assert.isNull(error);
 
             if (Assert.notNull(socket)) {
@@ -147,7 +157,7 @@ class SocketTests extends Test {
 
         Thread.create(() -> {
             try {
-                server.bind(new sys.net.Host("127.0.0.1"), 7777);
+                server.bind(new sys.net.Host(address), port);
                 server.listen(1);
 
                 final socket = server.accept();
@@ -159,7 +169,7 @@ class SocketTests extends Test {
             lock.release();
         });
 
-        Socket.connect(Net("127.0.0.1", 7777), {}, (socket, error) -> {
+        Socket.connect(Net(address, port), {}, (socket, error) -> {
             Assert.isNull(error);
 
             if (Assert.notNull(socket)) {
@@ -193,7 +203,7 @@ class SocketTests extends Test {
 
         Thread.create(() -> {
             try {
-                server.bind(new sys.net.Host("127.0.0.1"), 7777);
+                server.bind(new sys.net.Host(address), port);
                 server.listen(1);
                 server.accept().close();
 
@@ -205,7 +215,7 @@ class SocketTests extends Test {
             lock.release();
         });
 
-        Socket.connect(Net("127.0.0.1", 7777), {}, (socket, error) -> {
+        Socket.connect(Net(address, port), {}, (socket, error) -> {
             Assert.isNull(error);
 
             if (Assert.notNull(socket)) {
@@ -236,7 +246,7 @@ class SocketTests extends Test {
     }
 
     function test_socket_connect_timeout(async:Async) {
-        Socket.connect(Net("127.0.0.1", 7777), {}, (socket, error) -> {
+        Socket.connect(Net(address, port), {}, (socket, error) -> {
             if (Assert.isOfType(error, IoException)) {
                 Assert.equals(IoErrorType.ConnectionRefused, (cast error : IoException).type);
             }

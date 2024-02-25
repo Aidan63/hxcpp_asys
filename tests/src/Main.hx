@@ -58,20 +58,35 @@ function main() {
                 SecureSession.authenticateAsClient(socket, null, (tls, error) -> {
                     switch error {
                         case null:
-                            final message = Bytes.ofString("Hello, Secure Server!");
+                            // final message = haxe.Resource.getBytes("long_ipsum"); // Bytes.ofString("Hello, Secure Server!");
 
-                            tls.write(message, 0, message.length, (count, error) -> {
-                                switch error {
-                                    case null:
-                                        trace('sent data');
+                            // tls.write(message, 0, message.length, (count, error) -> {
+                            //     switch error {
+                            //         case null:
+                            //             trace('wrote message');
+                            //         case exn:
+                            //             throw exn;
+                            //     }
+                            // });
 
-                                        socket.close((_, error) -> {
-                                            trace('closed socket');
-                                        });
-                                    case exn:
-                                        throw exn;
-                                }
+                            final output = Bytes.alloc(1024);
+
+                            socket.read(output, 0, output.length, (count, error) -> {
+                                trace(count, error);
                             });
+
+                            // tls.read(output, 0, output.length, (count, error) -> {
+                            //     switch error {
+                            //         case null:
+                            //             trace(output.toString());
+                            //         case exn:
+                            //             trace(exn);
+                            //     }
+
+                            //     socket.close((_, error) -> {
+                            //         trace('closed socket');
+                            //     });
+                            // });
                         case exn:
                             throw exn;
                     }

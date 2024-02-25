@@ -122,7 +122,28 @@ class SecureSession implements IDuplex {
 		position in `buffer`, then invoke `callback` with the amount of bytes read.
 	**/
 	public function read(buffer:Bytes, offset:Int, length:Int, callback:Callback<Int>) {
-        //
+        final temp = Bytes.alloc(1024);
+
+        socket.read(temp, 0, temp.length, (count, error) -> {
+            switch error {
+                case null:
+                    tls.ptr.decode(
+                        temp.getData(),
+                        0,
+                        count,
+                        (bytes) -> {
+                            final size = Std.int(Math.min(length, bytes.length));
+                            final src  = Bytes.ofData(bytes);
+
+                            buffer.blit(offset, src, 0, size);
+
+                            callback.success(size);
+                        },
+                        error -> callback.fail(new Exception(error)));
+                case exn:
+                    callback.fail(exn);
+            }
+        });
     }
 
     /**

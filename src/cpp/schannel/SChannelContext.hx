@@ -20,4 +20,5 @@ extern class SChannelContext {
     function startHandshake(cbSuccess:BytesData->Void, cbFailure:String->Void):Void;
     function handshake(input:BytesData, cbSuccess:(result:HandshakeResult, data:Null<BytesData>)->Void, cbFailure:String->Void):Void;
     function encode(input:BytesData, offset:Int, length:Int, cbSuccess:BytesData->Void, cbFailure:String->Void):Void;
+    function decode(input:BytesData, offset:Int, length:Int, cbSuccess:BytesData->Void, cbFailure:String->Void):Void;
 }

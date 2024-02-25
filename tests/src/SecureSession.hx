@@ -1,3 +1,4 @@
+import cpp.Finalizable;
 import haxe.io.BytesData;
 import haxe.NoData;
 import asys.native.IDuplex;
@@ -83,7 +84,7 @@ typedef SecureSessionSettings = {
     var hostname:String;
 }
 
-class SecureSession implements IDuplex {
+class SecureSession extends Finalizable implements IDuplex {
     final tls:Pointer<SChannelContext>;
     final socket:Socket;
 
@@ -92,6 +93,8 @@ class SecureSession implements IDuplex {
     var remoteCertificate (get, never) : Certificate;
 
     function new(_tls, _socket) {
+        super();
+
         tls    = _tls;
         socket = _socket;
     }
@@ -131,7 +134,7 @@ class SecureSession implements IDuplex {
                         temp.getData(),
                         0,
                         count,
-                        (bytes) -> {
+                        bytes -> {
                             final size = Std.int(Math.min(length, bytes.length));
                             final src  = Bytes.ofData(bytes);
 
@@ -150,14 +153,27 @@ class SecureSession implements IDuplex {
 		Force all buffered data to be committed.
 	**/
 	public function flush(callback:Callback<NoData>) {
-        //
+        socket.flush(callback);
     }
 
 	/**
 		Close this stream.
 	**/
 	public function close(callback:Callback<NoData>) {
-        //
+        tls.ptr.close(
+            bytes -> socket.write(Bytes.ofData(bytes), 0, bytes.length, (_, error) -> {
+                switch error {
+                    case null:
+                        socket.close(callback);
+                    case exn:
+                        callback.fail(exn);
+                }
+            }),
+            error -> callback.fail(new Exception(error)));
+    }
+
+    override function finalize() {
+        tls.destroy();
     }
 
     public static function authenticateAsClient(socket:Socket, settings : SecureSessionSettings = null, callback:Callback<SecureSession>) {

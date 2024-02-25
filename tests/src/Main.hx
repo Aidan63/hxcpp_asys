@@ -1,3 +1,5 @@
+import sys.thread.Thread;
+import asys.native.net.Dns;
 import cpp.Pointer;
 import haxe.Exception;
 import haxe.Callback;
@@ -58,35 +60,25 @@ function main() {
                 SecureSession.authenticateAsClient(socket, null, (tls, error) -> {
                     switch error {
                         case null:
-                            // final message = haxe.Resource.getBytes("long_ipsum"); // Bytes.ofString("Hello, Secure Server!");
+                            final message = Bytes.alloc(1024);
 
-                            // tls.write(message, 0, message.length, (count, error) -> {
-                            //     switch error {
-                            //         case null:
-                            //             trace('wrote message');
-                            //         case exn:
-                            //             throw exn;
-                            //     }
-                            // });
+                            tls.read(message, 0, message.length, (count, error) -> {
+                                switch error {
+                                    case null:
+                                        trace(message.sub(0, count).toString());
+                                    case exn:
+                                        throw exn;
+                                }
 
-                            final output = Bytes.alloc(1024);
-
-                            socket.read(output, 0, output.length, (count, error) -> {
-                                trace(count, error);
+                                tls.close((_, error) -> {
+                                    switch error {
+                                        case null:
+                                            trace('closed');
+                                        case exn:
+                                            throw exn;
+                                    }
+                                });
                             });
-
-                            // tls.read(output, 0, output.length, (count, error) -> {
-                            //     switch error {
-                            //         case null:
-                            //             trace(output.toString());
-                            //         case exn:
-                            //             trace(exn);
-                            //     }
-
-                            //     socket.close((_, error) -> {
-                            //         trace('closed socket');
-                            //     });
-                            // });
                         case exn:
                             throw exn;
                     }

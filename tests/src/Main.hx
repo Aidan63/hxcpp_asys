@@ -1,10 +1,11 @@
+import asys.native.net.SecureSocket;
+import cpp.asys.SecureSession;
 import sys.thread.Thread;
 import asys.native.net.Dns;
 import cpp.Pointer;
 import haxe.Exception;
 import haxe.Callback;
 import haxe.io.Bytes;
-import cpp.schannel.SChannelContext;
 import asys.native.net.Socket;
 import net.IpTests;
 import net.DnsTests;
@@ -54,34 +55,27 @@ import utest.Runner;
 import utest.ui.Report;
 
 function main() {
-    Socket.connect(Net("127.0.0.1", 4443), null, (socket, error) -> {
+    SecureSocket.connect(Net("127.0.0.1", 4443), null, (socket, error) -> {
         switch error {
             case null:
-                SecureSession.authenticateAsClient(socket, null, (tls, error) -> {
+                final message = Bytes.alloc(1024);
+
+                socket.read(message, 0, message.length, (count, error) -> {
                     switch error {
                         case null:
-                            final message = Bytes.alloc(1024);
-
-                            tls.read(message, 0, message.length, (count, error) -> {
-                                switch error {
-                                    case null:
-                                        trace(message.sub(0, count).toString());
-                                    case exn:
-                                        throw exn;
-                                }
-
-                                tls.close((_, error) -> {
-                                    switch error {
-                                        case null:
-                                            trace('closed');
-                                        case exn:
-                                            throw exn;
-                                    }
-                                });
-                            });
+                            trace(message.sub(0, count).toString());
                         case exn:
                             throw exn;
                     }
+
+                    socket.close((_, error) -> {
+                        switch error {
+                            case null:
+                                trace('closed');
+                            case exn:
+                                throw exn;
+                        }
+                    });
                 });
             case exn:
                 throw exn;

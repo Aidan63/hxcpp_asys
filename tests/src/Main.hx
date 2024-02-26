@@ -55,7 +55,7 @@ import utest.Runner;
 import utest.ui.Report;
 
 function main() {
-    SecureSocket.connect(Net("127.0.0.1", 4443), null, (socket, error) -> {
+    SecureSocket.connect(Net("127.0.0.1", 4443), { verifyCert: false }, (socket, error) -> {
         switch error {
             case null:
                 final message = Bytes.alloc(1024);

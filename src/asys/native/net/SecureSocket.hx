@@ -1,5 +1,6 @@
 package asys.native.net;
 
+import sys.ssl.Certificate;
 import haxe.exceptions.NotImplementedException;
 import cpp.asys.SecureSession;
 import haxe.NoData;
@@ -7,7 +8,10 @@ import haxe.io.Bytes;
 import haxe.Exception;
 import haxe.Callback;
 
-typedef SecureSocketOptions = SocketOptions & {}
+typedef SecureSocketOptions = SocketOptions & {
+    @:optional var verifyCert : Bool;
+    @:optional var certificate : Certificate;
+}
 
 class SecureSocket extends Socket {
     final session:SecureSession;
@@ -18,7 +22,7 @@ class SecureSocket extends Socket {
         session = _session;
     }
 
-	static public function connect(address:SocketAddress, options:SecureSocketOptions, callback:Callback<SecureSocket>) {
+	static public function connect(address:SocketAddress, options:SecureSocketOptions = null, callback:Callback<SecureSocket>) {
 		Socket.connect(address, options, (socket, error) -> {
             switch error {
                 case null:
@@ -27,6 +31,7 @@ class SecureSocket extends Socket {
                             SecureSession.authenticateAsClient(
                                 @:privateAccess socket.native,
                                 host,
+                                options,
                                 session -> callback.success(new SecureSocket(socket, session)),
                                 error -> callback.fail(new Exception(error)));
                         case Ipc(_):

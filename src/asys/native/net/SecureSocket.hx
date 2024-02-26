@@ -9,12 +9,12 @@ import haxe.Callback;
 
 typedef SecureSocketOptions = SocketOptions & {}
 
-class SecureSocket implements IDuplex {
-    final socket:Socket;
+class SecureSocket extends Socket {
     final session:SecureSession;
 
     function new(_socket:Socket, _session:SecureSession) {
-        socket  = _socket;
+        super(_socket.native);
+
         session = _session;
     }
 
@@ -38,10 +38,10 @@ class SecureSocket implements IDuplex {
         });
 	}
 
-	public function read(buffer:Bytes, offset:Int, length:Int, callback:Callback<Int, Exception>) {
+	override function read(buffer:Bytes, offset:Int, length:Int, callback:Callback<Int, Exception>) {
         final temp = Bytes.alloc(1024);
 
-        socket.read(
+        super.read(
             temp,
             0,
             temp.length,
@@ -67,30 +67,23 @@ class SecureSocket implements IDuplex {
             });
     }
 
-    public function write(buffer:Bytes, offset:Int, length:Int, callback:Callback<Int, Exception>) {
+    override function write(buffer:Bytes, offset:Int, length:Int, callback:Callback<Int, Exception>) {
         session.encode(
             buffer.getData(),
             offset,
             length,
-            encoded -> socket.write(Bytes.ofData(encoded), 0, encoded.length, callback),
+            encoded -> native.write(encoded, 0, encoded.length, () -> callback.success(length), error -> callback.fail(new IoException(error))),
             error -> callback.fail(new Exception(error)));
     }
 
-    public function close(callback:Callback<NoData, Exception>) {
+    override function close(callback:Callback<NoData, Exception>) {
         session.close(
-            bytes -> socket.write(Bytes.ofData(bytes), 0, bytes.length, (_, error) -> {
-                switch error {
-                    case null:
-                        socket.close(callback);
-                    case exn:
-                        callback.fail(exn);
-                }
-            }),
+            bytes -> native.write(
+                bytes,
+                0,
+                bytes.length,
+                () -> native.close(() -> callback.success(null), error -> callback.fail(new IoException(error))),
+                error -> callback.fail(new IoException(error))),
             error -> callback.fail(new Exception(error)));
-    }
-
-    public function flush(callback:Callback<NoData, Exception>)
-    {
-        callback.success(null);
     }
 }

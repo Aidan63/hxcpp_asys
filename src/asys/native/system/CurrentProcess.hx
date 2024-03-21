@@ -136,10 +136,26 @@ class CurrentProcess extends Process {
 		Actions for `Kill` and `Stop` signals cannot be changed.
 	**/
 	public function setSignalAction(signal:Signal, action:SignalAction):Void {
+		if (signal == null) {
+			throw new ArgumentException("signal", "signal was null");
+		}
+
+		if (action == null) {
+			throw new ArgumentException("action", "action was null");
+		}
+
 		native.setSignalAction(cast signal, cast action);
 	}
 
 	override function sendSignal(signal:Signal, callback:Callback<NoData>) {
+		if (signal == null) {
+			throw new ArgumentException("signal", "signal was null");
+		}
+
+		if (callback == null) {
+			throw new ArgumentException("callback", "callback was null");
+		}
+
 		native.sendSignal(
 			cast signal,
 			() -> callback.success(null),

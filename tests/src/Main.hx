@@ -2,8 +2,9 @@ import net.IpTests;
 import net.DnsTests;
 import net.ServerTests;
 import net.SocketTests;
-import system.TestWriteTTY;
+import system.TestCurrentProcessWriteTty;
 import system.TestProcessOpen;
+import system.TestCurrentProcessSignals;
 import filesystem.TestFile;
 import filesystem.TestFilePath;
 import filesystem.TestFileOpenRead;
@@ -98,8 +99,9 @@ function main() {
 
     // System
     // runner.addCase(new TestProcessOpen());
-    runner.addCase(new TestWriteStdout());
-    runner.addCase(new TestWriteStderr());
+    runner.addCase(new TestCurrentProcessWriteStdout());
+    runner.addCase(new TestCurrentProcessWriteStderr());
+    runner.addCase(new TestCurrentProcessSignals());
      
     Report.create(runner);
     

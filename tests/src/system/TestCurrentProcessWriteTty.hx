@@ -8,19 +8,19 @@ import utest.Test;
 import utest.Async;
 import utest.Assert;
 
-class TestWriteStdout extends TestWriteTTY {
+class TestCurrentProcessWriteStdout extends TestCurrentProcessWriteTty {
     public function new() {
         super(Process.current.stdout);
     }
 }
 
-class TestWriteStderr extends TestWriteTTY {
+class TestCurrentProcessWriteStderr extends TestCurrentProcessWriteTty {
     public function new() {
         super(Process.current.stderr);
     }
 }
 
-abstract class TestWriteTTY extends Test {
+abstract class TestCurrentProcessWriteTty extends Test {
     final data : Bytes;
     final writable : IWritable;
 

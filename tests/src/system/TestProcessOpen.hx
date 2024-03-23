@@ -8,7 +8,7 @@ import utest.Test;
 
 class TestProcessOpen extends Test {
     function test_pid(async:Async) {
-        Process.open("cmd.exe", { args: [ "/c", "echo hello" ] }, (proc, error) -> {
+        Process.open(Sys.programPath(), { args: [ Mode.ZeroExit ] }, (proc, error) -> {
             Assert.isNull(error);
 
             if (Assert.notNull(proc)) {
@@ -26,7 +26,7 @@ class TestProcessOpen extends Test {
     }
 
     function test_exit_code(async:Async) {
-        Process.open("cmd.exe", { args: [ "/c", "echo hello" ] }, (proc, error) -> {
+        Process.open(Sys.programPath(), { args: [ Mode.ZeroExit ] }, (proc, error) -> {
             Assert.isNull(error);
 
             if (Assert.notNull(proc)) {
@@ -49,7 +49,7 @@ class TestProcessOpen extends Test {
     function test_non_zero_exit_code(async:Async) {
         final code = 7;
 
-        Process.open("cmd.exe", { args: [ "/c", 'EXIT /B $code' ] }, (proc, error) -> {
+        Process.open(Sys.programPath(), { args: [ Mode.ErrorExit, Std.string(code) ] }, (proc, error) -> {
             Assert.isNull(error);
 
             if (Assert.notNull(proc)) {
@@ -73,7 +73,7 @@ class TestProcessOpen extends Test {
         final srcString = "hello";
         final srcBytes  = Bytes.ofString(srcString);
 
-        Process.open("cmd.exe", { args: [ "/C", 'echo $srcString' ], stdio : [ null, PipeWrite ] }, (proc, error) -> {
+        Process.open(Sys.programPath(), { args: [ Mode.StdoutEcho, srcString ], stdio : [ null, PipeWrite ] }, (proc, error) -> {
             Assert.isNull(error);
 
             if (Assert.notNull(proc)) {
@@ -81,7 +81,9 @@ class TestProcessOpen extends Test {
                 var read = 0;
 
                 proc.stdout.read(buffer, 0, buffer.length, (count, error) -> {
-                    if (error == null) {
+                    if (Assert.isNull(error)) {
+                        Assert.isTrue(count > 0);
+
                         read += count;
                     }
                 });
@@ -96,21 +98,6 @@ class TestProcessOpen extends Test {
     
                             async.done();
                         });
-
-                        // proc.stdout.close((_, error) -> {
-                        //     if (Assert.isNull(error)) {
-                        //         Assert.equals(srcBytes.length, read);
-                        //         Assert.equals(0, buffer.sub(0, read).compare(srcBytes));
-        
-                        //         proc.close((_, error) -> {
-                        //             Assert.isNull(error);
-            
-                        //             async.done();
-                        //         });
-                        //     } else {
-                        //         async.done();
-                        //     }
-                        // });
                     } else {
                         async.done();
                     }

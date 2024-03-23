@@ -82,7 +82,7 @@ class Process {
     }
 
     static function makeStderr(arg:Null<Array<StdioConfig>>) {
-        if (arg == null || arg.length < 3) {
+        if (arg == null || arg.length < 3 || arg[2] == null) {
             return StdioConfig.PipeWrite;
         }
 
@@ -90,7 +90,7 @@ class Process {
     }
 
     static function makeStdout(arg:Null<Array<StdioConfig>>) {
-        if (arg == null || arg.length < 2) {
+        if (arg == null || arg.length < 2 || arg[1] == null) {
             return StdioConfig.PipeWrite;
         }
 
@@ -98,7 +98,7 @@ class Process {
     }
 
     static function makeStdin(arg:Null<Array<StdioConfig>>) {
-        if (arg == null || arg.length < 1) {
+        if (arg == null || arg.length < 1 || arg[0] == null) {
             return StdioConfig.PipeRead;
         }
 

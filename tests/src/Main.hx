@@ -1,3 +1,4 @@
+import asys.native.system.Process;
 import net.IpTests;
 import net.DnsTests;
 import net.ServerTests;
@@ -47,7 +48,7 @@ import filesystem.TestFileSystemDeleteDirectory;
 import utest.Runner;
 import utest.ui.Report;
 
-function main() {
+function test() {
     final runner = new Runner();
     
     // Fs
@@ -98,7 +99,7 @@ function main() {
     runner.addCase(new ServerTests());
 
     // System
-    // runner.addCase(new TestProcessOpen());
+    runner.addCase(new TestProcessOpen());
     runner.addCase(new TestCurrentProcessWriteStdout());
     runner.addCase(new TestCurrentProcessWriteStderr());
     runner.addCase(new TestCurrentProcessSignals());
@@ -106,4 +107,29 @@ function main() {
     Report.create(runner);
     
     runner.run();
+}
+
+function main() {
+    switch Sys.args() {
+        case [ Mode.ZeroExit ]:
+            Sys.exit(0);
+        case [ Mode.ErrorExit, code ]:
+            Sys.exit(Std.parseInt(code));
+        case [ Mode.StdoutEcho, str ]:
+            final output = Sys.stdout();
+
+            output.writeString(str);
+            output.flush();
+        case [ Mode.StderrEcho, str ]:
+            final output = Sys.stderr();
+
+            output.writeString(str);
+            output.flush();
+        case [ Mode.LoopForever ]:
+            while (true) {
+                Sys.sleep(1);
+            }
+        case _:
+            test();
+    }
 }

@@ -1,4 +1,4 @@
-import asys.native.system.Process;
+import haxe.io.Bytes;
 import net.IpTests;
 import net.DnsTests;
 import net.ServerTests;
@@ -124,6 +124,20 @@ function main() {
             final output = Sys.stderr();
 
             output.writeString(str);
+            output.flush();
+        case [ Mode.StdinEcho, expected ]:
+            final input  = Sys.stdin().readString(expected.length);
+            
+            Sys.exit(input == expected ? 0 : 1);
+        case [ Mode.PrintCwd ]:
+            final output = Sys.stdout();
+
+            output.writeString(Sys.getCwd());
+            output.flush();
+        case [ Mode.PrintEnv, env ]:
+            final output = Sys.stdout();
+
+            output.writeString(Sys.getEnv(env));
             output.flush();
         case [ Mode.LoopForever ]:
             while (true) {

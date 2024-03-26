@@ -1,5 +1,6 @@
 package asys.native.system;
 
+import haxe.exceptions.ArgumentException;
 import haxe.ds.ReadOnlyArray;
 import sys.thread.Thread;
 import haxe.NoData;
@@ -40,6 +41,16 @@ class Process {
 	}
 
     static public function open(command:String, ?options:ProcessOptions, callback:Callback<ChildProcess>) {
+        if (callback == null) {
+            throw new ArgumentException("callback", "callback was null");
+        }
+
+        if (command == null) {
+            callback.fail(new ArgumentException("command", "command was null"));
+
+            return;
+        }
+
 		cpp.asys.Process.open(
             @:privateAccess Thread.current().events.context,
             command,

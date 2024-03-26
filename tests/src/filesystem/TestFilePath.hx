@@ -35,7 +35,7 @@ class TestFilePath extends Test {
     function test_parent() {
         Assert.equals("", FilePath.ofString(null).parent());
         Assert.equals("", FilePath.ofString('file').parent());
-        Assert.equals("", FilePath.ofString('/file').parent());
+        Assert.equals("/", FilePath.ofString('/file').parent());
         Assert.equals("", FilePath.ofString('.').parent());
         Assert.equals('path/to', FilePath.ofString('path/to/file').parent());
         Assert.equals('path/to', FilePath.ofString('path/to/dir/').parent());
@@ -135,6 +135,6 @@ class TestFilePath extends Test {
     }
 
     function test_preserve_absolute_path_when_getting_parent() {
-        Assert.equals('C:${FilePath.SEPARATOR}foo', FilePath.ofString('C:/foo/bar').parent());
+        Assert.equals('C:/foo', FilePath.ofString('C:/foo/bar').parent());
     }
 }

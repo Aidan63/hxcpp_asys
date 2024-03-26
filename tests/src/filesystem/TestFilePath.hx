@@ -133,4 +133,8 @@ class TestFilePath extends Test {
         Assert.equals('C:', FilePath.ofString('C:relative/.././').normalize());
         Assert.equals('C:..${FilePath.SEPARATOR}..', FilePath.ofString('C:relative/../excessive/dots/../../../..').normalize());
     }
+
+    function test_preserve_absolute_path_when_getting_parent() {
+        Assert.equals('C:${FilePath.SEPARATOR}foo', FilePath.ofString('C:/foo/bar').parent());
+    }
 }

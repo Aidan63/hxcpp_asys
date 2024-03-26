@@ -92,7 +92,7 @@ abstract FilePath(NativeFilePath) to String {
 			return abstract;
 		}
 
-		final s = this.getRelativePath().trimSlashes();
+		final s = this.trimSlashes();
 
 		var i = s.length;
 		while (!s.fastCodeAt(i).isSeparator()) {

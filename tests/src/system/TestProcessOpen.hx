@@ -340,4 +340,116 @@ class TestProcessOpen extends Test {
             }
         });
     }
+
+    function test_custom_envvar(async:Async) {
+        final env   = "FOO";
+        final value = "BAR";
+
+        Process.open(Sys.programPath(), { args: [ Mode.PrintEnv, env ], env: [ env => value ] }, (proc, error) -> {
+            Assert.isNull(error);
+
+            if (Assert.notNull(proc)) {
+                final buffer = Bytes.alloc(1024);
+                var read = 0;
+
+                proc.stdout.read(buffer, 0, buffer.length, (count, error) -> {
+                    if (Assert.isNull(error)) {
+                        Assert.equals(value.length, count);
+
+                        read += count;
+                    }
+                });
+
+                proc.exitCode((exit, error) -> {
+                    if (Assert.isNull(error)) {
+                        Assert.equals(0, Bytes.ofString(value).compare(buffer.sub(0, read)));
+                    }
+
+                    proc.close((_, error) -> {
+                        Assert.isNull(error);
+
+                        async.done();
+                    });
+                });
+            } else {
+                async.done();
+            }
+        });
+    }
+
+    function test_inherit_envvar(async:Async) {
+        final env   = "FOO";
+        final value = "BAR";
+
+        Sys.putEnv(env, value);
+
+        Process.open(Sys.programPath(), { args: [ Mode.PrintEnv, env ] }, (proc, error) -> {
+            Assert.isNull(error);
+
+            if (Assert.notNull(proc)) {
+                final buffer = Bytes.alloc(1024);
+                var read = 0;
+
+                proc.stdout.read(buffer, 0, buffer.length, (count, error) -> {
+                    if (Assert.isNull(error)) {
+                        Assert.equals(value.length, count);
+
+                        read += count;
+                    }
+                });
+
+                proc.exitCode((exit, error) -> {
+                    if (Assert.isNull(error)) {
+                        Assert.equals(0, Bytes.ofString(value).compare(buffer.sub(0, read)));
+                    }
+
+                    proc.close((_, error) -> {
+                        Assert.isNull(error);
+
+                        async.done();
+                    });
+                });
+            } else {
+                async.done();
+            }
+        });
+    }
+
+    function test_both_envvar(async:Async) {
+        final env   = "FOO";
+        final value = "BAR";
+
+        Sys.putEnv(env, value);
+
+        Process.open(Sys.programPath(), { args: [ Mode.PrintEnv, env ], env: [ "BAR" => "BAZ" ] }, (proc, error) -> {
+            Assert.isNull(error);
+
+            if (Assert.notNull(proc)) {
+                final buffer = Bytes.alloc(1024);
+                var read = 0;
+
+                proc.stdout.read(buffer, 0, buffer.length, (count, error) -> {
+                    if (Assert.isNull(error)) {
+                        Assert.equals(value.length, count);
+
+                        read += count;
+                    }
+                });
+
+                proc.exitCode((exit, error) -> {
+                    if (Assert.isNull(error)) {
+                        Assert.equals(0, Bytes.ofString(value).compare(buffer.sub(0, read)));
+                    }
+
+                    proc.close((_, error) -> {
+                        Assert.isNull(error);
+
+                        async.done();
+                    });
+                });
+            } else {
+                async.done();
+            }
+        });
+    }
 }

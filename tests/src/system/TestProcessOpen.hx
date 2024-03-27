@@ -452,4 +452,66 @@ class TestProcessOpen extends Test {
             }
         });
     }
+
+    @:timeout(1000)
+    function test_argument_escaping(async:Async) {
+        final cases = [
+            'HelloWorld',
+            'Hello World',
+            'Hello"World',
+            'Hello World\\',
+            'Hello\\"World',
+            'Hello\\World',
+            'Hello\\\\World',
+            "c:\\path\\to\\node.exe --eval \"require('c:\\\\path\\\\to\\\\test.js')\""
+        ];
+
+        function run() {
+
+            function again() {
+                if (cases.length > 0) {
+                    run();
+                } else {
+                    async.done();
+                }
+            }
+
+            final srcString = cases.shift();
+            final srcBytes  = Bytes.ofString(srcString);
+
+            Process.open(Sys.programPath(), { args: [ Mode.StdoutEcho, srcString ], stdio : [ Ignore, PipeWrite ] }, (proc, error) -> {
+                Assert.isNull(error);
+
+                if (Assert.notNull(proc)) {
+                    final buffer = Bytes.alloc(1024);
+                    var read = 0;
+
+                    proc.stdout.read(buffer, 0, buffer.length, (count, error) -> {
+                        if (Assert.isNull(error)) {
+                            Assert.isTrue(count > 0);
+
+                            read += count;
+                        }
+                    });
+
+                    proc.exitCode((exit, error) -> {
+                        if (Assert.isNull(error)) {
+                            Assert.equals(srcBytes.length, read);
+                            Assert.equals(0, buffer.sub(0, read).compare(srcBytes));   
+                        }
+
+                        proc.close((_, error) -> {
+                            Assert.isNull(error);
+    
+                            again();
+                        });
+                    });
+                } else {
+                    again();
+                }
+            });
+        }
+
+        run();
+    }
 }

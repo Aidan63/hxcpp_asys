@@ -1,5 +1,7 @@
 package net;
 
+import sys.thread.Thread;
+import sys.io.Process;
 import haxe.io.Bytes;
 import asys.native.net.Server;
 import asys.native.net.Socket;
@@ -19,31 +21,174 @@ class ServerTests extends Test
         port    = 7000;
     }
 
+    function test_open(async:Async) {
+        Server.open(Net(address, port), null, (server, error) -> {
+            Assert.isNull(error);
+
+            if (Assert.notNull(server)) {
+                server.close((_, error) -> {
+                    Assert.isNull(error);
+
+                    async.done();
+                });
+            }
+        });
+    }
+
+    function test_default_keep_alive(async:Async) {
+        Server.open(Net(address, port), null, (server, error) -> {
+            Assert.isNull(error);
+
+            if (Assert.notNull(server)) {
+                server.getOption(KeepAlive, (enabled, error) -> {
+                    Assert.isNull(error);
+                    Assert.isTrue(enabled);
+
+                    server.close((_, error) -> {
+                        Assert.isNull(error);
+    
+                        async.done();
+                    });
+                });
+            }
+        });
+    }
+
+    function test_default_send_buffer_size(async:Async) {
+        Server.open(Net(address, port), null, (server, error) -> {
+            Assert.isNull(error);
+
+            if (Assert.notNull(server)) {
+                server.getOption(SendBuffer, (size, error) -> {
+                    Assert.isNull(error);
+                    Assert.isTrue(size > 0);
+
+                    server.close((_, error) -> {
+                        Assert.isNull(error);
+    
+                        async.done();
+                    });
+                });
+            }
+        });
+    }
+
+    function test_default_receive_buffer_size(async:Async) {
+        Server.open(Net(address, port), null, (server, error) -> {
+            Assert.isNull(error);
+
+            if (Assert.notNull(server)) {
+                server.getOption(ReceiveBuffer, (size, error) -> {
+                    Assert.isNull(error);
+                    Assert.isTrue(size > 0);
+
+                    server.close((_, error) -> {
+                        Assert.isNull(error);
+    
+                        async.done();
+                    });
+                });
+            }
+        });
+    }
+
+    function test_custom_keep_alive(async:Async) {
+        final expected = false;
+
+        Server.open(Net(address, port), { keepAlive: expected }, (server, error) -> {
+            Assert.isNull(error);
+
+            if (Assert.notNull(server)) {
+                server.getOption(KeepAlive, (enabled, error) -> {
+                    Assert.isNull(error);
+                    Assert.equals(expected, enabled);
+
+                    server.close((_, error) -> {
+                        Assert.isNull(error);
+    
+                        async.done();
+                    });
+                });
+            }
+        });
+    }
+
+    function test_custom_send_buffer_size(async:Async) {
+        final expected = 7000;
+
+        Server.open(Net(address, port), { sendBuffer: expected }, (server, error) -> {
+            Assert.isNull(error);
+
+            if (Assert.notNull(server)) {
+                server.getOption(SendBuffer, (size, error) -> {
+                    Assert.isNull(error);
+                    Assert.equals(expected, size);
+
+                    server.close((_, error) -> {
+                        Assert.isNull(error);
+    
+                        async.done();
+                    });
+                });
+            }
+        });
+    }
+
+    function test_custom_receive_buffer_size(async:Async) {
+        final expected = 7000;
+
+        Server.open(Net(address, port), { receiveBuffer: expected }, (server, error) -> {
+            Assert.isNull(error);
+
+            if (Assert.notNull(server)) {
+                server.getOption(ReceiveBuffer, (size, error) -> {
+                    Assert.isNull(error);
+                    Assert.equals(expected, size);
+
+                    server.close((_, error) -> {
+                        Assert.isNull(error);
+    
+                        async.done();
+                    });
+                });
+            }
+        });
+    }
+
+    @:timeout(2000)
     function test_connection_disconnection(async:Async) {
         Server.open(Net(address, port), null, (server, error) -> {
             Assert.isNull(error);
 
             if (Assert.notNull(server)) {
+                final proc = new Process("haxe -p scripts/client --run TcpConnect");
+
                 server.accept((socket, error) -> {
                     Assert.isNull(error);
                     
                     if (Assert.notNull(socket)) {
                         socket.close((_, error) -> {
+                            if (Assert.isNull(error)) {
+                                proc.exitCode();
+                            }
+
                             server.close((_, error) -> {
+                                Assert.isNull(error);
+
+                                proc.close();
                                 async.done();
                             });
                         });
                     } else {
                         server.close((_, error) -> {
+                            Assert.notNull(error);
+
+                            proc.kill();
+                            proc.close();
+
                             async.done();
                         });
                     }
-                });
-
-                Socket.connect(Net(address, port), {}, (socket, error) -> {
-                    socket.close((_, error) -> {
-                        Assert.isNull(error);
-                    });
                 });
             } else {
                 async.done();

@@ -1,5 +1,6 @@
 package net;
 
+import sys.io.Process;
 import sys.thread.Lock;
 import asys.native.IoErrorType;
 import asys.native.IoException;
@@ -22,19 +23,7 @@ class SocketTests extends Test {
     }
 
     function test_connection_disconnection(async:Async) {
-        final lock   = new Lock();
-        final server = new sys.net.Socket();
-
-        Thread.createWithEventLoop(() -> {
-            try {
-                server.bind(new sys.net.Host(address), port);
-                server.listen(1);
-                server.accept().close();
-                server.close();
-            } catch (_) {}
-
-            lock.release();
-        });
+        final proc = new Process('haxe -p scripts/server --run TcpListen "$address" $port');
 
         Socket.connect(Net(address, port), {}, (socket, error) -> {
             Assert.isNull(error);
@@ -43,12 +32,14 @@ class SocketTests extends Test {
                 socket.close((_, error) -> {
                     Assert.isNull(error);
                     
-                    lock.wait();
+                    proc.exitCode();
+                    proc.close();
 
                     async.done();
                 });
             } else {
-                server.close();
+                proc.kill();
+                proc.close();
 
                 async.done();
             }

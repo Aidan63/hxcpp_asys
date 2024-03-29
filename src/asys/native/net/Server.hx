@@ -11,7 +11,6 @@ import sys.thread.Thread;
 typedef ServerOptions = SocketOptions & {
 	/**
 		Maximum size of incoming connections queue.
-		Default: 0
 		TODO: decide on a meaningful default value.
 	**/
 	var ?backlog:Int;

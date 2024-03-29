@@ -43,7 +43,7 @@ class TestFileSystemLinkInfo extends DirectoryTests {
                 Assert.equals(expected.atime.getTime() / 1000, info.accessTime);
                 // Assert.equals(expected.ctime.getTime() / 1000, stat.creationTime);
                 Assert.equals(expected.mtime.getTime() / 1000, info.modificationTime);
-                Assert.equals(expected.mode, info.mode);
+                Assert.equals(expected.mode, cast info.mode);
             }
 
             async.done();

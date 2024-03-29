@@ -1,7 +1,5 @@
 package net;
 
-import sys.thread.Thread;
-import asys.native.IoException;
 import sys.io.Process;
 import haxe.Exception;
 import haxe.exceptions.ArgumentException;
@@ -10,6 +8,7 @@ import utest.Assert;
 import utest.Async;
 import utest.Test;
 
+@:timeout(1000)
 class ServerAcceptTests extends Test {
     final address : String;
     final port : Int;
@@ -21,7 +20,6 @@ class ServerAcceptTests extends Test {
         port    = 7000;
     }
 
-    @:timeout(1000)
     function test_accept_net_client(async:Async) {
         Server.open(Net(address, port), null, (server, error) -> {
             Assert.isNull(error);
@@ -62,7 +60,6 @@ class ServerAcceptTests extends Test {
         });
     }
 
-    @:timeout(1000)
     function test_accept_null_callback(async:Async) {
         Server.open(Net(address, port), null, (server, error) -> {
             Assert.isNull(error);
@@ -86,7 +83,6 @@ class ServerAcceptTests extends Test {
         });
     }
 
-    @:timeout(1000)
     function test_accept_custom_keep_alive(async:Async) {
         final expected = false;
 
@@ -134,7 +130,6 @@ class ServerAcceptTests extends Test {
         });
     }
 
-    @:timeout(1000)
     function test_accept_custom_send_buffer_size(async:Async) {
         final expected = 7000;
 
@@ -182,7 +177,6 @@ class ServerAcceptTests extends Test {
         });
     }
 
-    @:timeout(1000)
     function test_accept_custom_recv_buffer_size(async:Async) {
         final expected = 7000;
 

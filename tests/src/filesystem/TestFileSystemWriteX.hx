@@ -88,7 +88,7 @@ class TestFileSystemWriteX extends FileOpenTests {
     function test_write_string_to_non_existing_file(async:Async) {
         FileSystem.writeString(nonExistingFile, dummyFileData, WriteX, (_, error) -> {
             if (Assert.isNull(error)) {
-                Assert.equals(dummyFileData, sys.io.File.getBytes(nonExistingFile));
+                Assert.equals(dummyFileData, sys.io.File.getContent(nonExistingFile));
             }
 
             async.done();

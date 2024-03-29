@@ -135,11 +135,10 @@ class TestFile extends FileOpenTests {
                     final expected = sys.FileSystem.stat(dummyFileName);
     
                     Assert.equals(expected.size, stat.size);
-                    Assert.equals(expected.mode, stat.mode);
+                    Assert.equals(expected.mode, cast stat.mode);
                     Assert.equals(expected.atime.getTime() / 1000, stat.accessTime);
-                    // Assert.equals(expected.ctime.getTime() / 1000, stat.creationTime);
+                    Assert.equals(expected.ctime.getTime() / 1000, stat.creationTime);
                     Assert.equals(expected.mtime.getTime() / 1000, stat.modificationTime);
-                    Assert.equals(expected.mode, stat.mode);
     
                     file.close((_, error) -> {
                         Assert.isNull(error);
@@ -166,8 +165,8 @@ class TestFile extends FileOpenTests {
     
                     final stat = sys.FileSystem.stat(dummyFileName);
     
-                    Assert.equals(access, stat.atime.getTime() / 1000);
-                    Assert.equals(modified, stat.mtime.getTime() / 1000);
+                    Assert.equals(access, Std.int(stat.atime.getTime() / 1000));
+                    Assert.equals(modified, Std.int(stat.mtime.getTime() / 1000));
     
                     file.close((_, error) -> {
                         Assert.isNull(error);

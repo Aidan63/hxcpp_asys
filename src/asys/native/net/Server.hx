@@ -1,8 +1,8 @@
 package asys.native.net;
 
+import haxe.exceptions.ArgumentException;
 import haxe.exceptions.NotImplementedException;
 import asys.native.net.SocketOptions;
-import cpp.asys.SocketAddressTools.makeSocketAddress;
 import haxe.NoData;
 import haxe.Callback;
 import asys.native.net.Ip.IpTools;
@@ -89,8 +89,24 @@ class Server {
 	}
 
     static public function open(address:SocketAddress, ?options:ServerOptions, callback:Callback<Server>) {
+		if (callback == null) {
+			throw new ArgumentException("callback", "callback was null");
+		}
+
+		if (address == null) {
+			callback.fail(new ArgumentException("address", "address was null"));
+
+			return;
+		}
+
         switch address {
             case Net(host, port):
+				if (host == null) {
+					callback.fail(new ArgumentException("host", "Net SocketAddress host was null"));
+
+					return;
+				}
+
                 try {
                     switch IpTools.parseIp(host) {
 						case Ipv4(_):
@@ -114,6 +130,13 @@ class Server {
                     callback.fail(exn);
                 }
             case Ipc(path):
+				if (path == null) {
+					callback.fail(new ArgumentException("path", "Ipc SocketAddress path was null"));
+
+					return;
+				}
+
+				callback.fail(new NotImplementedException());
                 // cpp.asys.Server.open_ipc(
                 //     @:privateAccess Thread.current().events.context,
                 //     path,

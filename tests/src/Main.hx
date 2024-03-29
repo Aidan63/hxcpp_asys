@@ -1,8 +1,9 @@
+import asys.native.net.Server;
 import haxe.io.Bytes;
 import net.IpTests;
 import net.DnsTests;
-import net.ServerTests;
 import net.SocketTests;
+import net.ServerOpenTests;
 import system.TestCurrentProcessWriteTty;
 import system.TestProcessOpen;
 import system.TestCurrentProcessSignals;
@@ -96,7 +97,7 @@ function test() {
     runner.addCase(new DnsTests());
     runner.addCase(new IpTests());
     runner.addCase(new SocketTests());
-    runner.addCase(new ServerTests());
+    runner.addCase(new ServerOpenTests());
 
     // System
     runner.addCase(new TestProcessOpen());

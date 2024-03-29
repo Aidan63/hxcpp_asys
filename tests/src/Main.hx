@@ -1,13 +1,12 @@
-import net.ServerAcceptTests;
-import asys.native.net.Server;
-import haxe.io.Bytes;
 import net.IpTests;
 import net.DnsTests;
 import net.SocketTests;
 import net.ServerOpenTests;
-import system.TestCurrentProcessWriteTty;
+import net.ServerAcceptTests;
+import net.ServerReadingTests;
 import system.TestProcessOpen;
 import system.TestCurrentProcessSignals;
+import system.TestCurrentProcessWriteTty;
 import filesystem.TestFile;
 import filesystem.TestFilePath;
 import filesystem.TestFileOpenRead;
@@ -100,6 +99,7 @@ function test() {
     runner.addCase(new SocketTests());
     runner.addCase(new ServerOpenTests());
     runner.addCase(new ServerAcceptTests());
+    runner.addCase(new ServerReadingTests());
 
     // System
     runner.addCase(new TestProcessOpen());

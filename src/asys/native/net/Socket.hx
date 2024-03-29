@@ -1,5 +1,6 @@
 package asys.native.net;
 
+import haxe.exceptions.ArgumentException;
 import sys.thread.Thread;
 import asys.native.net.Ip;
 import asys.native.net.SocketOptions;
@@ -152,10 +153,40 @@ class Socket implements IDuplex {
 		position in `buffer`, then invoke `callback` with the amount of bytes read.
 	**/
 	public function read(buffer:Bytes, offset:Int, length:Int, callback:Callback<Int>) {
+		if (callback == null) {
+			throw new ArgumentException("callback", "callback was null");
+		}
+
+		if (buffer == null) {
+			callback.fail(new ArgumentException("buffer", "buffer was null"));
+
+			return;
+		}
+
+		if (offset < 0 ) {
+			callback.fail(new ArgumentException("offset", "offset was less than zero"));
+
+			return;
+		}
+
+		if (offset > buffer.length) {
+			callback.fail(new ArgumentException("offset", "offset was greater than the buffer length"));
+
+			return;
+		}
+
+		if (length < 0) {
+			callback.fail(new ArgumentException("length", "length was less than zero"));
+
+			return;
+		}
+
+		final actualLength = (cast Math.min(length, buffer.length - offset) : Int);
+
 		duplex.read(
 			buffer.getData(),
 			offset,
-			length,
+			actualLength,
 			len -> callback.success(len),
 			msg -> callback.fail(new IoException(msg)));
 	}

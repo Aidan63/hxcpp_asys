@@ -14,7 +14,7 @@ class Process {
 		Can be used to communicate with the parent process and for self-signalling.
 	**/
 	static public var current(get,never):CurrentProcess;
-	static function get_current():CurrentProcess return @:privateAccess new CurrentProcess(Thread.current().events.context.process);
+	static function get_current():CurrentProcess return @:privateAccess new CurrentProcess(Thread.current().context().process);
 
     public final pid:Int;
 
@@ -52,7 +52,7 @@ class Process {
         }
 
 		cpp.asys.Process.open(
-            @:privateAccess Thread.current().events.context,
+            @:privateAccess Thread.current().context(),
             command,
             toSensibleOptions(options),
             proc -> callback.success(@:privateAccess new ChildProcess(proc)),

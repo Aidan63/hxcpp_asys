@@ -27,7 +27,7 @@ class FileSystem {
 		}
 
         cpp.asys.File.open(
-            @:privateAccess Thread.current().events.context,
+            @:privateAccess Thread.current().context(),
             path,
             cast flag,
             file -> callback.success(cast @:privateAccess new File(file)),
@@ -45,7 +45,7 @@ class FileSystem {
 	**/
 	static public function tempFile(callback:Callback<File>):Void {
 		cpp.asys.File.temp(
-			@:privateAccess Thread.current().events.context,
+			@:privateAccess Thread.current().context(),
 			file -> callback.success(cast @:privateAccess new File(file)),
 			msg -> callback.fail(new FsException(msg, '')));
 	}
@@ -198,7 +198,7 @@ class FileSystem {
 		}
 
 		cpp.asys.Directory.open(
-            @:privateAccess Thread.current().events.context,
+            @:privateAccess Thread.current().context(),
             path,
             dir -> callback.success(@:privateAccess new Directory(dir, maxBatchSize)),
             msg -> callback.fail(new FsException(msg, path)));
@@ -269,7 +269,7 @@ class FileSystem {
 		}
 
 		cpp.asys.Directory.create(
-            @:privateAccess Thread.current().events.context,
+            @:privateAccess Thread.current().context(),
 			path,
 			if (permissions == null) FilePermissions.octal(0, 7, 7, 7) else permissions,
 			recursive,
@@ -341,7 +341,7 @@ class FileSystem {
 				if (isDir)
 				{
 					cpp.asys.Directory.rename(
-						@:privateAccess Thread.current().events.context,
+						@:privateAccess Thread.current().context(),
 						oldPath,
 						newPath,
 						() -> callback.success(null),
@@ -350,7 +350,7 @@ class FileSystem {
 				else
 				{
 					cpp.asys.Directory.copyFile(
-						@:privateAccess Thread.current().events.context,
+						@:privateAccess Thread.current().context(),
 						oldPath,
 						newPath,
 						overwrite,
@@ -377,7 +377,7 @@ class FileSystem {
 			callback.fail(new ArgumentException("path", "null path"));
 		} else {
 			cpp.asys.Directory.deleteFile(
-				@:privateAccess Thread.current().events.context,
+				@:privateAccess Thread.current().context(),
 				path,
 				() -> callback.success(null),
 				msg -> callback.fail(new FsException(msg, path)));
@@ -392,7 +392,7 @@ class FileSystem {
 			callback.fail(new ArgumentException("path", "path was null"));
 		} else {
 			cpp.asys.Directory.deleteDirectory(
-				@:privateAccess Thread.current().events.context,
+				@:privateAccess Thread.current().context(),
 				path,
 				() -> callback.success(null),
 				msg -> callback.fail(new FsException(msg, path)));
@@ -451,7 +451,7 @@ class FileSystem {
 		}
 
 		cpp.asys.Directory.check(
-			@:privateAccess Thread.current().events.context,
+			@:privateAccess Thread.current().context(),
 			path,
 			cast mode,
 			callback.success,
@@ -471,7 +471,7 @@ class FileSystem {
 		}
 
 		cpp.asys.Directory.isDirectory(
-			@:privateAccess Thread.current().events.context,
+			@:privateAccess Thread.current().context(),
 			path,
 			callback.success,
 			msg -> callback.fail(new FsException(msg, path)));
@@ -490,7 +490,7 @@ class FileSystem {
 		}
 
 		cpp.asys.Directory.isFile(
-			@:privateAccess Thread.current().events.context,
+			@:privateAccess Thread.current().context(),
 			path,
 			callback.success,
 			msg -> callback.fail(new FsException(msg, path)));
@@ -575,7 +575,7 @@ class FileSystem {
 		}
 
 		cpp.asys.Directory.setLinkOwner(
-			@:privateAccess Thread.current().events.context,
+			@:privateAccess Thread.current().context(),
 			path,
 			user,
 			group,
@@ -605,7 +605,7 @@ class FileSystem {
 		}
 
 		cpp.asys.Directory.link(
-			@:privateAccess Thread.current().events.context,
+			@:privateAccess Thread.current().context(),
 			target,
 			path,
 			cast type,
@@ -625,7 +625,7 @@ class FileSystem {
 		}
 
 		cpp.asys.Directory.isLink(
-			@:privateAccess Thread.current().events.context,
+			@:privateAccess Thread.current().context(),
 			path,
 			callback.success,
 			msg -> callback.fail(new FsException(msg, path)));
@@ -642,7 +642,7 @@ class FileSystem {
 		}
 
 		cpp.asys.Directory.readLink(
-			@:privateAccess Thread.current().events.context,
+			@:privateAccess Thread.current().context(),
 			path,
 			callback.success,
 			msg -> callback.fail(new FsException(msg, path)));
@@ -659,7 +659,7 @@ class FileSystem {
 		}
 
 		cpp.asys.Directory.linkInfo(
-			@:privateAccess Thread.current().events.context,
+			@:privateAccess Thread.current().context(),
 			path,
 			callback.success,
 			msg -> callback.fail(new FsException(msg, path)));
@@ -682,7 +682,7 @@ class FileSystem {
 		}
 
 		cpp.asys.Directory.copyFile(
-			@:privateAccess Thread.current().events.context,
+			@:privateAccess Thread.current().context(),
 			source,
 			destination,
 			overwrite,
@@ -791,7 +791,7 @@ class FileSystem {
 		}
 
 		cpp.asys.Directory.realPath(
-			@:privateAccess Thread.current().events.context,
+			@:privateAccess Thread.current().context(),
 			path,
 			callback.success,
 			msg -> callback.fail(new FsException(msg, path)));

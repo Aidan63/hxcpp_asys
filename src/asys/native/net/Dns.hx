@@ -27,7 +27,7 @@ class Dns {
 		}
 
 		cpp.asys.Net.resolve(
-            @:privateAccess Thread.current().events.context,
+            @:privateAccess Thread.current().context(),
             host,
             ips -> callback.success(ips.map(convertIp)),
             msg -> callback.fail(new IoException(msg.toIoErrorType())));
@@ -46,13 +46,13 @@ class Dns {
 				callback.fail(new ArgumentException("ip", "argument was null"));
 			case Ipv4(raw):
 				cpp.asys.Net.reverse(
-					@:privateAccess Thread.current().events.context,
+					@:privateAccess Thread.current().context(),
 					raw,
 					host -> callback.success([ host ]),
 					msg -> callback.fail(new IoException(msg.toIoErrorType())));
 			case Ipv6(raw):
 				cpp.asys.Net.reverse(
-					@:privateAccess Thread.current().events.context,
+					@:privateAccess Thread.current().context(),
 					raw.getData(),
 					host -> callback.success([ host ]),
 					msg -> callback.fail(new IoException(msg.toIoErrorType())));

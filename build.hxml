@@ -1,5 +1,5 @@
--p tests/src
 -p src
+-p tests/src
 -m Main
 -L utest
 -r tests/resources/long_ipsum.txt@long_ipsum

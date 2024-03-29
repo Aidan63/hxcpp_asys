@@ -119,7 +119,7 @@ class Socket implements IDuplex {
 					switch IpTools.parseIp(host) {
 						case Ipv4(_):
 							cpp.asys.TcpSocket.connect_ipv4(
-								@:privateAccess Thread.current().events.context,
+								@:privateAccess Thread.current().context(),
 								host,
 								port,
 								options,
@@ -127,7 +127,7 @@ class Socket implements IDuplex {
 								msg -> callback.fail(new IoException(msg)));
 						case Ipv6(_):
 							cpp.asys.TcpSocket.connect_ipv6(
-								@:privateAccess Thread.current().events.context,
+								@:privateAccess Thread.current().context(),
 								host,
 								port,
 								options,
@@ -140,7 +140,7 @@ class Socket implements IDuplex {
 				}
 			case Ipc(path):
 				cpp.asys.IpcSocket.connect(
-					@:privateAccess Thread.current().events.context,
+					@:privateAccess Thread.current().context(),
 					path,
 					socket -> callback.success(new IpcSocketSpecialisation(socket)),
 					msg -> callback.fail(new IoException(msg)));

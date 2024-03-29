@@ -1,3 +1,4 @@
+import net.ServerAcceptTests;
 import asys.native.net.Server;
 import haxe.io.Bytes;
 import net.IpTests;
@@ -98,6 +99,7 @@ function test() {
     runner.addCase(new IpTests());
     runner.addCase(new SocketTests());
     runner.addCase(new ServerOpenTests());
+    runner.addCase(new ServerAcceptTests());
 
     // System
     runner.addCase(new TestProcessOpen());

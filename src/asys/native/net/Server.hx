@@ -133,7 +133,7 @@ class Server {
                     switch IpTools.parseIp(host) {
 						case Ipv4(_):
                             cpp.asys.TcpServer.open_ipv4(
-                                @:privateAccess Thread.current().events.context,
+                                @:privateAccess Thread.current().context(),
                                 host,
                                 port,
                                 options,
@@ -141,7 +141,7 @@ class Server {
                                 msg -> callback.fail(new IoException(msg)));
 						case Ipv6(_):
 							cpp.asys.TcpServer.open_ipv6(
-                                @:privateAccess Thread.current().events.context,
+                                @:privateAccess Thread.current().context(),
                                 host,
                                 port,
                                 options,
@@ -160,7 +160,7 @@ class Server {
 
 				callback.fail(new NotImplementedException());
                 // cpp.asys.Server.open_ipc(
-                //     @:privateAccess Thread.current().events.context,
+                //     @:privateAccess Thread.current().context(),
                 //     path,
                 //     options,
                 //     server -> callback.success(new Server(server)),

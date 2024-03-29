@@ -56,7 +56,7 @@ class Server {
 		if (callback == null) {
 			throw new ArgumentException("callback", "callback was null");
 		}
-		
+
 		switch option {
 			case KeepAlive:
 				native.getKeepAlive(
@@ -119,6 +119,12 @@ class Server {
             case Net(host, port):
 				if (host == null) {
 					callback.fail(new ArgumentException("host", "Net SocketAddress host was null"));
+
+					return;
+				}
+
+				if (options != null && options.backlog <= 0) {
+					callback.fail(new ArgumentException("backlog", "Backlog must be greater than zero"));
 
 					return;
 				}

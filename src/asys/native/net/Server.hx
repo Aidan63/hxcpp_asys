@@ -30,12 +30,20 @@ class Server {
     }
 
     public function accept(callback:Callback<Socket>) {
+		if (callback == null) {
+			throw new ArgumentException("callback", "callback was null");
+		}
+
         native.accept(
-            socket -> callback.success(@:privateAccess new Socket(socket)),
+            socket -> callback.success(@:privateAccess new asys.native.net.Socket.TcpSocketSpecialisation(socket)),
             msg -> callback.fail(new IoException(msg)));
     }
 
     public function close(callback:Callback<NoData>) {
+		if (callback == null) {
+			throw new ArgumentException("callback", "callback was null");
+		}
+
         native.close(
             () -> callback.success(null),
             msg -> callback.fail(new IoException(msg)));
@@ -45,6 +53,10 @@ class Server {
 		Get the value of a specified socket option.
 	**/
 	public function getOption<T>(option:SocketOptionKind<T>, callback:Callback<T>) {
+		if (callback == null) {
+			throw new ArgumentException("callback", "callback was null");
+		}
+		
 		switch option {
 			case KeepAlive:
 				native.getKeepAlive(
@@ -67,6 +79,10 @@ class Server {
 		Set socket option.
 	**/
 	public function setOption<T>(option:SocketOptionKind<T>, value:T, callback:Callback<NoData>) {
+		if (callback == null) {
+			throw new ArgumentException("callback", "callback was null");
+		}
+
 		switch option {
 			case KeepAlive:
 				native.setKeepAlive(

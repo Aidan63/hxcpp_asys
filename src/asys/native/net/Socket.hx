@@ -9,7 +9,7 @@ import haxe.Exception;
 import haxe.io.Bytes;
 import haxe.exceptions.NotImplementedException;
 
-private class IpcSocketSpecialisation extends Socket {
+class IpcSocketSpecialisation extends Socket {
 	final native : cpp.asys.IpcSocket;
 
 	public function new(native : cpp.asys.IpcSocket) {
@@ -27,7 +27,7 @@ private class IpcSocketSpecialisation extends Socket {
 	}
 }
 
-private class TcpSocketSpecialisation extends Socket {
+class TcpSocketSpecialisation extends Socket {
 	final native : cpp.asys.TcpSocket;
 
 	public function new(native : cpp.asys.TcpSocket) {

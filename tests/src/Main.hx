@@ -1,9 +1,10 @@
 import net.IpTests;
 import net.DnsTests;
-import net.SocketTests;
 import net.ServerOpenTests;
 import net.ServerAcceptTests;
+import net.SocketConnectTests;
 import net.ServerReadingTests;
+import net.ServerWritingTests;
 import system.TestProcessOpen;
 import system.TestCurrentProcessSignals;
 import system.TestCurrentProcessWriteTty;
@@ -49,7 +50,7 @@ import filesystem.TestFileSystemDeleteDirectory;
 import utest.Runner;
 import utest.ui.Report;
 
-function test() {
+function test() {   
     final runner = new Runner();
     
     // Fs
@@ -96,10 +97,11 @@ function test() {
     // Net
     runner.addCase(new DnsTests());
     runner.addCase(new IpTests());
-    runner.addCase(new SocketTests());
+    runner.addCase(new SocketConnectTests());
     runner.addCase(new ServerOpenTests());
     runner.addCase(new ServerAcceptTests());
     runner.addCase(new ServerReadingTests());
+    runner.addCase(new ServerWritingTests());
 
     // System
     runner.addCase(new TestProcessOpen());

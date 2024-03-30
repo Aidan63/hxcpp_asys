@@ -114,6 +114,16 @@ class Socket implements IDuplex {
 		Establish a connection to `address`.
 	**/
 	static public function connect(address:SocketAddress, ?options:SocketOptions, callback:Callback<Socket>) {
+		if (callback == null) {
+			throw new ArgumentException("callback", "callback was null");
+		}
+
+		if (address == null) {
+			callback.fail(new ArgumentException("address", "address was null"));
+
+			return;
+		}
+
 		switch address {
 			case Net(host, port):
 				try {

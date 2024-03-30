@@ -3,7 +3,7 @@ import sys.net.Socket;
 
 function main() {
     final client = new Socket();
-    client.setTimeout(1);
+    client.setTimeout(0.5);
     client.connect(new Host("127.0.0.1"), 7000);
     client.setFastSend(true);
 

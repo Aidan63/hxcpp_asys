@@ -163,7 +163,7 @@ class Socket implements IDuplex {
 			return;
 		}
 
-		if (offset < 0 ) {
+		if (offset < 0) {
 			callback.fail(new ArgumentException("offset", "offset was less than zero"));
 
 			return;
@@ -181,12 +181,16 @@ class Socket implements IDuplex {
 			return;
 		}
 
-		final actualLength = (cast Math.min(length, buffer.length - offset) : Int);
+		if (offset + length > buffer.length) {
+			callback.fail(new Exception("invalid buffer range"));
+
+			return;
+		}
 
 		duplex.read(
 			buffer.getData(),
 			offset,
-			actualLength,
+			length,
 			len -> callback.success(len),
 			msg -> callback.fail(new IoException(msg)));
 	}
@@ -196,6 +200,40 @@ class Socket implements IDuplex {
 		then invoke `callback` with the amount of bytes written.
 	**/
 	public function write(buffer:Bytes, offset:Int, length:Int, callback:Callback<Int>) {
+		if (callback == null) {
+			throw new ArgumentException("callback", "callback was null");
+		}
+
+		if (buffer == null) {
+			callback.fail(new ArgumentException("buffer", "buffer was null"));
+
+			return;
+		}
+
+		if (offset < 0) {
+			callback.fail(new ArgumentException("offset", "offset was less than zero"));
+
+			return;
+		}
+
+		if (offset > buffer.length) {
+			callback.fail(new ArgumentException("offset", "offset was greater than the buffer length"));
+
+			return;
+		}
+
+		if (length < 0) {
+			callback.fail(new ArgumentException("length", "length was less than zero"));
+
+			return;
+		}
+
+		if (offset + length > buffer.length) {
+			callback.fail(new Exception("invalid buffer range"));
+
+			return;
+		}
+
 		duplex.write(
 			buffer.getData(),
 			offset,

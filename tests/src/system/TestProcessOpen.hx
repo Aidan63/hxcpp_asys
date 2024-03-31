@@ -24,7 +24,10 @@ class TestProcessOpen extends Test {
     }
 
     function test_null_callback() {
-        Assert.raises(() -> Process.open(Sys.programPath(), null, null), ArgumentException);
+        Assert.exception(
+            () -> Process.open(Sys.programPath(), null, null),
+            ArgumentException,
+            exn -> exn.argument == "callback");
     }
 
     function test_null_program(async:Async) {
@@ -105,7 +108,7 @@ class TestProcessOpen extends Test {
         final srcString = "hello";
         final srcBytes  = Bytes.ofString(srcString);
 
-        Process.open(Sys.programPath(), { args: [ Mode.StdoutEcho, srcString ], stdio : [ Ignore, PipeWrite ] }, (proc, error) -> {
+        Process.open(Sys.programPath(), { args: [ Mode.StdoutEcho, srcString ], stdio : [ Ignore, PipeWrite, Ignore ] }, (proc, error) -> {
             Assert.isNull(error);
 
             if (Assert.notNull(proc)) {

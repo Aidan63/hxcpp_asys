@@ -4,9 +4,6 @@ function main() {
             final server = new sys.net.Socket();
             server.setTimeout(0.5);
             server.bind(new sys.net.Host(ip), Std.parseInt(port));
-
-            Sys.println("READY");
-
             server.listen(1);
             server.accept().close();
             server.close();

@@ -1,15 +1,15 @@
 package net;
 
+import haxe.Callback;
+import asys.native.net.SocketOptions;
+import asys.native.net.SocketAddress;
 import haxe.Exception;
 import haxe.exceptions.ArgumentException;
 import sys.io.Process;
-import sys.thread.Lock;
 import asys.native.IoErrorType;
 import asys.native.IoException;
-import haxe.io.Bytes;
 import utest.Assert;
 import asys.native.net.Socket;
-import sys.thread.Thread;
 import utest.Async;
 import utest.Test;
 
@@ -73,9 +73,7 @@ class SocketConnectTests extends Test {
     function test_net_connect(async:Async) {
         final proc = new Process('haxe -p scripts/server --run TcpListen "$address" "$port"');
 
-        proc.stdout.readLine();
-
-        Socket.connect(Net(address, port), null, (socket, error) -> {
+        try_connect(0, Net(address, port), null, (socket, error) -> {
             Assert.isNull(error);
 
             if (Assert.notNull(socket)) {
@@ -99,9 +97,7 @@ class SocketConnectTests extends Test {
     function test_default_keep_alive(async:Async) {
         final proc = new Process('haxe -p scripts/server --run TcpListen "$address" "$port"');
 
-        proc.stdout.readLine();
-
-        Socket.connect(Net(address, port), null, (socket, error) -> {
+        try_connect(0, Net(address, port), null, (socket, error) -> {
             Assert.isNull(error);
 
             if (Assert.notNull(socket)) {
@@ -131,9 +127,7 @@ class SocketConnectTests extends Test {
     function test_default_send_buffer_size(async:Async) {
         final proc = new Process('haxe -p scripts/server --run TcpListen "$address" "$port"');
 
-        proc.stdout.readLine();
-
-        Socket.connect(Net(address, port), null, (socket, error) -> {
+        try_connect(0, Net(address, port), null, (socket, error) -> {
             Assert.isNull(error);
 
             if (Assert.notNull(socket)) {
@@ -163,9 +157,7 @@ class SocketConnectTests extends Test {
     function test_default_recv_buffer_size(async:Async) {
         final proc = new Process('haxe -p scripts/server --run TcpListen "$address" "$port"');
 
-        proc.stdout.readLine();
-
-        Socket.connect(Net(address, port), null, (socket, error) -> {
+        try_connect(0, Net(address, port), null, (socket, error) -> {
             Assert.isNull(error);
 
             if (Assert.notNull(socket)) {
@@ -188,6 +180,121 @@ class SocketConnectTests extends Test {
                 proc.close();
 
                 async.done();
+            }
+        });
+    }
+
+    function test_custom_keep_alive(async:Async) {
+        final proc     = new Process('haxe -p scripts/server --run TcpListen "$address" "$port"');
+        final expected = false;
+
+        try_connect(0, Net(address, port), { keepAlive: expected }, (socket, error) -> {
+            Assert.isNull(error);
+
+            if (Assert.notNull(socket)) {
+                socket.getOption(KeepAlive, (enabled, error) -> {
+                    if (Assert.isNull(error)) {
+                        Assert.equals(expected, enabled);
+                    }
+
+                    socket.close((_, error) -> {
+                        Assert.isNull(error);
+                        
+                        proc.exitCode();
+                        proc.close();
+    
+                        async.done();
+                    });
+                });
+            } else {
+                proc.kill();
+                proc.close();
+
+                async.done();
+            }
+        });
+    }
+
+    function test_custom_send_buffer_size(async:Async) {
+        final proc     = new Process('haxe -p scripts/server --run TcpListen "$address" "$port"');
+        final expected = 7000;
+
+        try_connect(0, Net(address, port), { sendBuffer: expected }, (socket, error) -> {
+            Assert.isNull(error);
+
+            if (Assert.notNull(socket)) {
+                socket.getOption(SendBuffer, (size, error) -> {
+                    if (Assert.isNull(error)) {
+                        Assert.equals(expected, size);
+                    }
+
+                    socket.close((_, error) -> {
+                        Assert.isNull(error);
+                        
+                        proc.exitCode();
+                        proc.close();
+    
+                        async.done();
+                    });
+                });
+            } else {
+                proc.kill();
+                proc.close();
+
+                async.done();
+            }
+        });
+    }
+
+    function test_custom_recv_buffer_size(async:Async) {
+        final proc     = new Process('haxe -p scripts/server --run TcpListen "$address" "$port"');
+        final expected = 7000;
+
+
+        try_connect(0, Net(address, port), { receiveBuffer: expected }, (socket, error) -> {
+            Assert.isNull(error);
+
+            if (Assert.notNull(socket)) {
+                socket.getOption(ReceiveBuffer, (size, error) -> {
+                    if (Assert.isNull(error)) {
+                        Assert.equals(expected, size);
+                    }
+
+                    socket.close((_, error) -> {
+                        Assert.isNull(error);
+                        
+                        proc.exitCode();
+                        proc.close();
+    
+                        async.done();
+                    });
+                });
+            } else {
+                proc.kill();
+                proc.close();
+
+                async.done();
+            }
+        });
+    }
+
+    static function try_connect(attempt:Int, address:SocketAddress, ?options:SocketOptions, callback:Callback<Socket>) {
+        if (attempt > 3) {
+            callback.fail(new IoException(ConnectionRefused));
+
+            return;
+        }
+
+        Socket.connect(address, options, (socket, error) -> {
+            switch error {
+                case null:
+                    callback.success(socket);
+                case exn:
+                    if (exn is IoException && (cast exn:IoException).type == ConnectionRefused) {
+                        try_connect(attempt++, address, options, callback);
+                    } else {
+                        callback.fail(error);
+                    }
             }
         });
     }

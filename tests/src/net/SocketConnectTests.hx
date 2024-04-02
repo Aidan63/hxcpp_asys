@@ -1,18 +1,16 @@
 package net;
 
 import sys.io.Process;
-import haxe.Callback;
 import haxe.Exception;
 import haxe.exceptions.ArgumentException;
 import haxe.exceptions.NotImplementedException;
 import asys.native.IoErrorType;
 import asys.native.IoException;
 import asys.native.net.Socket;
-import asys.native.net.SocketOptions;
-import asys.native.net.SocketAddress;
 import utest.Assert;
 import utest.Async;
 import utest.Test;
+import utils.SocketHelper;
 
 @:timeout(1000)
 class SocketConnectTests extends Test {
@@ -74,7 +72,7 @@ class SocketConnectTests extends Test {
     function test_net_connect(async:Async) {
         final proc = new Process('haxe -p scripts/server --run TcpListen "$address" "$port"');
 
-        try_connect(0, Net(address, port), null, (socket, error) -> {
+        tryConnect(0, Net(address, port), null, (socket, error) -> {
             Assert.isNull(error);
 
             if (Assert.notNull(socket)) {
@@ -98,7 +96,7 @@ class SocketConnectTests extends Test {
     function test_default_keep_alive(async:Async) {
         final proc = new Process('haxe -p scripts/server --run TcpListen "$address" "$port"');
 
-        try_connect(0, Net(address, port), null, (socket, error) -> {
+        tryConnect(0, Net(address, port), null, (socket, error) -> {
             Assert.isNull(error);
 
             if (Assert.notNull(socket)) {
@@ -128,7 +126,7 @@ class SocketConnectTests extends Test {
     function test_default_send_buffer_size(async:Async) {
         final proc = new Process('haxe -p scripts/server --run TcpListen "$address" "$port"');
 
-        try_connect(0, Net(address, port), null, (socket, error) -> {
+        tryConnect(0, Net(address, port), null, (socket, error) -> {
             Assert.isNull(error);
 
             if (Assert.notNull(socket)) {
@@ -158,7 +156,7 @@ class SocketConnectTests extends Test {
     function test_default_recv_buffer_size(async:Async) {
         final proc = new Process('haxe -p scripts/server --run TcpListen "$address" "$port"');
 
-        try_connect(0, Net(address, port), null, (socket, error) -> {
+        tryConnect(0, Net(address, port), null, (socket, error) -> {
             Assert.isNull(error);
 
             if (Assert.notNull(socket)) {
@@ -189,7 +187,7 @@ class SocketConnectTests extends Test {
         final proc     = new Process('haxe -p scripts/server --run TcpListen "$address" "$port"');
         final expected = false;
 
-        try_connect(0, Net(address, port), { keepAlive: expected }, (socket, error) -> {
+        tryConnect(0, Net(address, port), { keepAlive: expected }, (socket, error) -> {
             Assert.isNull(error);
 
             if (Assert.notNull(socket)) {
@@ -220,7 +218,7 @@ class SocketConnectTests extends Test {
         final proc     = new Process('haxe -p scripts/server --run TcpListen "$address" "$port"');
         final expected = 7000;
 
-        try_connect(0, Net(address, port), { sendBuffer: expected }, (socket, error) -> {
+        tryConnect(0, Net(address, port), { sendBuffer: expected }, (socket, error) -> {
             Assert.isNull(error);
 
             if (Assert.notNull(socket)) {
@@ -251,7 +249,7 @@ class SocketConnectTests extends Test {
         final proc     = new Process('haxe -p scripts/server --run TcpListen "$address" "$port"');
         final expected = 7000;
 
-        try_connect(0, Net(address, port), { receiveBuffer: expected }, (socket, error) -> {
+        tryConnect(0, Net(address, port), { receiveBuffer: expected }, (socket, error) -> {
             Assert.isNull(error);
 
             if (Assert.notNull(socket)) {
@@ -281,7 +279,7 @@ class SocketConnectTests extends Test {
     function test_local_address(async:Async) {
         final proc = new Process('haxe -p scripts/server --run TcpListen "$address" "$port"');
 
-        try_connect(0, Net(address, port), null, (socket, error) -> {
+        tryConnect(0, Net(address, port), null, (socket, error) -> {
             Assert.isNull(error);
 
             if (Assert.notNull(socket)) {
@@ -317,7 +315,7 @@ class SocketConnectTests extends Test {
     function test_remote_address(async:Async) {
         final proc = new Process('haxe -p scripts/server --run TcpListen "$address" "$port"');
 
-        try_connect(0, Net(address, port), null, (socket, error) -> {
+        tryConnect(0, Net(address, port), null, (socket, error) -> {
             Assert.isNull(error);
 
             if (Assert.notNull(socket)) {
@@ -353,7 +351,7 @@ class SocketConnectTests extends Test {
     function test_get_option_null_callback(async:Async) {
         final proc = new Process('haxe -p scripts/server --run TcpListen "$address" "$port"');
 
-        try_connect(0, Net(address, port), null, (socket, error) -> {
+        tryConnect(0, Net(address, port), null, (socket, error) -> {
             Assert.isNull(error);
 
             if (Assert.notNull(socket)) {
@@ -382,7 +380,7 @@ class SocketConnectTests extends Test {
     function test_get_unsupported_option(async:Async) {
         final proc = new Process('haxe -p scripts/server --run TcpListen "$address" "$port"');
 
-        try_connect(0, Net(address, port), null, (socket, error) -> {
+        tryConnect(0, Net(address, port), null, (socket, error) -> {
             Assert.isNull(error);
 
             if (Assert.notNull(socket)) {
@@ -410,7 +408,7 @@ class SocketConnectTests extends Test {
     function test_get_invalid_option(async:Async) {
         final proc = new Process('haxe -p scripts/server --run TcpListen "$address" "$port"');
 
-        try_connect(0, Net(address, port), null, (socket, error) -> {
+        tryConnect(0, Net(address, port), null, (socket, error) -> {
             Assert.isNull(error);
 
             if (Assert.notNull(socket)) {
@@ -438,7 +436,7 @@ class SocketConnectTests extends Test {
     function test_set_option_null_callback(async:Async) {
         final proc = new Process('haxe -p scripts/server --run TcpListen "$address" "$port"');
 
-        try_connect(0, Net(address, port), null, (socket, error) -> {
+        tryConnect(0, Net(address, port), null, (socket, error) -> {
             Assert.isNull(error);
 
             if (Assert.notNull(socket)) {
@@ -467,7 +465,7 @@ class SocketConnectTests extends Test {
     function test_set_unsupported_option(async:Async) {
         final proc = new Process('haxe -p scripts/server --run TcpListen "$address" "$port"');
 
-        try_connect(0, Net(address, port), null, (socket, error) -> {
+        tryConnect(0, Net(address, port), null, (socket, error) -> {
             Assert.isNull(error);
 
             if (Assert.notNull(socket)) {
@@ -495,7 +493,7 @@ class SocketConnectTests extends Test {
     function test_set_invalid_option(async:Async) {
         final proc = new Process('haxe -p scripts/server --run TcpListen "$address" "$port"');
 
-        try_connect(0, Net(address, port), null, (socket, error) -> {
+        tryConnect(0, Net(address, port), null, (socket, error) -> {
             Assert.isNull(error);
 
             if (Assert.notNull(socket)) {
@@ -516,27 +514,6 @@ class SocketConnectTests extends Test {
                 proc.close();
 
                 async.done();
-            }
-        });
-    }
-
-    static function try_connect(attempt:Int, address:SocketAddress, ?options:SocketOptions, callback:Callback<Socket>) {
-        if (attempt > 3) {
-            callback.fail(new IoException(ConnectionRefused));
-
-            return;
-        }
-
-        Socket.connect(address, options, (socket, error) -> {
-            switch error {
-                case null:
-                    callback.success(socket);
-                case exn:
-                    if (exn is IoException && (cast exn:IoException).type == ConnectionRefused) {
-                        try_connect(attempt++, address, options, callback);
-                    } else {
-                        callback.fail(error);
-                    }
             }
         });
     }

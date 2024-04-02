@@ -2,6 +2,7 @@ import net.IpTests;
 import net.DnsTests;
 import net.ServerOpenTests;
 import net.ServerAcceptTests;
+import net.SocketReadingTests;
 import net.SocketConnectTests;
 import net.ServerReadingTests;
 import net.ServerWritingTests;
@@ -98,6 +99,7 @@ function test() {
     runner.addCase(new DnsTests());
     runner.addCase(new IpTests());
     runner.addCase(new SocketConnectTests());
+    runner.addCase(new SocketReadingTests());
     runner.addCase(new ServerOpenTests());
     runner.addCase(new ServerAcceptTests());
     runner.addCase(new ServerReadingTests());

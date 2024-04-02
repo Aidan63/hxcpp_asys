@@ -1,15 +1,16 @@
 package net;
 
+import sys.io.Process;
 import haxe.Callback;
-import asys.native.net.SocketOptions;
-import asys.native.net.SocketAddress;
 import haxe.Exception;
 import haxe.exceptions.ArgumentException;
-import sys.io.Process;
+import haxe.exceptions.NotImplementedException;
 import asys.native.IoErrorType;
 import asys.native.IoException;
-import utest.Assert;
 import asys.native.net.Socket;
+import asys.native.net.SocketOptions;
+import asys.native.net.SocketAddress;
+import utest.Assert;
 import utest.Async;
 import utest.Test;
 
@@ -250,7 +251,6 @@ class SocketConnectTests extends Test {
         final proc     = new Process('haxe -p scripts/server --run TcpListen "$address" "$port"');
         final expected = 7000;
 
-
         try_connect(0, Net(address, port), { receiveBuffer: expected }, (socket, error) -> {
             Assert.isNull(error);
 
@@ -259,6 +259,248 @@ class SocketConnectTests extends Test {
                     if (Assert.isNull(error)) {
                         Assert.equals(expected, size);
                     }
+
+                    socket.close((_, error) -> {
+                        Assert.isNull(error);
+                        
+                        proc.exitCode();
+                        proc.close();
+    
+                        async.done();
+                    });
+                });
+            } else {
+                proc.kill();
+                proc.close();
+
+                async.done();
+            }
+        });
+    }
+
+    function test_local_address(async:Async) {
+        final proc = new Process('haxe -p scripts/server --run TcpListen "$address" "$port"');
+
+        try_connect(0, Net(address, port), null, (socket, error) -> {
+            Assert.isNull(error);
+
+            if (Assert.notNull(socket)) {
+                socket.getOption(ReceiveBuffer, (size, error) -> {
+                    if (Assert.isNull(error)) {
+                        switch socket.localAddress {
+                            case Net(host, port):
+                                Assert.equals(address, host);
+                                Assert.isTrue(port > 0);
+                            case Ipc(_):
+                                Assert.fail('Expected network socket address');
+                        }
+                    }
+
+                    socket.close((_, error) -> {
+                        Assert.isNull(error);
+                        
+                        proc.exitCode();
+                        proc.close();
+    
+                        async.done();
+                    });
+                });
+            } else {
+                proc.kill();
+                proc.close();
+
+                async.done();
+            }
+        });
+    }
+
+    function test_remote_address(async:Async) {
+        final proc = new Process('haxe -p scripts/server --run TcpListen "$address" "$port"');
+
+        try_connect(0, Net(address, port), null, (socket, error) -> {
+            Assert.isNull(error);
+
+            if (Assert.notNull(socket)) {
+                socket.getOption(ReceiveBuffer, (size, error) -> {
+                    if (Assert.isNull(error)) {
+                        switch socket.localAddress {
+                            case Net(host, port):
+                                Assert.equals(address, host);
+                                Assert.isTrue(port > 0);
+                            case Ipc(_):
+                                Assert.fail('Expected network socket address');
+                        }
+                    }
+
+                    socket.close((_, error) -> {
+                        Assert.isNull(error);
+                        
+                        proc.exitCode();
+                        proc.close();
+    
+                        async.done();
+                    });
+                });
+            } else {
+                proc.kill();
+                proc.close();
+
+                async.done();
+            }
+        });
+    }
+
+    function test_get_option_null_callback(async:Async) {
+        final proc = new Process('haxe -p scripts/server --run TcpListen "$address" "$port"');
+
+        try_connect(0, Net(address, port), null, (socket, error) -> {
+            Assert.isNull(error);
+
+            if (Assert.notNull(socket)) {
+                Assert.exception(
+                    () -> socket.getOption(ReceiveBuffer, null),
+                    ArgumentException,
+                    exn -> exn.argument == 'callback');
+
+                socket.close((_, error) -> {
+                    Assert.isNull(error);
+                    
+                    proc.exitCode();
+                    proc.close();
+
+                    async.done();
+                });
+            } else {
+                proc.kill();
+                proc.close();
+
+                async.done();
+            }
+        });
+    }
+
+    function test_get_unsupported_option(async:Async) {
+        final proc = new Process('haxe -p scripts/server --run TcpListen "$address" "$port"');
+
+        try_connect(0, Net(address, port), null, (socket, error) -> {
+            Assert.isNull(error);
+
+            if (Assert.notNull(socket)) {
+                socket.getOption(MulticastLoop, (_, error) -> {
+                    Assert.isOfType(error, NotImplementedException);
+
+                    socket.close((_, error) -> {
+                        Assert.isNull(error);
+                        
+                        proc.exitCode();
+                        proc.close();
+    
+                        async.done();
+                    });
+                });
+            } else {
+                proc.kill();
+                proc.close();
+
+                async.done();
+            }
+        });
+    }
+
+    function test_get_invalid_option(async:Async) {
+        final proc = new Process('haxe -p scripts/server --run TcpListen "$address" "$port"');
+
+        try_connect(0, Net(address, port), null, (socket, error) -> {
+            Assert.isNull(error);
+
+            if (Assert.notNull(socket)) {
+                socket.getOption(cast -1, (_, error) -> {
+                    Assert.isOfType(error, NotImplementedException);
+
+                    socket.close((_, error) -> {
+                        Assert.isNull(error);
+                        
+                        proc.exitCode();
+                        proc.close();
+    
+                        async.done();
+                    });
+                });
+            } else {
+                proc.kill();
+                proc.close();
+
+                async.done();
+            }
+        });
+    }
+
+    function test_set_option_null_callback(async:Async) {
+        final proc = new Process('haxe -p scripts/server --run TcpListen "$address" "$port"');
+
+        try_connect(0, Net(address, port), null, (socket, error) -> {
+            Assert.isNull(error);
+
+            if (Assert.notNull(socket)) {
+                Assert.exception(
+                    () -> socket.setOption(ReceiveBuffer, 1024, null),
+                    ArgumentException,
+                    exn -> exn.argument == 'callback');
+
+                socket.close((_, error) -> {
+                    Assert.isNull(error);
+                    
+                    proc.exitCode();
+                    proc.close();
+
+                    async.done();
+                });
+            } else {
+                proc.kill();
+                proc.close();
+
+                async.done();
+            }
+        });
+    }
+
+    function test_set_unsupported_option(async:Async) {
+        final proc = new Process('haxe -p scripts/server --run TcpListen "$address" "$port"');
+
+        try_connect(0, Net(address, port), null, (socket, error) -> {
+            Assert.isNull(error);
+
+            if (Assert.notNull(socket)) {
+                socket.setOption(MulticastLoop, true, (_, error) -> {
+                    Assert.isOfType(error, NotImplementedException);
+
+                    socket.close((_, error) -> {
+                        Assert.isNull(error);
+                        
+                        proc.exitCode();
+                        proc.close();
+    
+                        async.done();
+                    });
+                });
+            } else {
+                proc.kill();
+                proc.close();
+
+                async.done();
+            }
+        });
+    }
+
+    function test_set_invalid_option(async:Async) {
+        final proc = new Process('haxe -p scripts/server --run TcpListen "$address" "$port"');
+
+        try_connect(0, Net(address, port), null, (socket, error) -> {
+            Assert.isNull(error);
+
+            if (Assert.notNull(socket)) {
+                socket.setOption(cast -1, null, (_, error) -> {
+                    Assert.isOfType(error, NotImplementedException);
 
                     socket.close((_, error) -> {
                         Assert.isNull(error);

@@ -46,6 +46,10 @@ class TcpSocketSpecialisation extends Socket {
 	}
 
 	override function getOption<T>(option:SocketOptionKind<T>, callback:Callback<T, Exception>) {
+		if (callback == null) {
+			throw new ArgumentException("callback");
+		}
+
 		switch option {
 			case KeepAlive:
 				native.getKeepAlive(
@@ -65,6 +69,10 @@ class TcpSocketSpecialisation extends Socket {
 	}
 
 	override function setOption<T>(option:SocketOptionKind<T>, value:T, callback:Callback<NoData, Exception>) {
+		if (callback == null) {
+			throw new ArgumentException("callback");
+		}
+
 		switch option {
 			case KeepAlive:
 				native.setKeepAlive(

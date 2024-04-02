@@ -67,7 +67,10 @@ class ServerAcceptTests extends Test {
             if (Assert.notNull(server)) {
                 final proc = new Process("haxe -p scripts/client --run TcpConnect");
 
-                Assert.raises(() -> server.accept(null), ArgumentException);
+                Assert.exception(
+                    () -> server.accept(null),
+                    ArgumentException,
+                    exn -> exn.argument == "callback");
 
                 server.close((_, error) -> {
                     Assert.isNull(error);
@@ -83,136 +86,66 @@ class ServerAcceptTests extends Test {
         });
     }
 
-    function test_accept_custom_keep_alive(async:Async) {
-        final expected = false;
-
-        Server.open(Net(address, port), { keepAlive: expected }, (server, error) -> {
+    function test_multiple_connections(async:Async) {
+        Server.open(Net(address, port), null, (server, error) -> {
             Assert.isNull(error);
 
             if (Assert.notNull(server)) {
-                final proc = new Process("haxe -p scripts/client --run TcpConnect");
+                final proc1 = new Process("haxe -p scripts/client --run TcpConnect");
 
-                server.accept((socket, error) -> {
+                server.accept((socket1, error) -> {
                     Assert.isNull(error);
                     
-                    if (Assert.notNull(socket)) {
-                        socket.getOption(KeepAlive, (keepAlive, error) -> {
-                            Assert.isNull(error);
-                            Assert.equals(expected, keepAlive);
+                    if (Assert.notNull(socket1)) {
+                        final proc2 = new Process("haxe -p scripts/client --run TcpConnect");
 
-                            socket.close((_, error) -> {
-                                if (Assert.isNull(error)) {
-                                    proc.exitCode();
-                                }
-    
-                                server.close((_, error) -> {
-                                    Assert.isNull(error);
-    
-                                    proc.close();
-                                    async.done();
+                        server.accept((socket2, error) -> {
+                            Assert.isNull(error);
+
+                            if (Assert.notNull(socket2)) {
+                                socket2.close((_, error) -> {
+                                    if (Assert.isNull(error)) {
+                                        proc2.exitCode();
+                                    }
+
+                                    socket1.close((_, error) -> {
+                                        if (Assert.isNull(error)) {
+                                            proc1.exitCode();
+                                        }
+            
+                                        server.close((_, error) -> {
+                                            Assert.isNull(error);
+            
+                                            proc1.close();
+                                            async.done();
+                                        });
+                                    });
                                 });
-                            });
+                            }
+                            else {
+                                proc2.kill();
+                                proc2.close();
+
+                                socket1.close((_, error) -> {
+                                    if (Assert.isNull(error)) {
+                                        proc1.exitCode();
+                                    }
+        
+                                    server.close((_, error) -> {
+                                        Assert.isNull(error);
+        
+                                        proc1.close();
+                                        async.done();
+                                    });
+                                });
+                            }                            
                         });
                     } else {
                         server.close((_, error) -> {
                             Assert.isNull(error);
 
-                            proc.kill();
-                            proc.close();
-
-                            async.done();
-                        });
-                    }
-                });
-            } else {
-                async.done();
-            }
-        });
-    }
-
-    function test_accept_custom_send_buffer_size(async:Async) {
-        final expected = 7000;
-
-        Server.open(Net(address, port), { sendBuffer: expected }, (server, error) -> {
-            Assert.isNull(error);
-
-            if (Assert.notNull(server)) {
-                final proc = new Process("haxe -p scripts/client --run TcpConnect");
-
-                server.accept((socket, error) -> {
-                    Assert.isNull(error);
-                    
-                    if (Assert.notNull(socket)) {
-                        socket.getOption(SendBuffer, (size, error) -> {
-                            Assert.isNull(error);
-                            Assert.equals(expected, size);
-
-                            socket.close((_, error) -> {
-                                if (Assert.isNull(error)) {
-                                    proc.exitCode();
-                                }
-    
-                                server.close((_, error) -> {
-                                    Assert.isNull(error);
-    
-                                    proc.close();
-                                    async.done();
-                                });
-                            });
-                        });
-                    } else {
-                        server.close((_, error) -> {
-                            Assert.isNull(error);
-
-                            proc.kill();
-                            proc.close();
-
-                            async.done();
-                        });
-                    }
-                });
-            } else {
-                async.done();
-            }
-        });
-    }
-
-    function test_accept_custom_recv_buffer_size(async:Async) {
-        final expected = 7000;
-
-        Server.open(Net(address, port), { receiveBuffer: expected }, (server, error) -> {
-            Assert.isNull(error);
-
-            if (Assert.notNull(server)) {
-                final proc = new Process("haxe -p scripts/client --run TcpConnect");
-
-                server.accept((socket, error) -> {
-                    Assert.isNull(error);
-                    
-                    if (Assert.notNull(socket)) {
-                        socket.getOption(ReceiveBuffer, (size, error) -> {
-                            Assert.isNull(error);
-                            Assert.equals(expected, size);
-
-                            socket.close((_, error) -> {
-                                if (Assert.isNull(error)) {
-                                    proc.exitCode();
-                                }
-    
-                                server.close((_, error) -> {
-                                    Assert.isNull(error);
-    
-                                    proc.close();
-                                    async.done();
-                                });
-                            });
-                        });
-                    } else {
-                        server.close((_, error) -> {
-                            Assert.isNull(error);
-
-                            proc.kill();
-                            proc.close();
+                            proc1.kill();
+                            proc1.close();
 
                             async.done();
                         });

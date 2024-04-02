@@ -1,5 +1,6 @@
 package net;
 
+import utils.IWritableTests;
 import haxe.Exception;
 import haxe.io.Bytes;
 import sys.io.Process;
@@ -10,7 +11,7 @@ import utest.Async;
 import utest.Test;
 
 @:timeout(1000)
-class ServerWritingTests extends Test {
+class ServerWritingTests extends Test implements IWritableTests {
     final address : String;
     final port : Int;
 
@@ -21,7 +22,7 @@ class ServerWritingTests extends Test {
         port    = 7000;
     }
 
-    function test_net_writing(async:Async) {
+    public function test_writing(async:Async) {
         Server.open(Net(address, port), null, (server, error) -> {
             Assert.isNull(error);
 
@@ -68,7 +69,7 @@ class ServerWritingTests extends Test {
         });
     }
 
-    function test_net_writing_null_callback(async:Async) {
+    public function test_writing_null_callback(async:Async) {
         Server.open(Net(address, port), null, (server, error) -> {
             Assert.isNull(error);
 
@@ -103,7 +104,7 @@ class ServerWritingTests extends Test {
         });
     }
 
-    function test_net_writing_null_buffer(async:Async) {
+    public function test_writing_null_buffer(async:Async) {
         Server.open(Net(address, port), null, (server, error) -> {
             Assert.isNull(error);
 
@@ -151,7 +152,7 @@ class ServerWritingTests extends Test {
         });
     }
 
-    function test_net_reading_negative_offset(async:Async) {
+    public function test_writing_negative_offset(async:Async) {
         Server.open(Net(address, port), null, (server, error) -> {
             Assert.isNull(error);
 
@@ -199,7 +200,7 @@ class ServerWritingTests extends Test {
         });
     }
 
-    function test_net_writing_large_offset(async:Async) {
+    public function test_writing_large_offset(async:Async) {
         Server.open(Net(address, port), null, (server, error) -> {
             Assert.isNull(error);
 
@@ -247,7 +248,7 @@ class ServerWritingTests extends Test {
         });
     }
 
-    function test_net_writing_negative_length(async:Async) {
+    public function test_writing_negative_length(async:Async) {
         Server.open(Net(address, port), null, (server, error) -> {
             Assert.isNull(error);
 
@@ -295,7 +296,7 @@ class ServerWritingTests extends Test {
         });
     }
 
-    function test_net_writing_invalid_range_due_to_large_length(async:Async) {
+    public function test_writing_invalid_range_due_to_large_length(async:Async) {
         Server.open(Net(address, port), null, (server, error) -> {
             Assert.isNull(error);
 
@@ -341,7 +342,7 @@ class ServerWritingTests extends Test {
         });
     }
 
-    function test_net_writing_invalid_range_due_to_offset(async:Async) {
+    public function test_writing_invalid_range_due_to_offset(async:Async) {
         Server.open(Net(address, port), null, (server, error) -> {
             Assert.isNull(error);
 

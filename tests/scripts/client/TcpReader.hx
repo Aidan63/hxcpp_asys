@@ -7,7 +7,6 @@ function main() {
             final client = new Socket();
             client.setTimeout(0.5);
             client.connect(new Host("127.0.0.1"), 7000);
-            client.setFastSend(true);
 
             Sys.println(client.input.readString(Std.parseInt(length)));
 

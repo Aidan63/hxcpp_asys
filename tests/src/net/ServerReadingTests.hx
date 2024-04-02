@@ -1,5 +1,6 @@
 package net;
 
+import utils.IReadableTests;
 import haxe.Exception;
 import haxe.io.Bytes;
 import sys.io.Process;
@@ -10,7 +11,7 @@ import utest.Async;
 import utest.Test;
 
 @:timeout(1000)
-class ServerReadingTests extends Test {
+class ServerReadingTests extends Test implements IReadableTests {
     final address : String;
     final port : Int;
 
@@ -21,7 +22,7 @@ class ServerReadingTests extends Test {
         port    = 7000;
     }
 
-    function test_net_reading(async:Async) {
+    public function test_reading(async:Async) {
         Server.open(Net(address, port), null, (server, error) -> {
             Assert.isNull(error);
 
@@ -72,7 +73,7 @@ class ServerReadingTests extends Test {
         });
     }
 
-    function test_net_reading_null_callback(async:Async) {
+    public function test_reading_null_callback(async:Async) {
         Server.open(Net(address, port), null, (server, error) -> {
             Assert.isNull(error);
 
@@ -104,7 +105,7 @@ class ServerReadingTests extends Test {
         });
     }
 
-    function test_net_reading_null_buffer(async:Async) {
+    public function test_reading_null_buffer(async:Async) {
         Server.open(Net(address, port), null, (server, error) -> {
             Assert.isNull(error);
 
@@ -152,7 +153,7 @@ class ServerReadingTests extends Test {
         });
     }
 
-    function test_net_reading_negative_offset(async:Async) {
+    public function test_reading_negative_offset(async:Async) {
         Server.open(Net(address, port), null, (server, error) -> {
             Assert.isNull(error);
 
@@ -200,7 +201,7 @@ class ServerReadingTests extends Test {
         });
     }
 
-    function test_net_reading_large_offset(async:Async) {
+    public function test_reading_large_offset(async:Async) {
         Server.open(Net(address, port), null, (server, error) -> {
             Assert.isNull(error);
 
@@ -248,7 +249,7 @@ class ServerReadingTests extends Test {
         });
     }
 
-    function test_net_reading_negative_length(async:Async) {
+    public function test_reading_negative_length(async:Async) {
         Server.open(Net(address, port), null, (server, error) -> {
             Assert.isNull(error);
 
@@ -296,7 +297,7 @@ class ServerReadingTests extends Test {
         });
     }
 
-    function test_net_reading_invalid_range_due_to_large_length(async:Async) {
+    public function test_reading_invalid_range_due_to_large_length(async:Async) {
         Server.open(Net(address, port), null, (server, error) -> {
             Assert.isNull(error);
 
@@ -342,7 +343,7 @@ class ServerReadingTests extends Test {
         });
     }
 
-    function test_net_reading_invalid_range_due_to_offset(async:Async) {
+    public function test_reading_invalid_range_due_to_offset(async:Async) {
         Server.open(Net(address, port), null, (server, error) -> {
             Assert.isNull(error);
 

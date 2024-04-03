@@ -1,5 +1,7 @@
 package net;
 
+import asys.native.IoErrorType;
+import asys.native.IoException;
 import haxe.io.Bytes;
 import sys.io.Process;
 import haxe.Exception;
@@ -40,6 +42,45 @@ class SocketReadingTests extends Test implements IReadableTests {
                     }
 
                     socket.close((_, error) -> {                   
+                        Assert.isNull(error);
+                        
+                        proc.exitCode();
+                        proc.close();
+    
+                        async.done();
+                    });
+                });
+            } else {
+                proc.kill();
+                proc.close();
+
+                async.done();
+            }
+        });
+    }
+
+    public function test_reading_from_killed_server(async:Async) {
+        final text = "Hello, World!";
+        final proc = new Process('haxe -p scripts/server --run TcpListen "$address" "$port"');
+
+        tryConnect(0, Net(address, port), null, (socket, error) -> {
+            Assert.isNull(error);
+
+            if (Assert.notNull(socket)) {
+                final buffer = Bytes.alloc(1024);
+
+                proc.exitCode();
+                proc.close();
+
+                socket.read(buffer, 0, buffer.length, (count, error) -> {
+                    if (Assert.isOfType(error, IoException)) {
+                        Assert.equals(0, count);
+                        Assert.equals(IoErrorType.CustomError("EOF"), (cast error:IoException).type);
+                    } else {
+                        Assert.equals(count, buffer.length);
+                    }
+
+                    socket.close((_, error) -> {
                         Assert.isNull(error);
                         
                         proc.exitCode();

@@ -9,6 +9,7 @@ function main() {
             final client = server.accept();
 
             client.write(data);
+            client.shutdown(true, true);
             client.close();
             server.close();
         case _:

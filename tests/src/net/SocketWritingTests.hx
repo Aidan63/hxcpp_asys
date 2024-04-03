@@ -1,5 +1,7 @@
 package net;
 
+import asys.native.IoErrorType;
+import asys.native.IoException;
 import haxe.Exception;
 import haxe.exceptions.ArgumentException;
 import haxe.io.Bytes;
@@ -24,7 +26,7 @@ class SocketWritingTests extends Test implements IWritableTests {
 
     public function test_writing(async:Async) {
         final text = "Hello, World!";
-        final proc = new Process('haxe -p scripts/server --run TcpListenerRead "$address" "$port" ${ text.length }');
+        final proc = new Process('haxe -p scripts/server --run TcpListenRead "$address" "$port" ${ text.length }');
 
         tryConnect(0, Net(address, port), null, (socket, error) -> {
             Assert.isNull(error);
@@ -56,9 +58,48 @@ class SocketWritingTests extends Test implements IWritableTests {
         });
     }
 
+    public function test_writing_to_killed_server(async:Async) {
+        final text = "Hello, World!";
+        final proc = new Process('haxe -p scripts/server --run TcpListen "$address" "$port"');
+
+        tryConnect(0, Net(address, port), null, (socket, error) -> {
+            Assert.isNull(error);
+
+            if (Assert.notNull(socket)) {
+                final buffer = Bytes.ofString(text);
+
+                proc.exitCode();
+                proc.close();
+
+                socket.write(buffer, 0, buffer.length, (count, error) -> {
+                    if (Assert.isOfType(error, IoException)) {
+                        Assert.equals(0, count);
+                        Assert.equals(IoErrorType.CustomError("EOF"), (cast error:IoException).type);
+                    } else {
+                        Assert.equals(count, buffer.length);
+                    }
+
+                    socket.close((_, error) -> {
+                        Assert.isNull(error);
+                        
+                        proc.exitCode();
+                        proc.close();
+    
+                        async.done();
+                    });
+                });
+            } else {
+                proc.kill();
+                proc.close();
+
+                async.done();
+            }
+        });
+    }
+
     public function test_writing_null_callback(async:Async) {
         final text = "Hello, World!";
-        final proc = new Process('haxe -p scripts/server --run TcpListenerRead "$address" "$port" ${ text.length }');
+        final proc = new Process('haxe -p scripts/server --run TcpListenRead "$address" "$port" ${ text.length }');
 
         tryConnect(0, Net(address, port), null, (socket, error) -> {
             Assert.isNull(error);
@@ -90,7 +131,7 @@ class SocketWritingTests extends Test implements IWritableTests {
 
     public function test_writing_null_buffer(async:Async) {
         final text = "Hello, World!";
-        final proc = new Process('haxe -p scripts/server --run TcpListenerRead "$address" "$port" ${ text.length }');
+        final proc = new Process('haxe -p scripts/server --run TcpListenRead "$address" "$port" ${ text.length }');
 
         tryConnect(0, Net(address, port), null, (socket, error) -> {
             Assert.isNull(error);
@@ -123,7 +164,7 @@ class SocketWritingTests extends Test implements IWritableTests {
 
     public function test_writing_negative_offset(async:Async) {
         final text = "Hello, World!";
-        final proc = new Process('haxe -p scripts/server --run TcpListenerRead "$address" "$port" ${ text.length }');
+        final proc = new Process('haxe -p scripts/server --run TcpListenRead "$address" "$port" ${ text.length }');
 
         tryConnect(0, Net(address, port), null, (socket, error) -> {
             Assert.isNull(error);
@@ -156,7 +197,7 @@ class SocketWritingTests extends Test implements IWritableTests {
 
     public function test_writing_large_offset(async:Async) {
         final text = "Hello, World!";
-        final proc = new Process('haxe -p scripts/server --run TcpListenerRead "$address" "$port" ${ text.length }');
+        final proc = new Process('haxe -p scripts/server --run TcpListenRead "$address" "$port" ${ text.length }');
 
         tryConnect(0, Net(address, port), null, (socket, error) -> {
             Assert.isNull(error);
@@ -189,7 +230,7 @@ class SocketWritingTests extends Test implements IWritableTests {
 
     public function test_writing_negative_length(async:Async) {
         final text = "Hello, World!";
-        final proc = new Process('haxe -p scripts/server --run TcpListenerRead "$address" "$port" ${ text.length }');
+        final proc = new Process('haxe -p scripts/server --run TcpListenRead "$address" "$port" ${ text.length }');
 
         tryConnect(0, Net(address, port), null, (socket, error) -> {
             Assert.isNull(error);
@@ -222,7 +263,7 @@ class SocketWritingTests extends Test implements IWritableTests {
 
     public function test_writing_invalid_range_due_to_large_length(async:Async) {
         final text = "Hello, World!";
-        final proc = new Process('haxe -p scripts/server --run TcpListenerRead "$address" "$port" ${ text.length }');
+        final proc = new Process('haxe -p scripts/server --run TcpListenRead "$address" "$port" ${ text.length }');
 
         tryConnect(0, Net(address, port), null, (socket, error) -> {
             Assert.isNull(error);
@@ -253,7 +294,7 @@ class SocketWritingTests extends Test implements IWritableTests {
 
     public function test_writing_invalid_range_due_to_offset(async:Async) {
         final text = "Hello, World!";
-        final proc = new Process('haxe -p scripts/server --run TcpListenerRead "$address" "$port" ${ text.length }');
+        final proc = new Process('haxe -p scripts/server --run TcpListenRead "$address" "$port" ${ text.length }');
 
         tryConnect(0, Net(address, port), null, (socket, error) -> {
             Assert.isNull(error);

@@ -5,7 +5,11 @@ function main() {
             server.setTimeout(0.5);
             server.bind(new sys.net.Host(ip), Std.parseInt(port));
             server.listen(1);
-            server.accept().close();
+            
+            final client = server.accept();
+            client.shutdown(true, true);
+            client.close();
+
             server.close();
         case _:
             Sys.exit(1);

@@ -60,7 +60,6 @@ class SocketReadingTests extends Test implements IReadableTests {
     }
 
     public function test_reading_from_killed_server(async:Async) {
-        final text = "Hello, World!";
         final proc = new Process('haxe -p scripts/server --run TcpListen "$address" "$port"');
 
         tryConnect(0, Net(address, port), null, (socket, error) -> {

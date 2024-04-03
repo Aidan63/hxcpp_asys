@@ -1,5 +1,7 @@
 package net;
 
+import asys.native.IoErrorType;
+import asys.native.IoException;
 import utils.IReadableTests;
 import haxe.Exception;
 import haxe.io.Bytes;
@@ -123,6 +125,51 @@ class ServerReadingTests extends Test implements IReadableTests {
             }
         });
     }
+
+    // public function test_reading_from_killed_client(async:Async) {
+    //     Server.open(Net(address, port), null, (server, error) -> {
+    //         Assert.isNull(error);
+
+    //         if (Assert.notNull(server)) {
+    //             final proc = new Process('haxe -p scripts/client --run TcpConnect');
+
+    //             server.accept((socket, error) -> {
+    //                 Assert.isNull(error);
+
+    //                 proc.kill();
+    //                 proc.close();
+                    
+    //                 if (Assert.notNull(socket)) {
+    //                     final buffer = Bytes.alloc(1024);
+
+    //                     socket.read(buffer, 0, buffer.length, (count, error) -> {
+    //                         if (Assert.isOfType(error, IoException)) {
+    //                             Assert.equals(IoErrorType.CustomError("EOF"), (cast error : IoException).type);
+    //                         }
+
+    //                         socket.close((_, error) -> {
+    //                             Assert.isNull(error);
+    
+    //                             server.close((_, error) -> {
+    //                                 Assert.isNull(error);
+    
+    //                                 async.done();
+    //                             });
+    //                         });
+    //                     });
+    //                 } else {
+    //                     server.close((_, error) -> {
+    //                         Assert.isNull(error);
+
+    //                         async.done();
+    //                     });
+    //                 }
+    //             });
+    //         } else {
+    //             async.done();
+    //         }
+    //     });
+    // }
 
     public function test_reading_null_callback(async:Async) {
         Server.open(Net(address, port), null, (server, error) -> {

@@ -73,6 +73,57 @@ class ServerReadingTests extends Test implements IReadableTests {
         });
     }
 
+    public function test_reading_after_closing(async:Async) {
+        Server.open(Net(address, port), null, (server, error) -> {
+            Assert.isNull(error);
+
+            if (Assert.notNull(server)) {
+                final text = "Hello, World!";
+                final proc = new Process('haxe -p scripts/client --run TcpWriter "$text"');
+
+                server.accept((socket, error) -> {
+                    Assert.isNull(error);
+                    
+                    if (Assert.notNull(socket)) {
+                        server.close((_, error) -> {
+                            Assert.isNull(error);
+
+                            final buffer   = Bytes.alloc(1024);
+                            final expected = Bytes.ofString(text);
+
+                            socket.read(buffer, 0, buffer.length, (count, error) -> {
+                                Assert.isNull(error);
+    
+                                if (Assert.equals(expected.length, count)) {
+                                    Assert.equals(0, buffer.sub(0, count).compare(expected));
+                                }
+    
+                                socket.close((_, error) -> {
+                                    Assert.isNull(error);
+    
+                                    proc.kill();
+                                    proc.close();
+                                    async.done();
+                                });
+                            });
+                        });
+                    } else {
+                        server.close((_, error) -> {
+                            Assert.isNull(error);
+
+                            proc.kill();
+                            proc.close();
+
+                            async.done();
+                        });
+                    }
+                });
+            } else {
+                async.done();
+            }
+        });
+    }
+
     public function test_reading_null_callback(async:Async) {
         Server.open(Net(address, port), null, (server, error) -> {
             Assert.isNull(error);

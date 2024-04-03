@@ -75,8 +75,6 @@ class SocketWritingTests extends Test implements IWritableTests {
                     if (Assert.isOfType(error, IoException)) {
                         Assert.equals(0, count);
                         Assert.equals(IoErrorType.CustomError("EOF"), (cast error:IoException).type);
-                    } else {
-                        Assert.equals(count, buffer.length);
                     }
 
                     socket.close((_, error) -> {

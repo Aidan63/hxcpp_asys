@@ -69,6 +69,53 @@ class ServerWritingTests extends Test implements IWritableTests {
         });
     }
 
+    public function test_writing_after_closing(async:Async) {
+        Server.open(Net(address, port), null, (server, error) -> {
+            Assert.isNull(error);
+
+            if (Assert.notNull(server)) {
+                final text = "Hello, World!";
+                final proc = new Process('haxe -p scripts/client --run TcpReader ${text.length}');
+
+                server.accept((socket, error) -> {
+                    Assert.isNull(error);
+                    
+                    if (Assert.notNull(socket)) {
+                        server.close((_, error) -> {
+                            Assert.isNull(error);
+
+                            final buffer = Bytes.ofString(text);
+
+                            socket.write(buffer, 0, buffer.length, (count, error) -> {
+                                Assert.isNull(error);
+                                Assert.equals(text, proc.stdout.readLine());
+    
+                                socket.close((_, error) -> {
+                                    Assert.isNull(error);
+    
+                                    proc.kill();
+                                    proc.close();
+                                    async.done();
+                                });
+                            });
+                        });
+                    } else {
+                        server.close((_, error) -> {
+                            Assert.isNull(error);
+
+                            proc.kill();
+                            proc.close();
+
+                            async.done();
+                        });
+                    }
+                });
+            } else {
+                async.done();
+            }
+        });
+    }
+
     public function test_writing_null_callback(async:Async) {
         Server.open(Net(address, port), null, (server, error) -> {
             Assert.isNull(error);

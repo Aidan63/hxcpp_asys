@@ -1,5 +1,6 @@
 package system;
 
+import utils.IWritableTests;
 import asys.native.system.Process;
 import asys.native.IWritable;
 import haxe.exceptions.ArgumentException;
@@ -20,7 +21,7 @@ class TestCurrentProcessWriteStderr extends TestCurrentProcessWriteTty {
     }
 }
 
-abstract class TestCurrentProcessWriteTty extends Test {
+abstract class TestCurrentProcessWriteTty extends Test implements IWritableTests {
     final data : Bytes;
     final writable : IWritable;
 
@@ -31,7 +32,7 @@ abstract class TestCurrentProcessWriteTty extends Test {
         writable = _writable;
     }
 
-    function test_write(async:Async) {
+    public function test_writing(async:Async) {
         writable.write(
             data,
             0,
@@ -44,11 +45,13 @@ abstract class TestCurrentProcessWriteTty extends Test {
             });
     }
 
-    function test_null_callback() {
+    public function test_writing_null_callback(async:Async) {
         Assert.raises(() -> writable.write(data, 0, data.length, null), ArgumentException);
+
+        async.done();
     }
 
-    function test_null_buffer(async:Async) {
+    public function test_writing_null_buffer(async:Async) {
         writable.write(null, 0, 7, (count, error) -> {
             Assert.equals(0, count);
 
@@ -60,7 +63,7 @@ abstract class TestCurrentProcessWriteTty extends Test {
         });
     }
 
-    function test_negative_offset(async:Async) {
+    public function test_writing_negative_offset(async:Async) {
         writable.write(data, -1, data.length, (count, error) -> {
             Assert.equals(0, count);
 
@@ -72,7 +75,7 @@ abstract class TestCurrentProcessWriteTty extends Test {
         });
     }
 
-    function test_negative_length(async:Async) {
+    public function test_writing_large_offset(async:Async) {
         writable.write(data, 0, -1, (count, error) -> {
             Assert.equals(0, count);
 
@@ -84,7 +87,7 @@ abstract class TestCurrentProcessWriteTty extends Test {
         });
     }
 
-    function test_wrong_buffer_offset(async:Async) {
+    public function test_writing_negative_length(async:Async) {
         writable.write(data, data.length + 1, data.length, (count, error) -> {
             Assert.equals(0, count);
 
@@ -96,7 +99,7 @@ abstract class TestCurrentProcessWriteTty extends Test {
         });
     }
 
-    function test_writing_too_long_buffer(async:Async) {
+    public function test_writing_invalid_range_due_to_large_length(async:Async) {
         writable.write(data, 0, data.length * 2, (count, error) -> {
             Assert.equals(0, count);
 
@@ -108,7 +111,7 @@ abstract class TestCurrentProcessWriteTty extends Test {
         });
     }
 
-    function test_writing_too_long_buffer_length_due_to_offset(async:Async) {
+    public function test_writing_invalid_range_due_to_offset(async:Async) {
         writable.write(data, 8, data.length, (count, error) -> {
             Assert.equals(0, count);
 

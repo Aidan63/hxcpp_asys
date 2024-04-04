@@ -16,12 +16,30 @@ import utest.Test;
 class ServerReadingTests extends Test implements IReadableTests {
     final address : String;
     final port : Int;
+    final text : String;
+
+    var proc : Null<Process>;
 
     public function new() {
         super();
 
         address = "127.0.0.1";
         port    = 7000;
+        text    = "Hello, World!";
+        proc    = null;
+    }
+
+    function setup() {
+        proc = new Process('haxe -p scripts/client --run TcpWriter "$text"');
+    }
+
+    function teardown() {
+        if (proc != null) {
+            proc.kill();
+            proc.exitCode();
+            proc.close();
+            proc = null;
+        }
     }
 
     public function test_reading(async:Async) {
@@ -29,9 +47,6 @@ class ServerReadingTests extends Test implements IReadableTests {
             Assert.isNull(error);
 
             if (Assert.notNull(server)) {
-                final text = "Hello, World!";
-                final proc = new Process('haxe -p scripts/client --run TcpWriter "$text"');
-
                 server.accept((socket, error) -> {
                     Assert.isNull(error);
                     
@@ -52,8 +67,6 @@ class ServerReadingTests extends Test implements IReadableTests {
                                 server.close((_, error) -> {
                                     Assert.isNull(error);
     
-                                    proc.kill();
-                                    proc.close();
                                     async.done();
                                 });
                             });
@@ -61,9 +74,6 @@ class ServerReadingTests extends Test implements IReadableTests {
                     } else {
                         server.close((_, error) -> {
                             Assert.isNull(error);
-
-                            proc.kill();
-                            proc.close();
 
                             async.done();
                         });
@@ -80,9 +90,6 @@ class ServerReadingTests extends Test implements IReadableTests {
             Assert.isNull(error);
 
             if (Assert.notNull(server)) {
-                final text = "Hello, World!";
-                final proc = new Process('haxe -p scripts/client --run TcpWriter "$text"');
-
                 server.accept((socket, error) -> {
                     Assert.isNull(error);
                     
@@ -103,8 +110,6 @@ class ServerReadingTests extends Test implements IReadableTests {
                                 socket.close((_, error) -> {
                                     Assert.isNull(error);
     
-                                    proc.kill();
-                                    proc.close();
                                     async.done();
                                 });
                             });
@@ -112,9 +117,6 @@ class ServerReadingTests extends Test implements IReadableTests {
                     } else {
                         server.close((_, error) -> {
                             Assert.isNull(error);
-
-                            proc.kill();
-                            proc.close();
 
                             async.done();
                         });
@@ -126,59 +128,51 @@ class ServerReadingTests extends Test implements IReadableTests {
         });
     }
 
-    // public function test_reading_from_killed_client(async:Async) {
-    //     Server.open(Net(address, port), null, (server, error) -> {
-    //         Assert.isNull(error);
+    public function test_reading_from_killed_client(async:Async) {
+        Server.open(Net(address, port), null, (server, error) -> {
+            Assert.isNull(error);
 
-    //         if (Assert.notNull(server)) {
-    //             final proc = new Process('haxe -p scripts/client --run TcpConnect');
-
-    //             server.accept((socket, error) -> {
-    //                 Assert.isNull(error);
-
-    //                 proc.kill();
-    //                 proc.close();
+            if (Assert.notNull(server)) {
+                server.accept((socket, error) -> {
+                    Assert.isNull(error);
                     
-    //                 if (Assert.notNull(socket)) {
-    //                     final buffer = Bytes.alloc(1024);
+                    if (Assert.notNull(socket)) {
+                        final buffer = Bytes.alloc(1024);
 
-    //                     socket.read(buffer, 0, buffer.length, (count, error) -> {
-    //                         if (Assert.isOfType(error, IoException)) {
-    //                             Assert.equals(IoErrorType.CustomError("EOF"), (cast error : IoException).type);
-    //                         }
+                        socket.read(buffer, 0, buffer.length, (count, error) -> {
+                            if (Assert.isOfType(error, IoException)) {
+                                Assert.equals(IoErrorType.CustomError("EOF"), (cast error : IoException).type);
+                            }
 
-    //                         socket.close((_, error) -> {
-    //                             Assert.isNull(error);
+                            socket.close((_, error) -> {
+                                Assert.isNull(error);
     
-    //                             server.close((_, error) -> {
-    //                                 Assert.isNull(error);
+                                server.close((_, error) -> {
+                                    Assert.isNull(error);
     
-    //                                 async.done();
-    //                             });
-    //                         });
-    //                     });
-    //                 } else {
-    //                     server.close((_, error) -> {
-    //                         Assert.isNull(error);
+                                    async.done();
+                                });
+                            });
+                        });
+                    } else {
+                        server.close((_, error) -> {
+                            Assert.isNull(error);
 
-    //                         async.done();
-    //                     });
-    //                 }
-    //             });
-    //         } else {
-    //             async.done();
-    //         }
-    //     });
-    // }
+                            async.done();
+                        });
+                    }
+                });
+            } else {
+                async.done();
+            }
+        });
+    }
 
     public function test_reading_null_callback(async:Async) {
         Server.open(Net(address, port), null, (server, error) -> {
             Assert.isNull(error);
 
             if (Assert.notNull(server)) {
-                final text = "Hello, World!";
-                final proc = new Process('haxe -p scripts/client --run TcpWriter "$text"');
-
                 server.accept((socket, error) -> {
                     Assert.isNull(error);
                     
@@ -190,10 +184,6 @@ class ServerReadingTests extends Test implements IReadableTests {
                     
                     server.close((_, error) -> {
                         Assert.isNull(error);
-
-                        proc.kill();
-                        proc.close();
-
                         async.done();
                     });
                 });
@@ -208,9 +198,6 @@ class ServerReadingTests extends Test implements IReadableTests {
             Assert.isNull(error);
 
             if (Assert.notNull(server)) {
-                final text = "Hello, World!";
-                final proc = new Process('haxe -p scripts/client --run TcpWriter "$text"');
-
                 server.accept((socket, error) -> {
                     Assert.isNull(error);
                     
@@ -228,8 +215,6 @@ class ServerReadingTests extends Test implements IReadableTests {
                                 server.close((_, error) -> {
                                     Assert.isNull(error);
     
-                                    proc.kill();
-                                    proc.close();
                                     async.done();
                                 });
                             });
@@ -237,9 +222,6 @@ class ServerReadingTests extends Test implements IReadableTests {
                     } else {
                         server.close((_, error) -> {
                             Assert.isNull(error);
-
-                            proc.kill();
-                            proc.close();
 
                             async.done();
                         });
@@ -256,9 +238,6 @@ class ServerReadingTests extends Test implements IReadableTests {
             Assert.isNull(error);
 
             if (Assert.notNull(server)) {
-                final text = "Hello, World!";
-                final proc = new Process('haxe -p scripts/client --run TcpWriter "$text"');
-
                 server.accept((socket, error) -> {
                     Assert.isNull(error);
                     
@@ -276,8 +255,6 @@ class ServerReadingTests extends Test implements IReadableTests {
                                 server.close((_, error) -> {
                                     Assert.isNull(error);
     
-                                    proc.kill();
-                                    proc.close();
                                     async.done();
                                 });
                             });
@@ -285,9 +262,6 @@ class ServerReadingTests extends Test implements IReadableTests {
                     } else {
                         server.close((_, error) -> {
                             Assert.isNull(error);
-
-                            proc.kill();
-                            proc.close();
 
                             async.done();
                         });
@@ -304,9 +278,6 @@ class ServerReadingTests extends Test implements IReadableTests {
             Assert.isNull(error);
 
             if (Assert.notNull(server)) {
-                final text = "Hello, World!";
-                final proc = new Process('haxe -p scripts/client --run TcpWriter "$text"');
-
                 server.accept((socket, error) -> {
                     Assert.isNull(error);
                     
@@ -324,8 +295,6 @@ class ServerReadingTests extends Test implements IReadableTests {
                                 server.close((_, error) -> {
                                     Assert.isNull(error);
     
-                                    proc.kill();
-                                    proc.close();
                                     async.done();
                                 });
                             });
@@ -333,9 +302,6 @@ class ServerReadingTests extends Test implements IReadableTests {
                     } else {
                         server.close((_, error) -> {
                             Assert.isNull(error);
-
-                            proc.kill();
-                            proc.close();
 
                             async.done();
                         });
@@ -352,9 +318,6 @@ class ServerReadingTests extends Test implements IReadableTests {
             Assert.isNull(error);
 
             if (Assert.notNull(server)) {
-                final text = "Hello, World!";
-                final proc = new Process('haxe -p scripts/client --run TcpWriter "$text"');
-
                 server.accept((socket, error) -> {
                     Assert.isNull(error);
                     
@@ -372,8 +335,6 @@ class ServerReadingTests extends Test implements IReadableTests {
                                 server.close((_, error) -> {
                                     Assert.isNull(error);
     
-                                    proc.kill();
-                                    proc.close();
                                     async.done();
                                 });
                             });
@@ -381,9 +342,6 @@ class ServerReadingTests extends Test implements IReadableTests {
                     } else {
                         server.close((_, error) -> {
                             Assert.isNull(error);
-
-                            proc.kill();
-                            proc.close();
 
                             async.done();
                         });
@@ -400,9 +358,6 @@ class ServerReadingTests extends Test implements IReadableTests {
             Assert.isNull(error);
 
             if (Assert.notNull(server)) {
-                final text = "Hello, World!";
-                final proc = new Process('haxe -p scripts/client --run TcpWriter "$text"');
-
                 server.accept((socket, error) -> {
                     Assert.isNull(error);
                     
@@ -418,8 +373,6 @@ class ServerReadingTests extends Test implements IReadableTests {
                                 server.close((_, error) -> {
                                     Assert.isNull(error);
     
-                                    proc.kill();
-                                    proc.close();
                                     async.done();
                                 });
                             });
@@ -427,9 +380,6 @@ class ServerReadingTests extends Test implements IReadableTests {
                     } else {
                         server.close((_, error) -> {
                             Assert.isNull(error);
-
-                            proc.kill();
-                            proc.close();
 
                             async.done();
                         });
@@ -446,9 +396,6 @@ class ServerReadingTests extends Test implements IReadableTests {
             Assert.isNull(error);
 
             if (Assert.notNull(server)) {
-                final text = "Hello, World!";
-                final proc = new Process('haxe -p scripts/client --run TcpWriter "$text"');
-
                 server.accept((socket, error) -> {
                     Assert.isNull(error);
                     
@@ -464,8 +411,6 @@ class ServerReadingTests extends Test implements IReadableTests {
                                 server.close((_, error) -> {
                                     Assert.isNull(error);
     
-                                    proc.kill();
-                                    proc.close();
                                     async.done();
                                 });
                             });
@@ -473,9 +418,6 @@ class ServerReadingTests extends Test implements IReadableTests {
                     } else {
                         server.close((_, error) -> {
                             Assert.isNull(error);
-
-                            proc.kill();
-                            proc.close();
 
                             async.done();
                         });

@@ -16,12 +16,29 @@ import utest.Test;
 class ServerWritingTests extends Test implements IWritableTests {
     final address : String;
     final port : Int;
+    final text : String;
+
+    var proc : Null<Process>;
 
     public function new() {
         super();
 
         address = "127.0.0.1";
         port    = 7000;
+        text    = "Hello, World!";
+    }
+
+    function setup() {
+        proc = new Process('haxe -p scripts/client --run TcpReader ${text.length}');
+    }
+
+    function teardown() {
+        if (proc != null) {
+            proc.kill();
+            proc.exitCode();
+            proc.close();
+            proc = null;
+        }
     }
 
     public function test_writing(async:Async) {
@@ -29,9 +46,6 @@ class ServerWritingTests extends Test implements IWritableTests {
             Assert.isNull(error);
 
             if (Assert.notNull(server)) {
-                final text = "Hello, World!";
-                final proc = new Process('haxe -p scripts/client --run TcpReader ${text.length}');
-
                 server.accept((socket, error) -> {
                     Assert.isNull(error);
                     
@@ -48,8 +62,6 @@ class ServerWritingTests extends Test implements IWritableTests {
                                 server.close((_, error) -> {
                                     Assert.isNull(error);
     
-                                    proc.kill();
-                                    proc.close();
                                     async.done();
                                 });
                             });
@@ -57,9 +69,6 @@ class ServerWritingTests extends Test implements IWritableTests {
                     } else {
                         server.close((_, error) -> {
                             Assert.isNull(error);
-
-                            proc.kill();
-                            proc.close();
 
                             async.done();
                         });
@@ -76,14 +85,13 @@ class ServerWritingTests extends Test implements IWritableTests {
             Assert.isNull(error);
 
             if (Assert.notNull(server)) {
-                final text = "Hello, World!";
-                final proc = new Process('haxe -p scripts/client --run TcpConnect');
-
                 server.accept((socket, error) -> {
                     Assert.isNull(error);
 
                     proc.kill();
+                    proc.exitCode();
                     proc.close();
+                    proc = null;
                     
                     if (Assert.notNull(socket)) {
                         final buffer = Bytes.ofString(text);
@@ -122,9 +130,6 @@ class ServerWritingTests extends Test implements IWritableTests {
             Assert.isNull(error);
 
             if (Assert.notNull(server)) {
-                final text = "Hello, World!";
-                final proc = new Process('haxe -p scripts/client --run TcpReader ${text.length}');
-
                 server.accept((socket, error) -> {
                     Assert.isNull(error);
                     
@@ -141,8 +146,6 @@ class ServerWritingTests extends Test implements IWritableTests {
                                 socket.close((_, error) -> {
                                     Assert.isNull(error);
     
-                                    proc.kill();
-                                    proc.close();
                                     async.done();
                                 });
                             });
@@ -150,9 +153,6 @@ class ServerWritingTests extends Test implements IWritableTests {
                     } else {
                         server.close((_, error) -> {
                             Assert.isNull(error);
-
-                            proc.kill();
-                            proc.close();
 
                             async.done();
                         });
@@ -169,9 +169,6 @@ class ServerWritingTests extends Test implements IWritableTests {
             Assert.isNull(error);
 
             if (Assert.notNull(server)) {
-                final text = "Hello, World!";
-                final proc = new Process('haxe -p scripts/client --run TcpReader ${text.length}');
-
                 server.accept((socket, error) -> {
                     Assert.isNull(error);
                     
@@ -187,9 +184,6 @@ class ServerWritingTests extends Test implements IWritableTests {
                     server.close((_, error) -> {
                         Assert.isNull(error);
 
-                        proc.kill();
-                        proc.close();
-
                         async.done();
                     });
                 });
@@ -204,9 +198,6 @@ class ServerWritingTests extends Test implements IWritableTests {
             Assert.isNull(error);
 
             if (Assert.notNull(server)) {
-                final text = "Hello, World!";
-                final proc = new Process('haxe -p scripts/client --run TcpReader ${text.length}');
-
                 server.accept((socket, error) -> {
                     Assert.isNull(error);
                     
@@ -223,9 +214,7 @@ class ServerWritingTests extends Test implements IWritableTests {
     
                                 server.close((_, error) -> {
                                     Assert.isNull(error);
-    
-                                    proc.kill();
-                                    proc.close();
+
                                     async.done();
                                 });
                             });
@@ -233,9 +222,6 @@ class ServerWritingTests extends Test implements IWritableTests {
                     } else {
                         server.close((_, error) -> {
                             Assert.isNull(error);
-
-                            proc.kill();
-                            proc.close();
 
                             async.done();
                         });
@@ -252,9 +238,6 @@ class ServerWritingTests extends Test implements IWritableTests {
             Assert.isNull(error);
 
             if (Assert.notNull(server)) {
-                final text = "Hello, World!";
-                final proc = new Process('haxe -p scripts/client --run TcpReader ${text.length}');
-
                 server.accept((socket, error) -> {
                     Assert.isNull(error);
                     
@@ -272,8 +255,6 @@ class ServerWritingTests extends Test implements IWritableTests {
                                 server.close((_, error) -> {
                                     Assert.isNull(error);
     
-                                    proc.kill();
-                                    proc.close();
                                     async.done();
                                 });
                             });
@@ -281,9 +262,6 @@ class ServerWritingTests extends Test implements IWritableTests {
                     } else {
                         server.close((_, error) -> {
                             Assert.isNull(error);
-
-                            proc.kill();
-                            proc.close();
 
                             async.done();
                         });
@@ -300,9 +278,6 @@ class ServerWritingTests extends Test implements IWritableTests {
             Assert.isNull(error);
 
             if (Assert.notNull(server)) {
-                final text = "Hello, World!";
-                final proc = new Process('haxe -p scripts/client --run TcpReader ${text.length}');
-
                 server.accept((socket, error) -> {
                     Assert.isNull(error);
                     
@@ -320,8 +295,6 @@ class ServerWritingTests extends Test implements IWritableTests {
                                 server.close((_, error) -> {
                                     Assert.isNull(error);
     
-                                    proc.kill();
-                                    proc.close();
                                     async.done();
                                 });
                             });
@@ -329,9 +302,6 @@ class ServerWritingTests extends Test implements IWritableTests {
                     } else {
                         server.close((_, error) -> {
                             Assert.isNull(error);
-
-                            proc.kill();
-                            proc.close();
 
                             async.done();
                         });
@@ -348,9 +318,6 @@ class ServerWritingTests extends Test implements IWritableTests {
             Assert.isNull(error);
 
             if (Assert.notNull(server)) {
-                final text = "Hello, World!";
-                final proc = new Process('haxe -p scripts/client --run TcpReader ${text.length}');
-
                 server.accept((socket, error) -> {
                     Assert.isNull(error);
                     
@@ -367,9 +334,7 @@ class ServerWritingTests extends Test implements IWritableTests {
     
                                 server.close((_, error) -> {
                                     Assert.isNull(error);
-    
-                                    proc.kill();
-                                    proc.close();
+
                                     async.done();
                                 });
                             });
@@ -377,9 +342,6 @@ class ServerWritingTests extends Test implements IWritableTests {
                     } else {
                         server.close((_, error) -> {
                             Assert.isNull(error);
-
-                            proc.kill();
-                            proc.close();
 
                             async.done();
                         });
@@ -396,9 +358,6 @@ class ServerWritingTests extends Test implements IWritableTests {
             Assert.isNull(error);
 
             if (Assert.notNull(server)) {
-                final text = "Hello, World!";
-                final proc = new Process('haxe -p scripts/client --run TcpReader ${text.length}');
-
                 server.accept((socket, error) -> {
                     Assert.isNull(error);
                     
@@ -414,8 +373,6 @@ class ServerWritingTests extends Test implements IWritableTests {
                                 server.close((_, error) -> {
                                     Assert.isNull(error);
     
-                                    proc.kill();
-                                    proc.close();
                                     async.done();
                                 });
                             });
@@ -423,9 +380,6 @@ class ServerWritingTests extends Test implements IWritableTests {
                     } else {
                         server.close((_, error) -> {
                             Assert.isNull(error);
-
-                            proc.kill();
-                            proc.close();
 
                             async.done();
                         });
@@ -442,9 +396,6 @@ class ServerWritingTests extends Test implements IWritableTests {
             Assert.isNull(error);
 
             if (Assert.notNull(server)) {
-                final text = "Hello, World!";
-                final proc = new Process('haxe -p scripts/client --run TcpReader ${text.length}');
-
                 server.accept((socket, error) -> {
                     Assert.isNull(error);
                     
@@ -460,8 +411,6 @@ class ServerWritingTests extends Test implements IWritableTests {
                                 server.close((_, error) -> {
                                     Assert.isNull(error);
     
-                                    proc.kill();
-                                    proc.close();
                                     async.done();
                                 });
                             });
@@ -469,9 +418,6 @@ class ServerWritingTests extends Test implements IWritableTests {
                     } else {
                         server.close((_, error) -> {
                             Assert.isNull(error);
-
-                            proc.kill();
-                            proc.close();
 
                             async.done();
                         });

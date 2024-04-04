@@ -16,24 +16,40 @@ import utils.IReadableTests;
 class SocketReadingTests extends Test implements IReadableTests {
     final address : String;
     final port : Int;
+    final text : String;
+
+    var proc : Null<Process>;
 
     public function new() {
         super();
 
         address = "127.0.0.1";
         port    = 7000;
+        text    = "Hello, World!";
+        proc    = null;
+    }
+
+    function setup() {
+        proc = new Process('haxe -p scripts/server --run TcpListenWrite "$address" "$port" "$text"');
+    }
+
+    function teardown() {
+        if (proc != null) {
+            proc.kill();
+            proc.exitCode();
+            proc.close();
+
+            proc = null;
+        }
     }
 
     public function test_reading(async:Async) {
-        final data = "Hello, World!";
-        final proc = new Process('haxe -p scripts/server --run TcpListenWrite "$address" "$port" "$data"');
-
         tryConnect(0, Net(address, port), null, (socket, error) -> {
             Assert.isNull(error);
 
             if (Assert.notNull(socket)) {
                 final buffer   = Bytes.alloc(1024);
-                final expected = Bytes.ofString(data);
+                final expected = Bytes.ofString(text);
 
                 socket.read(buffer, 0, buffer.length, (count, error) -> {
                     if (Assert.isNull(error)) {
@@ -43,33 +59,27 @@ class SocketReadingTests extends Test implements IReadableTests {
 
                     socket.close((_, error) -> {                   
                         Assert.isNull(error);
-                        
-                        proc.exitCode();
-                        proc.close();
     
                         async.done();
                     });
                 });
             } else {
-                proc.kill();
-                proc.close();
-
                 async.done();
             }
         });
     }
 
     public function test_reading_from_killed_server(async:Async) {
-        final proc = new Process('haxe -p scripts/server --run TcpListen "$address" "$port"');
-
         tryConnect(0, Net(address, port), null, (socket, error) -> {
             Assert.isNull(error);
 
             if (Assert.notNull(socket)) {
                 final buffer = Bytes.alloc(1024);
 
+                proc.kill();
                 proc.exitCode();
                 proc.close();
+                proc = null;
 
                 socket.read(buffer, 0, buffer.length, (count, error) -> {
                     if (Assert.isOfType(error, IoException)) {
@@ -82,25 +92,16 @@ class SocketReadingTests extends Test implements IReadableTests {
                     socket.close((_, error) -> {
                         Assert.isNull(error);
                         
-                        proc.exitCode();
-                        proc.close();
-    
                         async.done();
                     });
                 });
             } else {
-                proc.kill();
-                proc.close();
-
                 async.done();
             }
         });
     }
 
     public function test_reading_null_callback(async:Async) {
-        final data = "Hello, World!";
-        final proc = new Process('haxe -p scripts/server --run TcpListenWrite "$address" "$port" "$data"');
-
         tryConnect(0, Net(address, port), null, (socket, error) -> {
             Assert.isNull(error);
 
@@ -115,24 +116,15 @@ class SocketReadingTests extends Test implements IReadableTests {
                 socket.close((_, error) -> {                   
                     Assert.isNull(error);
                     
-                    proc.exitCode();
-                    proc.close();
-
                     async.done();
                 });
             } else {
-                proc.kill();
-                proc.close();
-
                 async.done();
             }
         });
     }
 
     public function test_reading_null_buffer(async:Async) {
-        final data = "Hello, World!";
-        final proc = new Process('haxe -p scripts/server --run TcpListenWrite "$address" "$port" "$data"');
-
         tryConnect(0, Net(address, port), null, (socket, error) -> {
             Assert.isNull(error);
 
@@ -147,26 +139,17 @@ class SocketReadingTests extends Test implements IReadableTests {
 
                     socket.close((_, error) -> {                   
                         Assert.isNull(error);
-                        
-                        proc.exitCode();
-                        proc.close();
-    
+
                         async.done();
                     });
                 });
             } else {
-                proc.kill();
-                proc.close();
-
                 async.done();
             }
         });
     }
 
     public function test_reading_negative_offset(async:Async) {
-        final data = "Hello, World!";
-        final proc = new Process('haxe -p scripts/server --run TcpListenWrite "$address" "$port" "$data"');
-
         tryConnect(0, Net(address, port), null, (socket, error) -> {
             Assert.isNull(error);
 
@@ -181,26 +164,17 @@ class SocketReadingTests extends Test implements IReadableTests {
 
                     socket.close((_, error) -> {                   
                         Assert.isNull(error);
-                        
-                        proc.exitCode();
-                        proc.close();
-    
+
                         async.done();
                     });
                 });
             } else {
-                proc.kill();
-                proc.close();
-
                 async.done();
             }
         });
     }
 
     public function test_reading_large_offset(async:Async) {
-        final data = "Hello, World!";
-        final proc = new Process('haxe -p scripts/server --run TcpListenWrite "$address" "$port" "$data"');
-
         tryConnect(0, Net(address, port), null, (socket, error) -> {
             Assert.isNull(error);
 
@@ -215,26 +189,17 @@ class SocketReadingTests extends Test implements IReadableTests {
 
                     socket.close((_, error) -> {                   
                         Assert.isNull(error);
-                        
-                        proc.exitCode();
-                        proc.close();
-    
+
                         async.done();
                     });
                 });
             } else {
-                proc.kill();
-                proc.close();
-
                 async.done();
             }
         });
     }
 
     public function test_reading_negative_length(async:Async) {
-        final data = "Hello, World!";
-        final proc = new Process('haxe -p scripts/server --run TcpListenWrite "$address" "$port" "$data"');
-
         tryConnect(0, Net(address, port), null, (socket, error) -> {
             Assert.isNull(error);
 
@@ -249,26 +214,17 @@ class SocketReadingTests extends Test implements IReadableTests {
 
                     socket.close((_, error) -> {                   
                         Assert.isNull(error);
-                        
-                        proc.exitCode();
-                        proc.close();
     
                         async.done();
                     });
                 });
             } else {
-                proc.kill();
-                proc.close();
-
                 async.done();
             }
         });
     }
 
     public function test_reading_invalid_range_due_to_large_length(async:Async) {
-        final data = "Hello, World!";
-        final proc = new Process('haxe -p scripts/server --run TcpListenWrite "$address" "$port" "$data"');
-
         tryConnect(0, Net(address, port), null, (socket, error) -> {
             Assert.isNull(error);
 
@@ -281,26 +237,17 @@ class SocketReadingTests extends Test implements IReadableTests {
 
                     socket.close((_, error) -> {                   
                         Assert.isNull(error);
-                        
-                        proc.exitCode();
-                        proc.close();
     
                         async.done();
                     });
                 });
             } else {
-                proc.kill();
-                proc.close();
-
                 async.done();
             }
         });
     }
 
     public function test_reading_invalid_range_due_to_offset(async:Async) {
-        final data = "Hello, World!";
-        final proc = new Process('haxe -p scripts/server --run TcpListenWrite "$address" "$port" "$data"');
-
         tryConnect(0, Net(address, port), null, (socket, error) -> {
             Assert.isNull(error);
 
@@ -313,17 +260,11 @@ class SocketReadingTests extends Test implements IReadableTests {
 
                     socket.close((_, error) -> {                   
                         Assert.isNull(error);
-                        
-                        proc.exitCode();
-                        proc.close();
-    
+
                         async.done();
                     });
                 });
             } else {
-                proc.kill();
-                proc.close();
-
                 async.done();
             }
         });

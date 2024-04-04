@@ -17,11 +17,27 @@ class SocketConnectTests extends Test {
     final address : String;
     final port : Int;
 
+    var proc : Null<Process>;
+
     public function new() {
         super();
 
         address = "127.0.0.1";
         port    = 7000;
+        proc    = null;
+    }
+
+    function setup() {
+        proc = new Process('haxe -p scripts/server --run TcpListen "$address" "$port"');
+    }
+
+    function teardown() {
+        if (proc != null) {
+            proc.kill();
+            proc.exitCode();
+            proc.close();
+            proc = null;
+        }
     }
 
     function test_connect_null_callback() {
@@ -70,8 +86,6 @@ class SocketConnectTests extends Test {
     }
 
     function test_net_connect(async:Async) {
-        final proc = new Process('haxe -p scripts/server --run TcpListen "$address" "$port"');
-
         tryConnect(0, Net(address, port), null, (socket, error) -> {
             Assert.isNull(error);
 
@@ -79,23 +93,15 @@ class SocketConnectTests extends Test {
                 socket.close((_, error) -> {
                     Assert.isNull(error);
                     
-                    proc.exitCode();
-                    proc.close();
-
                     async.done();
                 });
             } else {
-                proc.kill();
-                proc.close();
-
                 async.done();
             }
         });
     }
 
     function test_default_keep_alive(async:Async) {
-        final proc = new Process('haxe -p scripts/server --run TcpListen "$address" "$port"');
-
         tryConnect(0, Net(address, port), null, (socket, error) -> {
             Assert.isNull(error);
 
@@ -107,25 +113,17 @@ class SocketConnectTests extends Test {
 
                     socket.close((_, error) -> {
                         Assert.isNull(error);
-                        
-                        proc.exitCode();
-                        proc.close();
     
                         async.done();
                     });
                 });
             } else {
-                proc.kill();
-                proc.close();
-
                 async.done();
             }
         });
     }
 
     function test_default_send_buffer_size(async:Async) {
-        final proc = new Process('haxe -p scripts/server --run TcpListen "$address" "$port"');
-
         tryConnect(0, Net(address, port), null, (socket, error) -> {
             Assert.isNull(error);
 
@@ -138,24 +136,16 @@ class SocketConnectTests extends Test {
                     socket.close((_, error) -> {
                         Assert.isNull(error);
                         
-                        proc.exitCode();
-                        proc.close();
-    
                         async.done();
                     });
                 });
             } else {
-                proc.kill();
-                proc.close();
-
                 async.done();
             }
         });
     }
 
     function test_default_recv_buffer_size(async:Async) {
-        final proc = new Process('haxe -p scripts/server --run TcpListen "$address" "$port"');
-
         tryConnect(0, Net(address, port), null, (socket, error) -> {
             Assert.isNull(error);
 
@@ -168,23 +158,16 @@ class SocketConnectTests extends Test {
                     socket.close((_, error) -> {
                         Assert.isNull(error);
                         
-                        proc.exitCode();
-                        proc.close();
-    
                         async.done();
                     });
                 });
             } else {
-                proc.kill();
-                proc.close();
-
                 async.done();
             }
         });
     }
 
     function test_custom_keep_alive(async:Async) {
-        final proc     = new Process('haxe -p scripts/server --run TcpListen "$address" "$port"');
         final expected = false;
 
         tryConnect(0, Net(address, port), { keepAlive: expected }, (socket, error) -> {
@@ -199,23 +182,16 @@ class SocketConnectTests extends Test {
                     socket.close((_, error) -> {
                         Assert.isNull(error);
                         
-                        proc.exitCode();
-                        proc.close();
-    
                         async.done();
                     });
                 });
             } else {
-                proc.kill();
-                proc.close();
-
                 async.done();
             }
         });
     }
 
     function test_custom_send_buffer_size(async:Async) {
-        final proc     = new Process('haxe -p scripts/server --run TcpListen "$address" "$port"');
         final expected = 7000;
 
         tryConnect(0, Net(address, port), { sendBuffer: expected }, (socket, error) -> {
@@ -229,24 +205,17 @@ class SocketConnectTests extends Test {
 
                     socket.close((_, error) -> {
                         Assert.isNull(error);
-                        
-                        proc.exitCode();
-                        proc.close();
     
                         async.done();
                     });
                 });
             } else {
-                proc.kill();
-                proc.close();
-
                 async.done();
             }
         });
     }
 
     function test_custom_recv_buffer_size(async:Async) {
-        final proc     = new Process('haxe -p scripts/server --run TcpListen "$address" "$port"');
         final expected = 7000;
 
         tryConnect(0, Net(address, port), { receiveBuffer: expected }, (socket, error) -> {
@@ -261,24 +230,16 @@ class SocketConnectTests extends Test {
                     socket.close((_, error) -> {
                         Assert.isNull(error);
                         
-                        proc.exitCode();
-                        proc.close();
-    
                         async.done();
                     });
                 });
             } else {
-                proc.kill();
-                proc.close();
-
                 async.done();
             }
         });
     }
 
     function test_local_address(async:Async) {
-        final proc = new Process('haxe -p scripts/server --run TcpListen "$address" "$port"');
-
         tryConnect(0, Net(address, port), null, (socket, error) -> {
             Assert.isNull(error);
 
@@ -296,25 +257,17 @@ class SocketConnectTests extends Test {
 
                     socket.close((_, error) -> {
                         Assert.isNull(error);
-                        
-                        proc.exitCode();
-                        proc.close();
     
                         async.done();
                     });
                 });
             } else {
-                proc.kill();
-                proc.close();
-
                 async.done();
             }
         });
     }
 
     function test_remote_address(async:Async) {
-        final proc = new Process('haxe -p scripts/server --run TcpListen "$address" "$port"');
-
         tryConnect(0, Net(address, port), null, (socket, error) -> {
             Assert.isNull(error);
 
@@ -332,25 +285,17 @@ class SocketConnectTests extends Test {
 
                     socket.close((_, error) -> {
                         Assert.isNull(error);
-                        
-                        proc.exitCode();
-                        proc.close();
     
                         async.done();
                     });
                 });
             } else {
-                proc.kill();
-                proc.close();
-
                 async.done();
             }
         });
     }
 
     function test_get_option_null_callback(async:Async) {
-        final proc = new Process('haxe -p scripts/server --run TcpListen "$address" "$port"');
-
         tryConnect(0, Net(address, port), null, (socket, error) -> {
             Assert.isNull(error);
 
@@ -362,24 +307,16 @@ class SocketConnectTests extends Test {
 
                 socket.close((_, error) -> {
                     Assert.isNull(error);
-                    
-                    proc.exitCode();
-                    proc.close();
 
                     async.done();
                 });
             } else {
-                proc.kill();
-                proc.close();
-
                 async.done();
             }
         });
     }
 
     function test_get_unsupported_option(async:Async) {
-        final proc = new Process('haxe -p scripts/server --run TcpListen "$address" "$port"');
-
         tryConnect(0, Net(address, port), null, (socket, error) -> {
             Assert.isNull(error);
 
@@ -389,25 +326,17 @@ class SocketConnectTests extends Test {
 
                     socket.close((_, error) -> {
                         Assert.isNull(error);
-                        
-                        proc.exitCode();
-                        proc.close();
-    
+
                         async.done();
                     });
                 });
             } else {
-                proc.kill();
-                proc.close();
-
                 async.done();
             }
         });
     }
 
     function test_get_invalid_option(async:Async) {
-        final proc = new Process('haxe -p scripts/server --run TcpListen "$address" "$port"');
-
         tryConnect(0, Net(address, port), null, (socket, error) -> {
             Assert.isNull(error);
 
@@ -418,24 +347,16 @@ class SocketConnectTests extends Test {
                     socket.close((_, error) -> {
                         Assert.isNull(error);
                         
-                        proc.exitCode();
-                        proc.close();
-    
                         async.done();
                     });
                 });
             } else {
-                proc.kill();
-                proc.close();
-
                 async.done();
             }
         });
     }
 
     function test_set_option_null_callback(async:Async) {
-        final proc = new Process('haxe -p scripts/server --run TcpListen "$address" "$port"');
-
         tryConnect(0, Net(address, port), null, (socket, error) -> {
             Assert.isNull(error);
 
@@ -448,23 +369,15 @@ class SocketConnectTests extends Test {
                 socket.close((_, error) -> {
                     Assert.isNull(error);
                     
-                    proc.exitCode();
-                    proc.close();
-
                     async.done();
                 });
             } else {
-                proc.kill();
-                proc.close();
-
                 async.done();
             }
         });
     }
 
     function test_set_unsupported_option(async:Async) {
-        final proc = new Process('haxe -p scripts/server --run TcpListen "$address" "$port"');
-
         tryConnect(0, Net(address, port), null, (socket, error) -> {
             Assert.isNull(error);
 
@@ -475,24 +388,16 @@ class SocketConnectTests extends Test {
                     socket.close((_, error) -> {
                         Assert.isNull(error);
                         
-                        proc.exitCode();
-                        proc.close();
-    
                         async.done();
                     });
                 });
             } else {
-                proc.kill();
-                proc.close();
-
                 async.done();
             }
         });
     }
 
     function test_set_invalid_option(async:Async) {
-        final proc = new Process('haxe -p scripts/server --run TcpListen "$address" "$port"');
-
         tryConnect(0, Net(address, port), null, (socket, error) -> {
             Assert.isNull(error);
 
@@ -503,16 +408,10 @@ class SocketConnectTests extends Test {
                     socket.close((_, error) -> {
                         Assert.isNull(error);
                         
-                        proc.exitCode();
-                        proc.close();
-    
                         async.done();
                     });
                 });
             } else {
-                proc.kill();
-                proc.close();
-
                 async.done();
             }
         });

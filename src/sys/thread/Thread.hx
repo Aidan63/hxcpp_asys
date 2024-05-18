@@ -85,8 +85,6 @@ private class HaxeThread {
     static function pumpAsysLoop(ctx:Context, events:EventLoop) {
         if (ctx.loop()) {
             events.run(pumpAsysLoop.bind(ctx, events));
-        } else {
-            ctx.close();
         }
     }
 
@@ -177,8 +175,13 @@ private class HaxeThread {
 		}
 	}
 
-	static function dropThread(item, probableIndex:Int) {
+	static function dropThread(item:{handle:Null<ThreadHandle>, thread:HaxeThread}, probableIndex:Int) {
+		if (item.thread.context != null) {
+			item.thread.context.close();
+		}
+
 		threadsMutex.acquire();
+
 		if(threads[probableIndex] == item) {
 			threads.splice(probableIndex, 1);
 		} else {

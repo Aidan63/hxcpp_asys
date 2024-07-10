@@ -7,53 +7,6 @@ import haxe.NoData;
 import haxe.Callback;
 import haxe.io.Bytes;
 
-private class WriteRequest {
-	/**
-	 * Current offset into the bytes buffer.
-	 * This may differ from the bytes offset if multiple smaller chunks are needed to complete the overall request.
-	 */
-	public var currentOffset:Int;
-
-	/**
-	 * The starting offset into the bytes for the overall request.
-	 */
-	public final bytesOffset:Int;
-
-	/**
-	 * The total length for the overall request.
-	 */
-	public final bytesLength:Int;
-
-	/**
-	 * The starting position into the file for the overall request.
-	 */
-	public final filePos:Int64;
-
-	/**
-	 * Bytes to copy into the file.
-	 */
-	public final bytes:Bytes;
-
-	/**
-	 * Callback to invoke once the overall request has completed.
-	 */
-	public final callback:Callback<Int>;
-
-	public function new(_bytesOffset:Int, _bytesLength:Int, _filePos:Int64, _bytes:Bytes, _callback:Callback<Int>) {
-		currentOffset = _bytesOffset;
-		bytesOffset   = _bytesOffset;
-		bytesLength   = _bytesLength;
-		filePos       = _filePos;
-		bytes         = _bytes;
-		callback      = _callback;
-	}
-}
-
-private enum QueuedOperation {
-	Write(request:WriteRequest);
-	Flush(callback:Callback<NoData>);
-}
-
 class File {
 	final native : cpp.asys.File;
 

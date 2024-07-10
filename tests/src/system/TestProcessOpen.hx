@@ -10,6 +10,7 @@ import asys.native.system.Process;
 import utest.Async;
 import utest.Test;
 
+@:timeout(10000)
 class TestProcessOpen extends Test {
     function test_non_existing_program(async:Async) {
         Process.open("does_not_exist", {}, (proc, error) -> {
@@ -43,7 +44,7 @@ class TestProcessOpen extends Test {
     }
 
     function test_pid(async:Async) {
-        Process.open(Sys.programPath(), { args: [ Mode.ZeroExit ] }, (proc, error) -> {
+        Process.open('haxe.cmd', {}, (proc, error) -> {
             Assert.isNull(error);
 
             if (Assert.notNull(proc)) {
@@ -61,7 +62,7 @@ class TestProcessOpen extends Test {
     }
 
     function test_exit_code(async:Async) {
-        Process.open(Sys.programPath(), { args: [ Mode.ZeroExit ] }, (proc, error) -> {
+        Process.open('haxe.cmd', {}, (proc, error) -> {
             Assert.isNull(error);
 
             if (Assert.notNull(proc)) {
@@ -84,7 +85,7 @@ class TestProcessOpen extends Test {
     function test_non_zero_exit_code(async:Async) {
         final code = 7;
 
-        Process.open(Sys.programPath(), { args: [ Mode.ErrorExit, Std.string(code) ] }, (proc, error) -> {
+        Process.open('haxe.cmd', { args: [ '-p', 'scripts/proc', '--run', 'ExitCode', Std.string(code) ] }, (proc, error) -> {
             Assert.isNull(error);
 
             if (Assert.notNull(proc)) {
@@ -108,7 +109,7 @@ class TestProcessOpen extends Test {
         final srcString = "hello";
         final srcBytes  = Bytes.ofString(srcString);
 
-        Process.open(Sys.programPath(), { args: [ Mode.StdoutEcho, srcString ], stdio : [ Ignore, PipeWrite, Ignore ] }, (proc, error) -> {
+        Process.open('haxe.cmd', { args: [ '-p', 'scripts/proc', '--run', 'StdoutEcho', srcString ], stdio : [ Ignore, PipeWrite, Ignore ] }, (proc, error) -> {
             Assert.isNull(error);
 
             if (Assert.notNull(proc)) {
@@ -147,7 +148,7 @@ class TestProcessOpen extends Test {
         final srcString = "hello";
         final srcBytes  = Bytes.ofString(srcString);
 
-        Process.open(Sys.programPath(), { args: [ Mode.StderrEcho, srcString ], stdio : [ Ignore, Ignore, PipeWrite ] }, (proc, error) -> {
+        Process.open('haxe.cmd', { args: [ '-p', 'scripts/proc', '--run', 'StderrEcho', srcString ], stdio : [ Ignore, Ignore, PipeWrite ] }, (proc, error) -> {
             Assert.isNull(error);
 
             if (Assert.notNull(proc)) {
@@ -186,7 +187,7 @@ class TestProcessOpen extends Test {
         final srcString = "hello";
         final srcBytes  = Bytes.ofString(srcString);
 
-        Process.open(Sys.programPath(), { args: [ Mode.StdinEcho, srcString ], stdio : [ PipeRead, PipeWrite, Ignore ] }, (proc, error) -> {
+        Process.open('haxe.cmd', { args: [ '-p', 'scripts/proc', '--run', 'StdinEcho', srcString ], stdio : [ PipeRead, PipeWrite, Ignore ] }, (proc, error) -> {
             Assert.isNull(error);
 
             if (Assert.notNull(proc)) {
@@ -213,7 +214,7 @@ class TestProcessOpen extends Test {
     }
 
     function test_killing_process(async:Async) {
-        Process.open(Sys.programPath(), { args: [ Mode.LoopForever ] }, (proc, error) -> {
+        Process.open('haxe.cmd', { args: [ '-p', 'scripts/proc', '--run', 'LoopForever' ] }, (proc, error) -> {
             Assert.isNull(error);
 
             if (Assert.notNull(proc)) {
@@ -240,7 +241,7 @@ class TestProcessOpen extends Test {
     function test_exitcode_after_exit(async:Async) {
         final expected = 7;
 
-        Process.open(Sys.programPath(), { args: [ Mode.ErrorExit, Std.string(expected) ] }, (proc, error) -> {
+        Process.open('haxe.cmd', { args: [ '-p', 'scripts/proc', '--run', 'ExitCode', Std.string(expected) ] }, (proc, error) -> {
             Assert.isNull(error);
 
             if (Assert.notNull(proc)) {
@@ -276,7 +277,7 @@ class TestProcessOpen extends Test {
     function test_inherit_cwd(async:Async) {
         final expected = Bytes.ofString(Sys.getCwd());
 
-        Process.open(Sys.programPath(), { args: [ Mode.PrintCwd ] }, (proc, error) -> {
+        Process.open('haxe.cmd', { args: [ '-p', 'scripts/proc', '--run', 'PrintCwd' ] }, (proc, error) -> {
             Assert.isNull(error);
 
             if (Assert.notNull(proc)) {
@@ -312,7 +313,7 @@ class TestProcessOpen extends Test {
     function test_different_cwd(async:Async) {
         final path = FilePath.ofString(Sys.getCwd()).parent().parent();
 
-        Process.open(Sys.programPath(), { args: [ Mode.PrintCwd ], cwd : path }, (proc, error) -> {
+        Process.open('haxe.cmd', { args: [ '-p', 'scripts/proc', '--run', 'PrintCwd' ], cwd : path }, (proc, error) -> {
             Assert.isNull(error);
 
             if (Assert.notNull(proc)) {
@@ -348,7 +349,7 @@ class TestProcessOpen extends Test {
         final env   = "FOO";
         final value = "BAR";
 
-        Process.open(Sys.programPath(), { args: [ Mode.PrintEnv, env ], env: [ env => value ] }, (proc, error) -> {
+        Process.open('haxe.cmd', { args: [ '-p', 'scripts/proc', '--run', 'PrintEnv', env ], env: [ env => value ] }, (proc, error) -> {
             Assert.isNull(error);
 
             if (Assert.notNull(proc)) {
@@ -386,7 +387,7 @@ class TestProcessOpen extends Test {
 
         Sys.putEnv(env, value);
 
-        Process.open(Sys.programPath(), { args: [ Mode.PrintEnv, env ] }, (proc, error) -> {
+        Process.open('haxe.cmd', { args: [ '-p', 'scripts/proc', '--run', 'PrintEnv', env ] }, (proc, error) -> {
             Assert.isNull(error);
 
             if (Assert.notNull(proc)) {
@@ -424,7 +425,7 @@ class TestProcessOpen extends Test {
 
         Sys.putEnv(env, value);
 
-        Process.open(Sys.programPath(), { args: [ Mode.PrintEnv, env ], env: [ "BAR" => "BAZ" ] }, (proc, error) -> {
+        Process.open('haxe.cmd', { args: [ '-p', 'scripts/proc', '--run', 'PrintEnv', env ], env: [ "BAR" => "BAZ" ] }, (proc, error) -> {
             Assert.isNull(error);
 
             if (Assert.notNull(proc)) {
@@ -456,7 +457,6 @@ class TestProcessOpen extends Test {
         });
     }
 
-    @:timeout(1000)
     function test_argument_escaping(async:Async) {
         final cases = [
             'HelloWorld',
@@ -482,7 +482,7 @@ class TestProcessOpen extends Test {
             final srcString = cases.shift();
             final srcBytes  = Bytes.ofString(srcString);
 
-            Process.open(Sys.programPath(), { args: [ Mode.StdoutEcho, srcString ], stdio : [ Ignore, PipeWrite ] }, (proc, error) -> {
+            Process.open('haxe.cmd', { args: [ '-p', 'scripts/proc', '--run', 'StdoutEcho', srcString ], stdio : [ Ignore, PipeWrite ] }, (proc, error) -> {
                 Assert.isNull(error);
 
                 if (Assert.notNull(proc)) {

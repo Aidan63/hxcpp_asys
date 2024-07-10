@@ -8,6 +8,7 @@ import asys.native.IoErrorType;
 import asys.native.filesystem.FileSystem;
 import asys.native.filesystem.FsException;
 
+@:timeout(1000)
 class TestFileSystemMove extends DirectoryTests {
     final newDirectoryName : String;
 

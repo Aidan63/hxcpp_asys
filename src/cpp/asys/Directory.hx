@@ -18,7 +18,7 @@ extern class Directory {
     static function open(ctx : Context, path : String, onSuccess : Directory->Void, onFailure : AsysError->Void) : Void;
 
     @:native('::hx::asys::filesystem::Directory_obj::create')
-    static function create(ctx : Context, path : String, permissions : Int, recursive : Bool, onSuccess : Void->Void, onFailure : AsysError->Void) : Void;
+    static function create(ctx : Context, path : String, permissions : Int, onSuccess : Void->Void, onFailure : AsysError->Void) : Void;
 
     @:native('::hx::asys::filesystem::Directory_obj::rename')
     static function rename(ctx : Context, oldPath : String, newPath : String, onSuccess : Void->Void, onFailure : AsysError->Void) : Void;

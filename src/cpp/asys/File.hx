@@ -22,4 +22,7 @@ extern class File {
 
 	@:native('::hx::asys::filesystem::File_obj::temp')
     static function temp(ctx : Context, onSuccess : File->Void, onFailure : AsysError->Void) : Void;
+
+    @:native('::hx::asys::filesystem::File_obj::info')
+    static function info(ctx : Context, path : String, onSuccess : NativeInfo->Void, onFailure : AsysError->Void) : Void;
 }

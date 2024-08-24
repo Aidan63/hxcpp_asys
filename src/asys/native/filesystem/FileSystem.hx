@@ -1,5 +1,6 @@
 package asys.native.filesystem;
 
+import cpp.asys.AsysError;
 import haxe.exceptions.ArgumentException;
 import sys.thread.Thread;
 import haxe.NoData;
@@ -268,13 +269,55 @@ class FileSystem {
 			return;
 		}
 
-		cpp.asys.Directory.create(
-            @:privateAccess Thread.current().context(),
-			path,
-			if (permissions == null) FilePermissions.octal(0, 7, 7, 7) else permissions,
-			recursive,
-			() -> callback.success(null),
-			msg -> callback.fail(new FsException(msg, path)));
+		final ctx  = @:privateAccess Thread.current().context();
+		final mode = if (permissions == null) FilePermissions.octal(0, 7, 7, 7) else permissions;
+
+		if (recursive) {
+			var toSearch = path;
+
+			final checked = [];
+
+			function onSuccess() {
+				// On the first success start working our way 
+				switch checked {
+					case []:
+						callback.success(null);
+					case _:
+						toSearch = toSearch.add(checked.shift());
+
+						cpp.asys.Directory.create(
+							ctx,
+							toSearch,
+							mode,
+							onSuccess,
+							msg -> callback.fail(new FsException(msg, path)));
+				}
+			}
+
+			function onError(error:AsysError) {
+				// Each time directory creation fails insert that name into the array.
+				// TODO : Only do this on the error associated with recursive creation.
+				checked.insert(0, toSearch.name());
+
+				toSearch = toSearch.parent();
+
+				if ('' == toSearch) {
+					callback.fail(new FsException(error, path));
+				} else {
+					cpp.asys.Directory.create(ctx, toSearch, mode, onSuccess, onError);
+				}
+			}
+
+			cpp.asys.Directory.create(ctx, toSearch, mode, onSuccess, onError);
+
+		} else {
+			cpp.asys.Directory.create(
+				ctx,
+				path,
+				mode,
+				() -> callback.success(null),
+				msg -> callback.fail(new FsException(msg, path)));
+		}
 	}
 
 	/**
@@ -412,27 +455,11 @@ class FileSystem {
 			return;
 		}
 
-		openFile(path, Read, (file, error) -> {
-			switch error {
-				case null:
-					file.info((info, error) -> {
-						file.close((_, _) -> {
-							// TODO : What should we do if closing fails?
-							// create a composite exception?
-
-							switch error {
-								case null:
-									// Should we error if not all of the data was written?
-									callback.success(info);
-								case exn:
-									callback.fail(exn);
-							}
-						});
-					});
-				case exn:
-					callback.fail(exn);
-			}
-		});
+		cpp.asys.File.info(
+			@:privateAccess Thread.current().context(),
+			path,
+			info -> callback.success(info),
+			msg -> callback.fail(new FsException(msg, path)));
 	}
 
 	/**

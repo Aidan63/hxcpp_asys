@@ -1,10 +1,60 @@
 package asys.native.system;
 
+import cpp.asys.Writable;
+import cpp.asys.Readable;
+import haxe.Exception;
+import haxe.io.Bytes;
 import haxe.ds.ReadOnlyArray;
-import cpp.asys.Writable.WritableWrapper;
-import cpp.asys.Readable.ReadableWrapper;
 import haxe.NoData;
 import haxe.Callback;
+
+private class ReadableWrapper implements IReadable {
+	final native : Readable;
+
+	public function new(native) {
+		this.native = native;
+	}
+
+	public function read(buffer:Bytes, offset:Int, length:Int, callback:Callback<Int, Exception>) {
+		native.read(
+			buffer.getData(),
+			offset,
+			length,
+			callback.success,
+			msg -> callback.fail(new IoException(msg)));
+	}
+
+	public function close(callback:Callback<NoData, Exception>) {
+		callback.success(null);
+	}
+}
+
+private class WritableWrapper implements IWritable {
+	final native : Writable;
+
+	public function new(native) {
+		this.native = native;
+	}
+
+	public function write(buffer:Bytes, offset:Int, length:Int, callback:Callback<Int, Exception>) {
+		native.write(
+			buffer.getData(),
+			offset,
+			length,
+			callback.success, 
+			msg -> callback.fail(new IoException(msg)));
+	}
+
+	public function flush(callback:Callback<NoData>) {
+		native.flush(
+			() -> callback.success(null),
+			msg -> callback.fail(new IoException(msg)));
+	}
+
+	public function close(callback:Callback<NoData>) {
+		callback.success(null);
+	}
+}
 
 /**
 	Additional API for child processes spawned by the current process.

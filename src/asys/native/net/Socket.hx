@@ -1,5 +1,7 @@
 package asys.native.net;
 
+import cpp.asys.Writable;
+import cpp.asys.Readable;
 import haxe.exceptions.ArgumentException;
 import sys.thread.Thread;
 import asys.native.net.Ip;
@@ -14,7 +16,7 @@ class IpcSocketSpecialisation extends Socket {
 	final native : cpp.asys.IpcSocket;
 
 	public function new(native : cpp.asys.IpcSocket) {
-		super(native);
+		super(native.reader, native.writer);
 
 		this.native = native;
 	}
@@ -26,13 +28,19 @@ class IpcSocketSpecialisation extends Socket {
 	override function get_remoteAddress():Null<SocketAddress> {
 		return SocketAddress.Ipc(native.peerName);
 	}
+
+	override function close(callback:Callback<NoData, Exception>) {
+		native.close(
+			() -> callback.success(null),
+			msg -> callback.fail(new IoException(msg)));
+	}
 }
 
 class TcpSocketSpecialisation extends Socket {
 	final native : cpp.asys.TcpSocket;
 
 	public function new(native : cpp.asys.TcpSocket) {
-		super(native);
+		super(native.reader, native.writer);
 
 		this.native = native;
 	}
@@ -93,13 +101,22 @@ class TcpSocketSpecialisation extends Socket {
 				callback.fail(new NotImplementedException());
 		}
 	}
+
+	override function close(callback:Callback<NoData, Exception>) {
+		native.close(
+			() -> callback.success(null),
+			msg -> callback.fail(new IoException(msg)));
+	}
 }
 
 class Socket implements IDuplex {
-	final duplex : cpp.asys.Duplex;
+	final reader : Readable;
 
-	function new(duplex) {
-		this.duplex = duplex;
+	final writer : Writable;
+
+	function new(reader, writer) {
+		this.reader = reader;
+		this.writer = writer;
 	}
 
 	/**
@@ -205,7 +222,7 @@ class Socket implements IDuplex {
 			return;
 		}
 
-		duplex.read(
+		reader.read(
 			buffer.getData(),
 			offset,
 			length,
@@ -252,11 +269,11 @@ class Socket implements IDuplex {
 			return;
 		}
 
-		duplex.write(
+		writer.write(
 			buffer.getData(),
 			offset,
 			length,
-			() -> callback.success(length),
+			count -> callback.success(count),
 			msg -> callback.fail(new IoException(msg)));
 	}
 
@@ -264,7 +281,7 @@ class Socket implements IDuplex {
 		Force all buffered data to be committed.
 	**/
 	public function flush(callback:Callback<NoData>):Void {
-		duplex.flush(
+		writer.flush(
 			() -> callback.success(null),
 			msg -> callback.fail(new IoException(msg)));
 	}
@@ -287,8 +304,6 @@ class Socket implements IDuplex {
 		Close the connection.
 	**/
 	public function close(callback:Callback<NoData>) {
-		duplex.close(
-			() -> callback.success(null),
-			msg -> callback.fail(new IoException(msg)));
+		callback.fail(new NotImplementedException());
 	}
 }

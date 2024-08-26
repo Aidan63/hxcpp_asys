@@ -1,10 +1,14 @@
 package cpp.asys;
 
 @:native('::hx::asys::net::TcpSocket')
-extern class TcpSocket extends Duplex {
+extern class TcpSocket {
     final localAddress : { host : String, port : Int };
 
     final remoteAddress : { host : String, port : Int };
+
+    final reader : Readable;
+
+    final writer : Writable;
 
     @:native('::hx::asys::net::TcpSocket_obj::connect_ipv4')
     static function connect_ipv4(ctx : Context, host : String, port : Int, options : Dynamic, onSuccess : TcpSocket->Void, onFailure : AsysError->Void) : Void;
@@ -23,4 +27,6 @@ extern class TcpSocket extends Duplex {
     function setSendBufferSize(size : Int, cbSuccess : Void->Void, cbFailure : AsysError->Void) : Void;
 
     function setRecvBufferSize(size : Int, cbSuccess : Void->Void, cbFailure : AsysError->Void) : Void;
+
+    function close(cbSuccess : Void->Void, cbFailure : AsysError->Void) : Void;
 }

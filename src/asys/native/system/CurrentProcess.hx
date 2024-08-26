@@ -27,9 +27,7 @@ private class Reader implements IReadable {
 	}
 
 	public function close(callback:Callback<NoData>) {
-		native.close(
-			() -> callback.success(null),
-			error -> callback.fail(new IoException(error.toIoErrorType())));
+		callback.success(null);
 	}
 }
 
@@ -90,9 +88,7 @@ private class Writer implements IWritable {
 	}
 
 	public function close(callback:Callback<NoData>) {
-		native.close(
-			() -> callback.success(null),
-			error -> callback.fail(new IoException(error.toIoErrorType())));
+		callback.success(null);
 	}
 }
 

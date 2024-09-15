@@ -82,12 +82,6 @@ private class HaxeThread {
 	static var mainThreadHandle:ThreadHandle;
 	static var mainThread:HaxeThread;
 
-    static function pumpAsysLoop(ctx:Context, events:EventLoop) {
-        if (ctx.loop()) {
-            events.run(pumpAsysLoop.bind(ctx, events));
-        }
-    }
-
 	static function __init__() {
 		threads = [];
 		threadsMutex = new Mutex();
@@ -95,8 +89,6 @@ private class HaxeThread {
 		mainThread = new HaxeThread(currentHandle());		
 		mainThread.events = new EventLoop();
         mainThread.context = Context.create();
-
-        mainThread.events.run(pumpAsysLoop.bind(mainThread.context, mainThread.events));
 	}
 
 	public var events(default,null):Null<EventLoop>;
@@ -134,7 +126,6 @@ private class HaxeThread {
 		if(withEventLoop) {
 			item.thread.events = new EventLoop();
             item.thread.context = Context.create();
-            item.thread.events.run(pumpAsysLoop.bind(item.thread.context, item.thread.events));
         }
 
 		item.handle = createHandle(() -> {
@@ -161,7 +152,6 @@ private class HaxeThread {
 		if(thread.events == null) {
 			thread.events = new EventLoop();
             thread.context = Context.create();
-            thread.events.run(pumpAsysLoop.bind(thread.context, thread.events));
 			try {
 				job();
 				thread.events.loop();
@@ -176,10 +166,6 @@ private class HaxeThread {
 	}
 
 	static function dropThread(item:{handle:Null<ThreadHandle>, thread:HaxeThread}, probableIndex:Int) {
-		if (item.thread.context != null) {
-			item.thread.context.close();
-		}
-
 		threadsMutex.acquire();
 
 		if(threads[probableIndex] == item) {

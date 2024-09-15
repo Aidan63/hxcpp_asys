@@ -92,6 +92,6 @@ abstract FileAppend(File) from File {
 		TODO: Is `append` a better name for this method?
 	**/
 	public inline function write(buffer:Bytes, offset:Int, length:Int, callback:Callback<Int>):Void {
-		this.write(0, buffer, offset, length, callback);
+		// this.write(0, buffer, offset, length, callback);
 	}
 }

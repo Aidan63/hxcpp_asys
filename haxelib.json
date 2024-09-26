@@ -1,0 +1,11 @@
+{
+  "name": "hxcpp_asys",
+  "url": "https://github.com/Aidan63/hxcpp_asys",
+  "license": "MIT",
+  "tags": ["haxe", "hxcpp", "cpp"],
+  "description": "",
+  "classPath": "src",
+  "version": "0.0.1",
+  "contributors": ["Aidan63"],
+  "dependencies": {}
+}

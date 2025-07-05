@@ -7,6 +7,9 @@ import haxe.Int64;
 import haxe.NoData;
 import haxe.Callback;
 import haxe.io.Bytes;
+import haxe.coro.schedulers.Scheduler;
+
+using hxcoro.util.Convenience;
 
 class File {
 	final native : cpp.asys.File;
@@ -27,142 +30,140 @@ class File {
 		If `position` is negative or `offset` is outside of `buffer` bounds or
 		if `length` is negative, an error is passed to the `callback`.
 	**/
-    public function write(position:Int64, buffer:Bytes, offset:Int, length:Int, callback:Callback<Int>):Void {
+    @:coroutine public function write(position:Int, buffer:Bytes, offset:Int, length:Int):Int {
 		if (position < 0) {
-			callback.fail(new FsException(IoErrorType.CustomError("Invalid position"), path));
-
-			return;
+			throw new FsException(IoErrorType.CustomError("Invalid position"), path);
 		}
 
 		if (buffer == null) {
-			callback.fail(new FsException(IoErrorType.CustomError("Null buffer"), path));
-
-			return;
+			throw new FsException(IoErrorType.CustomError("Null buffer"), path);
 		}
 
 		if (offset < 0 || offset > buffer.length) {
-			callback.fail(new FsException(IoErrorType.CustomError("Invalid offset"), path));
-
-			return;
+			throw new FsException(IoErrorType.CustomError("Invalid offset"), path);
 		}
 
 		final actualLength = (cast Math.min(length, buffer.length - offset) : Int);
 
 		if (actualLength < 0) {
-			callback.fail(new FsException(IoErrorType.CustomError("Invalid length"), path));
-
-			return;
+			throw new FsException(IoErrorType.CustomError("Invalid length"), path);
 		}
 
 		if (actualLength == 0) {
-			callback.success(0);
-
-			return;
+			return 0;
 		}
 
-		final events = Thread.current().events;
-
-		native.write(
-			position,
-			buffer.getData(),
-			offset,
-			actualLength,
-			pos -> events.run(() -> callback.success(pos)),
-			err -> events.run(() -> callback.fail(new FsException(err, path))));
+		return
+			hxcoro.Coro.suspend(cont -> {
+				native.write(
+					position,
+					buffer.getData(),
+					offset,
+					actualLength,
+					count -> cont.succeedAsync(count),
+					err -> cont.context.get(Scheduler).schedule(0, () -> cont.resume(0, new FsException(err, path))));
+			});
 	}
 
-	// /**
-	// 	Read up to `length` bytes from the file `position` and write them into
-	// 	`buffer` starting at `offset` position in `buffer`, then invoke `callback`
-	// 	with the amount of bytes read.
-	// 	If `position` is greater or equal to the file size at the moment of reading
-	// 	then `0` is passed to the `callback` and `buffer` is unaffected.
-	// 	If `position` is negative or `offset` is outside of `buffer` bounds, an
-	// 	error is passed to the `callback`.
-	// **/
-    // public function read(position:Int64, buffer:Bytes, offset:Int, length:Int, callback:Callback<Int>):Void {
-	// 	if (position < 0) {
-	// 		callback.fail(new FsException(IoErrorType.CustomError("Invalid position"), path));
+	/**
+		Read up to `length` bytes from the file `position` and write them into
+		`buffer` starting at `offset` position in `buffer`, then invoke `callback`
+		with the amount of bytes read.
+		If `position` is greater or equal to the file size at the moment of reading
+		then `0` is passed to the `callback` and `buffer` is unaffected.
+		If `position` is negative or `offset` is outside of `buffer` bounds, an
+		error is passed to the `callback`.
+	**/
+    @:coroutine public function read(position:Int, buffer:Bytes, offset:Int, length:Int):Int {
+		if (position < 0) {
+			throw new FsException(IoErrorType.CustomError("Invalid position"), path);
+		}
 
-	// 		return;
-	// 	}
+		if (buffer == null) {
+			throw new FsException(IoErrorType.CustomError("Null buffer"), path);
+		}
 
-	// 	if (buffer == null) {
-	// 		callback.fail(new FsException(IoErrorType.CustomError("Null buffer"), path));
+		if (offset < 0 || offset > buffer.length) {
+			throw new FsException(IoErrorType.CustomError("Invalid offset"), path);
+		}
 
-	// 		return;
-	// 	}
+		if (length < 0) {
+			throw new FsException(IoErrorType.CustomError("Invalid length"), path);
+		}
 
-	// 	if (offset < 0 || offset > buffer.length) {
-	// 		callback.fail(new FsException(IoErrorType.CustomError("Invalid offset"), path));
+		final actualLength = (cast Math.min(length, buffer.length - offset) : Int);
 
-	// 		return;
-	// 	}
+		return
+			hxcoro.Coro.suspend(cont -> {
+				native.read(
+					position,
+					buffer.getData(),
+					offset,
+					actualLength,
+					count -> cont.succeedAsync(count),
+					err -> cont.context.get(Scheduler).schedule(0, () -> cont.resume(0, new FsException(err, path))));
+			});
+	}
 
-	// 	if (length < 0) {
-	// 		callback.fail(new FsException(IoErrorType.CustomError("Invalid length"), path));
+	@:coroutine public function info() : FileInfo {
+		return hxcoro.Coro.suspend(cont -> {
+			native.info(
+				info -> cont.succeedAsync(info),
+				err -> cont.failAsync(new FsException(err, path)));
+		});
+	}
 
-	// 		return;
-	// 	}
+	@:coroutine public function resize(size : Int) {
+		hxcoro.Coro.suspend(cont -> {
+			native.resize(
+				size,
+				() -> cont.succeedAsync(null),
+				err -> cont.failAsync(new FsException(err, path)));
+		});
+	}
 
-	// 	final actualLength = (cast Math.min(length, buffer.length - offset) : Int);
+	@:coroutine @:coroutine.debug public function setPermissions(permissions:FilePermissions) {
+		hxcoro.Coro.suspend(cont -> {
+			native.setPermissions(
+				permissions,
+				() -> cont.succeedAsync(null),
+				err -> cont.failAsync(new FsException(err, path)));
+		});
+	}
 
-	// 	native.read(
-	// 		position,
-	// 		buffer.getData(),
-	// 		offset,
-	// 		actualLength,
-	// 		callback.success,
-	// 		err -> callback.fail(new FsException(err, path)));
-	// }
+	@:coroutine public function setOwner(user:SystemUser, group:SystemGroup) {
+		hxcoro.Coro.suspend(cont -> {
+			native.setOwner(
+				user,
+				group,
+				() -> cont.succeedAsync(null),
+				err -> cont.failAsync(new FsException(err, path)));
+		});
+	}
 
-	// public function info(callback:Callback<FileInfo>):Void {
-	// 	native.info(
-	// 		callback.success,
-	// 		err -> callback.fail(new FsException(err, path)));
-	// }
+	@:coroutine public function setTimes(accessTime:Int, modificationTime:Int) {
+		hxcoro.Coro.suspend(cont -> {
+			native.setTimes(
+				accessTime,
+				modificationTime,
+				() -> cont.succeedAsync(null),
+				err -> cont.failAsync(new FsException(err, path)));
+		});
+	}
 
-	// public function resize(size : Int, callback:Callback<NoData>):Void {
-	// 	native.resize(
-	// 		size,
-	// 		() -> callback.success(null),
-	// 		err -> callback.fail(new FsException(err, path)));
-	// }
+	@:coroutine public function flush() {
+		hxcoro.Coro.suspend(cont -> {
+			native.flush(
+				() -> cont.succeedAsync(null),
+				err -> cont.failAsync(new FsException(err, path)));
+		});
+	}
 
-	// public function setPermissions(permissions:FilePermissions, callback:Callback<NoData>):Void {
-	// 	native.setPermissions(
-	// 		permissions,
-	// 		() -> callback.success(null),
-	// 		err -> callback.fail(new FsException(err, path)));
-	// }
-
-	// public function setOwner(user:SystemUser, group:SystemGroup, callback:Callback<NoData>):Void {
-	// 	native.setOwner(
-	// 		user,
-	// 		group,
-	// 		() -> callback.success(null),
-	// 		err -> callback.fail(new FsException(err, path)));
-	// }
-
-	// public function setTimes(accessTime:Int, modificationTime:Int, callback:Callback<NoData>):Void {
-	// 	native.setTimes(
-	// 		accessTime,
-	// 		modificationTime,
-	// 		() -> callback.success(null),
-	// 		err -> callback.fail(new FsException(err, path)));
-	// }
-
-	// public function flush(callback:Callback<NoData>):Void {
-	// 	native.flush(
-	// 		() -> callback.success(null),
-	// 		err -> callback.fail(new FsException(err, path)));
-	// }
-
-    public function close(callback:Callback<NoData>):Void {
-		final events = Thread.current().events;
-
-		native.close(
-			() -> events.run(() -> callback.success(null)),
-			err -> events.run(() -> callback.fail(new FsException(err, path))));
+    @:coroutine public function close() {
+		hxcoro.Coro.suspend(cont -> {
+			native.close(
+				() -> cont.succeedAsync(null),
+				err -> cont.failAsync(new FsException(err, path)));
+		});
 	}
 }

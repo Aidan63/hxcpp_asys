@@ -5,8 +5,11 @@ package cpp.asys;
 extern class Context {
     // final process : CurrentProcess;
 
-    @:native('::hx::asys::Context_obj::create')
-    static function create() : Context;
+    @:native('::hx::asys::Context_obj::boot')
+    static function boot() : Context;
+
+    @:native('::hx::asys::Context_obj::get')
+    static function get() : Context;
 
     // function close() : Void;
 

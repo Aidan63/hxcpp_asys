@@ -1,5 +1,7 @@
 package asys.native.filesystem;
 
+import asys.native.filesystem.FileOpenFlag.FileRead;
+import asys.native.filesystem.FileOpenFlag.FileWrite;
 import cpp.asys.AsysError;
 import haxe.exceptions.ArgumentException;
 import sys.thread.Thread;
@@ -8,6 +10,8 @@ import haxe.Callback;
 import haxe.io.Bytes;
 import asys.native.system.SystemUser;
 import asys.native.system.SystemGroup;
+
+using hxcoro.util.Convenience;
 
 class FileSystem {
     /**
@@ -20,21 +24,49 @@ class FileSystem {
 		- `asys.native.filesystem.FileAppend` for writing to the end of file only;
 		@see asys.native.filesystem.FileOpenFlag for more details.
 	**/
-    static public function openFile<T>(path:FilePath, flag:FileOpenFlag<T>, callback:Callback<T>) {
-		if (path == null) {
-			callback.fail(new ArgumentException("path", "path was null"));
+    // @:coroutine @:coroutine.debug static public function openFile<T>(path:FilePath, flag:FileOpenFlag<T>):T {
+	// 	if (path == null) {
+	// 		throw new ArgumentException("path", "path was null");
+	// 	}
 
-			return;
+	// 	return hxcoro.Coro.suspend(cont -> {
+	// 		cpp.asys.File.open(
+	// 			cpp.asys.Context.get(),
+	// 			path,
+	// 			cast flag,
+	// 			file -> cont.succeedAsync(cast @:privateAccess new File(file)),
+	// 			msg -> cont.failAsync(new FsException(msg, path)));
+	// 	});
+    // }
+
+	@:coroutine static public function openWrite(path:FilePath):FileWrite {
+		if (path == null) {
+			throw new ArgumentException("path", "path was null");
 		}
 
-		final events = Thread.current().events;
+		return hxcoro.Coro.suspend(cont -> {
+			cpp.asys.File.open(
+				cpp.asys.Context.get(),
+				path,
+				cast FileOpenFlag.Write,
+				file -> cont.succeedAsync(cast @:privateAccess new File(file)),
+				msg -> cont.failAsync(new FsException(msg, path)));
+		});
+    }
 
-        cpp.asys.File.open(
-            @:privateAccess Thread.current().context(),
-            path,
-            cast flag,
-            file -> events.run(() -> callback.success(cast @:privateAccess new File(file))),
-            msg -> events.run(() -> callback.fail(new FsException(msg, path))));
+	@:coroutine static public function openRead(path:FilePath):FileRead {
+		if (path == null) {
+			throw new ArgumentException("path", "path was null");
+		}
+
+		return hxcoro.Coro.suspend(cont -> {
+			cpp.asys.File.open(
+				cpp.asys.Context.get(),
+				path,
+				cast FileOpenFlag.Read,
+				file -> cont.succeedAsync(cast @:privateAccess new File(file)),
+				msg -> cont.failAsync(new FsException(msg, path)));
+		});
     }
 
 	// /**
@@ -53,74 +85,39 @@ class FileSystem {
 	// 		msg -> callback.fail(new FsException(msg, '')));
 	// }
 
-	// /**
-	// 	Read the contents of a file specified by `path`.
-	// **/
-	// static public function readBytes(path:FilePath, callback:Callback<Bytes>):Void {
-	// 	if (path == null) {
-	// 		callback.fail(new ArgumentException("path", "path was null"));
+	/**
+		Read the contents of a file specified by `path`.
+	**/
+	@:coroutine static public function readBytes(path:FilePath):Bytes {
+		final file = FileSystem.openRead(path);
 
-	// 		return;
-	// 	}
+		try {
+			final stat   = file.info();
+			final buffer = Bytes.alloc(stat.size);
+			final count  = file.read(0, buffer, 0, buffer.length);
 
-	// 	openFile(path, Read, (file, error) -> {
-	// 		switch error {
-	// 			case null:
-	// 				file.info((stat, error) -> {
-	// 					switch error {
-	// 						case null:
-	// 							final buffer = Bytes.alloc(stat.size);
+			file.close();
 
-	// 							file.read(0, buffer, 0, buffer.length, (read, error) -> {
-	// 								file.close((_, _) -> {
-	// 									// TODO : What should we do if closing fails?
-	// 									// create a composite exception?
-										
-	// 									switch error {
-	// 										case null:
-	// 											final output = if (read < buffer.length) {
-	// 												buffer.sub(0, read);
-	// 											} else {
-	// 												buffer;
-	// 											}
+			if (count < buffer.length) {
+				return buffer.sub(0, count);
+			} else {
+				return buffer;
+			}
+		} catch (exn) {
+			file?.close();
 
-	// 											callback.success(output);
-	// 										case exn:
-	// 											callback.fail(exn);
-	// 									}
-	// 								});
-	// 							});
-	// 						case exn:
-	// 							callback.fail(exn);
-	// 					}
-	// 				});
-	// 			case exn:
-	// 				callback.fail(exn);
-	// 		}
-	// 	});
-	// }
+			throw exn;
+		}
+	}
 
-	// /**
-	// 	Read the contents of a file specified by `path` as a `String`.
-	// 	TODO:
-	// 	Should this return an error if the file does not contain a valid unicode string?
-	// **/
-	// static public function readString(path:FilePath, callback:Callback<String>):Void {
-	// 	if (path == null) {
-	// 		callback.fail(new ArgumentException("path", "path was null"));
-
-	// 		return;
-	// 	}
-
-	// 	readBytes(path, (bytes, error) -> {
-	// 		switch error {
-	// 			case null:
-	// 				callback.success(bytes.toString());
-	// 			case exn:
-	// 				callback.fail(exn);
-	// 		}
-	// 	});
-	// }
+	/**
+		Read the contents of a file specified by `path` as a `String`.
+		TODO:
+		Should this return an error if the file does not contain a valid unicode string?
+	**/
+	@:coroutine static public function readString(path:FilePath):String {
+		return readBytes(path).toString();
+	}
 
 	// /**
 	// 	Write `data` into a file specified by `path`

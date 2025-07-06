@@ -126,81 +126,60 @@ class FileSystem {
 		writeBytes(path, Bytes.ofString(text));
 	}
 
-	// /**
-	// 	Open directory for listing.
-	// 	`maxBatchSize` sets maximum amount of entries returned by a call to `directory.next`.
-	// 	In general bigger `maxBatchSize` allows to iterate faster, but requires more
-	// 	memory per call to `directory.next`.
-	// 	@see asys.native.filesystem.Directory.next
-	// **/
-	// static public function openDirectory(path:FilePath, maxBatchSize:Int = 64, callback:Callback<Directory>):Void {
-	// 	if (path == null) {
-	// 		callback.fail(new ArgumentException("path", "path was null"));
+	/**
+		Open directory for listing.
+		`maxBatchSize` sets maximum amount of entries returned by a call to `directory.next`.
+		In general bigger `maxBatchSize` allows to iterate faster, but requires more
+		memory per call to `directory.next`.
+		@see asys.native.filesystem.Directory.next
+	**/
+	@:coroutine static public function openDirectory(path:FilePath, maxBatchSize:Int):Directory {
+		if (path == null) {
+			throw new ArgumentException("path", "path was null");
+		}
 
-	// 		return;
-	// 	}
+		if (maxBatchSize <= 0) {
+			throw new ArgumentException("maxBatchSize", "batch size was less than or equal to 0");
+		}
 
-	// 	if (maxBatchSize <= 0) {
-	// 		callback.fail(new ArgumentException("maxBatchSize", "batch size was less than or equal to 0"));
+		return hxcoro.Coro.suspend(cont -> {
+			cpp.asys.Directory.open(
+				cpp.asys.Context.get(),
+				path,
+				dir -> cont.succeedAsync(@:privateAccess new Directory(dir, maxBatchSize)),
+				msg -> cont.failAsync(new FsException(msg, path)));
+		});
+	}
 
-	// 		return;
-	// 	}
+	/**
+		List directory contents.
+		Does not add `.` and `..` to the result.
+		Entries are provided as paths relative to the directory.
+	**/
+	@:coroutine static public function listDirectory(path:FilePath):Array<String> {
+		final dir = openDirectory(path, 64);
+		final acc = [];
 
-	// 	cpp.asys.Directory.open(
-    //         @:privateAccess Thread.current().context(),
-    //         path,
-    //         dir -> callback.success(@:privateAccess new Directory(dir, maxBatchSize)),
-    //         msg -> callback.fail(new FsException(msg, path)));
-	// }
-
-	// /**
-	// 	List directory contents.
-	// 	Does not add `.` and `..` to the result.
-	// 	Entries are provided as paths relative to the directory.
-	// **/
-	// static public function listDirectory(path:FilePath, callback:Callback<Array<String>>):Void {
-	// 	if (path == null) {
-	// 		callback.fail(new ArgumentException("path", "path was null"));
-
-	// 		return;
-	// 	}
-
-	// 	function read(dir:Directory, accumulated:Array<String>, callback:Callback<Array<String>>) {
-	// 		dir.next((entries, error) -> {
-	// 			switch error {
-	// 				case null:
-	// 					if (entries.length == 0) {
-	// 						callback.success(accumulated);
-	// 					} else {
-	// 						read(dir, accumulated.concat(entries), callback);
-	// 					}
-	// 				case exn:
-	// 					callback.fail(exn);
-	// 			}
-	// 		});
-	// 	}
-
-	// 	openDirectory(path, (dir, error) -> {
-	// 		switch error {
-	// 			case null:
-	// 				read(dir, [], (entries, error) -> {
-	// 					dir.close((_, _) -> {
-	// 						// TODO : What should we do if closing fails?
-	// 						// create a composite exception?
-
-	// 						switch error {
-	// 							case null:
-	// 								callback.success(entries);
-	// 							case exn:
-	// 								callback.fail(exn);
-	// 						}
-	// 					});
-	// 				});
-	// 			case exn:
-	// 				callback.fail(exn);
-	// 		}
-	// 	});
-	// }
+		try {
+			do
+			{
+				switch dir.next() {
+					case []:
+						dir.close();
+						
+						return acc;
+					case extra:
+						for (f in extra) {
+							acc.push(f);
+						}
+				}
+			}
+			while (true);
+		} catch (exn) {
+			dir?.close();
+			throw exn;
+		}
+	}
 
 	/**
 		Create a directory.

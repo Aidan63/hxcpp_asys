@@ -3,6 +3,8 @@ package asys.native.filesystem;
 import haxe.Callback;
 import haxe.NoData;
 
+using hxcoro.util.Convenience;
+
 /**
 	Represents a directory.
 **/
@@ -28,19 +30,23 @@ class Directory {
 		for opening this directory.
 		@see asys.native.filesystem.FileSystem.openDirectory
 	**/
-	public function next(callback:Callback<Array<String>>):Void {
-		dir.next(
-            batch,
-            callback.success,
-            err -> callback.fail(new FsException(err, path)));
+	@:coroutine public function next():Array<String> {
+		return hxcoro.Coro.suspend(cont -> {
+			dir.next(
+				batch,
+				cont.succeedAsync,
+				err -> cont.failAsync(new FsException(err, path)));
+		});
 	}
 
 	/**
 		Close the directory.
 	**/
-	public function close(callback:Callback<NoData>):Void {
-		dir.close(
-            () -> callback.success(null),
-            err -> callback.fail(new FsException(err, path)));
+	@:coroutine public function close() {
+		hxcoro.Coro.suspend(cont -> {
+			dir.close(
+				() -> cont.succeedAsync(null),
+				err -> cont.failAsync(new FsException(err, path)));
+		});
 	}
 }

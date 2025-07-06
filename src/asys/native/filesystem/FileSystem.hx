@@ -283,66 +283,39 @@ class FileSystem {
 		return finalPath;
 	}
 
-	// /**
-	// 	Move and/or rename the file or directory from `oldPath` to `newPath`.
-	// 	If `newPath` already exists and `overwrite` is `true` (which is the default)
-	// 	the destination is overwritten. However, operation fails if `newPath` is
-	// 	a non-empty directory.
-	// 	If `overwrite` is `false` the operation is not guaranteed to be atomic.
-	// 	That means if a third-party process creates `newPath` right in between the
-	// 	check for existance and the actual move operation then the data created
-	// 	by that third-party process may be overwritten.
-	// **/
-	// static public function move(oldPath:FilePath, newPath:FilePath, overwrite:Bool = true, callback:Callback<NoData>):Void {
-	// 	if (oldPath == null) {
-	// 		callback.fail(new ArgumentException("oldPath", "oldPath was null"));
+	/**
+		Move and/or rename the file or directory from `oldPath` to `newPath`.
+		If `newPath` already exists and `overwrite` is `true` (which is the default)
+		the destination is overwritten. However, operation fails if `newPath` is
+		a non-empty directory.
+		If `overwrite` is `false` the operation is not guaranteed to be atomic.
+		That means if a third-party process creates `newPath` right in between the
+		check for existance and the actual move operation then the data created
+		by that third-party process may be overwritten.
+	**/
+	@:coroutine static public function move(oldPath:FilePath, newPath:FilePath, overwrite:Null<Bool>) {
+		if (oldPath == null) {
+			throw new ArgumentException("oldPath", "oldPath was null");
+		}
 
-	// 		return;
-	// 	}
+		if (newPath == null) {
+			throw new ArgumentException("newPath", "newPath was null");
+		}
 
-	// 	if (newPath == null) {
-	// 		callback.fail(new ArgumentException("newPath", "newPath was null"));
-			
-	// 		return;
-	// 	}
-
-	// 	isDirectory(oldPath, (isDir, error) -> {
-	// 		if (error != null)
-	// 		{
-	// 			callback.fail(error);
-	// 		}
-	// 		else
-	// 		{
-	// 			if (isDir)
-	// 			{
-	// 				cpp.asys.Directory.rename(
-	// 					@:privateAccess Thread.current().context(),
-	// 					oldPath,
-	// 					newPath,
-	// 					() -> callback.success(null),
-	// 					msg -> callback.fail(new FsException(msg, oldPath))); // TODO : Custom exception for both paths?
-	// 			}
-	// 			else
-	// 			{
-	// 				cpp.asys.Directory.copyFile(
-	// 					@:privateAccess Thread.current().context(),
-	// 					oldPath,
-	// 					newPath,
-	// 					overwrite,
-	// 					() -> {
-	// 						deleteFile(oldPath, (_, error) -> {
-	// 							if (error != null) {
-	// 								callback.fail(error);
-	// 							} else {
-	// 								callback.success(_);
-	// 							}
-	// 						});
-	// 					},
-	// 					msg -> callback.fail(new FsException(msg, oldPath)));
-	// 			}
-	// 		}
-	// 	});
-	// }
+		if (isDirectory(oldPath)) {
+			hxcoro.Coro.suspend(cont -> {
+				cpp.asys.Directory.rename(
+					cpp.asys.Context.get(),
+					oldPath,
+					newPath,
+					() -> cont.succeedAsync(null),
+					msg -> cont.failAsync(new FsException(msg, oldPath))); // TODO : Custom exception for both paths?
+			});
+		} else {
+			copyFile(oldPath, newPath, overwrite ?? true);
+			deleteFile(oldPath);
+		}
+	}
 
 	/**
 		Remove a file or symbolic link.
@@ -459,73 +432,37 @@ class FileSystem {
 		});
 	}
 
-	// /**
-	// 	Set path permissions.
-	// 	If `path` is a symbolic link it is dereferenced.
-	// **/
-	// static public function setPermissions(path:FilePath, permissions:FilePermissions, callback:Callback<NoData>):Void {
-	// 	if (path == null) {
-	// 		callback.fail(new ArgumentException("path", "path was null"));
+	/**
+		Set path permissions.
+		If `path` is a symbolic link it is dereferenced.
+	**/
+	@:coroutine static public function setPermissions(path:FilePath, permissions:FilePermissions) {
+		final file = openFile(path, Read);
+		try {
+			file.setPermissions(permissions);
+			file.close();
+		} catch (exn) {
+			file?.close();
 
-	// 		return;
-	// 	}
+			throw exn;
+		}
+	}
 
-	// 	openFile(path, Read, (file, error) -> {
-	// 		switch error {
-	// 			case null:
-	// 				file.setPermissions(permissions, (info, error) -> {
-	// 					file.close((_, _) -> {
-	// 						// TODO : What should we do if closing fails?
-	// 						// create a composite exception?
+	/**
+		Set path owner and group.
+		If `path` is a symbolic link it is dereferenced.
+	**/
+	@:coroutine static public function setOwner(path:FilePath, user:SystemUser, group:SystemGroup) {
+		final file = openFile(path, Read);
+		try {
+			file.setOwner(user, group);
+			file.close();
+		} catch (exn) {
+			file?.close();
 
-	// 						switch error {
-	// 							case null:
-	// 								// Should we error if not all of the data was written?
-	// 								callback.success(info);
-	// 							case exn:
-	// 								callback.fail(exn);
-	// 						}
-	// 					});
-	// 				});
-	// 			case exn:
-	// 				callback.fail(exn);
-	// 		}
-	// 	});
-	// }
-
-	// /**
-	// 	Set path owner and group.
-	// 	If `path` is a symbolic link it is dereferenced.
-	// **/
-	// static public function setOwner(path:FilePath, user:SystemUser, group:SystemGroup, callback:Callback<NoData>):Void {
-	// 	if (path == null) {
-	// 		callback.fail(new ArgumentException("path", "path was null"));
-
-	// 		return;
-	// 	}
-
-	// 	openFile(path, Read, (file, error) -> {
-	// 		switch error {
-	// 			case null:
-	// 				file.setOwner(user, group, (info, error) -> {
-	// 					file.close((_, _) -> {
-	// 						// TODO : What should we do if closing fails?
-	// 						// create a composite exception?
-
-	// 						switch error {
-	// 							case null:
-	// 								// Should we error if not all of the data was written?
-	// 								callback.success(info);
-	// 							case exn:
-	// 								callback.fail(exn);
-	// 						}
-	// 					});
-	// 				});
-	// 			case exn:
-	// 				callback.fail(exn);
-	// 		}
-	// 	});
-	// }
+			throw exn;
+		}
+	}
 
 	/**
 		Set symbolic link owner and group.
@@ -649,93 +586,39 @@ class FileSystem {
 		});
 	}
 
-	// /**
-	// 	Shrink or expand a file specified by `path` to `newSize` bytes.
-	// 	If the file does not exist, it is created.
-	// 	If the file is larger than `newSize`, the extra data is lost.
-	// 	If the file is shorter, zero bytes are used to fill the added length.
-	// **/
-	// static public function resize(path:FilePath, newSize:Int, callback:Callback<NoData>):Void {
-	// 	if (path == null) {
-	// 		callback.fail(new ArgumentException("path", "path was null"));
+	/**
+		Shrink or expand a file specified by `path` to `newSize` bytes.
+		If the file does not exist, it is created.
+		If the file is larger than `newSize`, the extra data is lost.
+		If the file is shorter, zero bytes are used to fill the added length.
+	**/
+	@:coroutine static public function resize(path:FilePath, newSize:Int) {
+		final file = openFile(path, Overwrite);
+		try {
+			file.resize(newSize);
+			file.close();
+		} catch (exn) {
+			file?.close();
 
-	// 		return;
-	// 	}
+			throw exn;
+		}
+	}
 
-	// 	if (newSize < 0) {
-	// 		callback.fail(new ArgumentException("newSize", "newSize was less than zero"));
+	/**
+		Change access and modification times of an existing file.
+		TODO: Decide on type for `accessTime` and `modificationTime` - see TODO in `asys.native.filesystem.FileInfo.FileStat`
+	**/
+	@:coroutine static public function setTimes(path:FilePath, accessTime:Int, modificationTime:Int) {
+		final file = openFile(path, Overwrite);
+		try {
+			file.setTimes(accessTime, modificationTime);
+			file.close();
+		} catch (exn) {
+			file?.close();
 
-	// 		return;
-	// 	}
-
-	// 	openFile(path, Overwrite, (file, error) -> {
-	// 		switch error {
-	// 			case null:
-	// 				file.resize(newSize, (_, error) -> {
-	// 					file.close((_, _) -> {
-	// 						// TODO : What should we do if closing fails?
-	// 						// create a composite exception?
-
-	// 						switch error {
-	// 							case null:
-	// 								// Should we error if not all of the data was written?
-	// 								callback.success(null);
-	// 							case exn:
-	// 								callback.fail(exn);
-	// 						}
-	// 					});
-	// 				});
-	// 			case exn:
-	// 				callback.fail(exn);
-	// 		}
-	// 	});
-	// }
-
-	// /**
-	// 	Change access and modification times of an existing file.
-	// 	TODO: Decide on type for `accessTime` and `modificationTime` - see TODO in `asys.native.filesystem.FileInfo.FileStat`
-	// **/
-	// static public function setTimes(path:FilePath, accessTime:Int, modificationTime:Int, callback:Callback<NoData>):Void {
-	// 	if (path == null) {
-	// 		callback.fail(new ArgumentException("path", "path was null"));
-
-	// 		return;
-	// 	}
-
-	// 	if (accessTime < 0) {
-	// 		callback.fail(new ArgumentException("accessTime", "time was less than 0"));
-
-	// 		return;
-	// 	}
-
-	// 	if (modificationTime < 0) {
-	// 		callback.fail(new ArgumentException("modificationTime", "time was less than 0"));
-
-	// 		return;
-	// 	}
-
-	// 	openFile(path, Write, (file, error) -> {
-	// 		switch error {
-	// 			case null:
-	// 				file.setTimes(accessTime, modificationTime, (_, error) -> {
-	// 					file.close((_, _) -> {
-	// 						// TODO : What should we do if closing fails?
-	// 						// create a composite exception?
-
-	// 						switch error {
-	// 							case null:
-	// 								// Should we error if not all of the data was written?
-	// 								callback.success(null);
-	// 							case exn:
-	// 								callback.fail(exn);
-	// 						}
-	// 					});
-	// 				});
-	// 			case exn:
-	// 				callback.fail(exn);
-	// 		}
-	// 	});
-	// }
+			throw exn;
+		}
+	}
 
 	/**
 		Get a canonical absolute path. The path must exist.

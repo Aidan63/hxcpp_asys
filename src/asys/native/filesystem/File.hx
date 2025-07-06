@@ -122,7 +122,7 @@ class File {
 		});
 	}
 
-	@:coroutine @:coroutine.debug public function setPermissions(permissions:FilePermissions) {
+	@:coroutine public function setPermissions(permissions:FilePermissions) {
 		hxcoro.Coro.suspend(cont -> {
 			native.setPermissions(
 				permissions,

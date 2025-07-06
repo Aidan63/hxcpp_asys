@@ -1,7 +1,5 @@
 package asys.native.filesystem;
 
-import asys.native.filesystem.FileOpenFlag.FileRead;
-import asys.native.filesystem.FileOpenFlag.FileWrite;
 import cpp.asys.AsysError;
 import haxe.exceptions.ArgumentException;
 import sys.thread.Thread;
@@ -10,6 +8,7 @@ import haxe.Callback;
 import haxe.io.Bytes;
 import asys.native.system.SystemUser;
 import asys.native.system.SystemGroup;
+import haxe.coro.schedulers.Scheduler;
 
 using hxcoro.util.Convenience;
 
@@ -91,63 +90,41 @@ class FileSystem {
 		return readBytes(path).toString();
 	}
 
-	// /**
-	// 	Write `data` into a file specified by `path`
-	// 	`flag` controls the behavior.
-	// 	By default the file truncated if it exists and created if it does not exist.
-	// 	@see asys.native.filesystem.FileOpenFlag for more details.
-	// **/
-	// static public function writeBytes(path:FilePath, data:Bytes, flag:FileOpenFlag<Dynamic> = Write, callback:Callback<NoData>):Void {
-	// 	if (path == null) {
-	// 		callback.fail(new ArgumentException("path", "path was null"));
+	/**
+		Write `data` into a file specified by `path`
+		`flag` controls the behavior.
+		By default the file truncated if it exists and created if it does not exist.
+		@see asys.native.filesystem.FileOpenFlag for more details.
+	**/
+	@:coroutine static public function writeBytes(path:FilePath, data:Bytes) {
+		if (path == null) {
+			throw new ArgumentException("path", "path was null");
+		}
 
-	// 		return;
-	// 	}
+		if (data == null) {
+			throw new ArgumentException("data", "data was null");
+		}
 
-	// 	if (data == null) {
-	// 		callback.fail(new ArgumentException("data", "data was null"));
+		final file = openFile(path, Write);
+		try {
+			file.write(0, data, 0, data.length);
+			file.close();
+		} catch (exn) {
+			file?.close();
 
-	// 		return;
-	// 	}
+			throw exn;
+		}
+	}
 
-	// 	openFile(path, flag, (file, error) -> {
-	// 		switch error {
-	// 			case null:
-	// 				file.write(0, data, 0, data.length, (_, error) -> {
-	// 					file.close((_, _) -> {
-	// 						// TODO : What should we do if closing fails?
-	// 						// create a composite exception?
-
-	// 						switch error {
-	// 							case null:
-	// 								// Should we error if not all of the data was written?
-	// 								callback.success(null);
-	// 							case exn:
-	// 								callback.fail(exn);
-	// 						}
-	// 					});
-	// 				});
-	// 			case exn:
-	// 				callback.fail(exn);
-	// 		}
-	// 	});
-	// }
-
-	// /**
-	// 	Write `text` into a file specified by `path`
-	// 	`flag` controls the behavior.
-	// 	By default the file is truncated if it exists and is created if it does not exist.
-	// 	@see asys.native.filesystem.FileOpenFlag for more details.
-	// **/
-	// static public function writeString(path:FilePath, text:String, flag:FileOpenFlag<Dynamic> = Write, callback:Callback<NoData>):Void {
-	// 	if (text == null) {
-	// 		callback.fail(new ArgumentException("text", "text was null"));
-
-	// 		return;
-	// 	}
-
-	// 	writeBytes(path, Bytes.ofString(text), flag, callback);
-	// }
+	/**
+		Write `text` into a file specified by `path`
+		`flag` controls the behavior.
+		By default the file is truncated if it exists and is created if it does not exist.
+		@see asys.native.filesystem.FileOpenFlag for more details.
+	**/
+	@:coroutine static public function writeString(path:FilePath, text:String) {
+		writeBytes(path, Bytes.ofString(text));
+	}
 
 	// /**
 	// 	Open directory for listing.
@@ -225,102 +202,86 @@ class FileSystem {
 	// 	});
 	// }
 
-	// /**
-	// 	Create a directory.
-	// 	Default `permissions` equals to octal `0777`, which means read+write+execution
-	// 	permissions for everyone.
-	// 	If `recursive` is `true`: create missing directories tree all the way down to `path`.
-	// 	If `recursive` is `false`: fail if any parent directory of `path` does not exist.
-	// 	[cs] `permissions` parameter is ignored when targeting C#
-	// **/
-	// static public function createDirectory(path:FilePath, ?permissions:FilePermissions, recursive:Bool = false, callback:Callback<NoData>):Void {
-	// 	if (path == null) {
-	// 		callback.fail(new ArgumentException("path", "path was null"));
+	/**
+		Create a directory.
+		Default `permissions` equals to octal `0777`, which means read+write+execution
+		permissions for everyone.
+		If `recursive` is `true`: create missing directories tree all the way down to `path`.
+		If `recursive` is `false`: fail if any parent directory of `path` does not exist.
+	**/
+	@:coroutine static public function createDirectory(path:FilePath, permissions:Null<FilePermissions>, recursive:Null<Bool>) {
+		if (path == null) {
+			throw new ArgumentException("path", "path was null");
+		}
 
-	// 		return;
-	// 	}
+		final ctx    = cpp.asys.Context.get();
+		final mode   = permissions ?? FilePermissions.octal(0, 7, 7, 7);
+		final manual = recursive ?? false;
 
-	// 	final ctx  = @:privateAccess Thread.current().context();
-	// 	final mode = if (permissions == null) FilePermissions.octal(0, 7, 7, 7) else permissions;
+		@:coroutine inline function create(path:FilePath) {
+			return hxcoro.Coro.suspend(cont -> {
+				cpp.asys.Directory.create(
+					ctx,
+					path,
+					mode,
+					() -> cont.succeedAsync(null),
+					msg -> cont.failAsync(new FsException(msg, path)));
+			});
+		}
 
-	// 	if (recursive) {
-	// 		var toSearch = path;
+		if (manual) {
+			var toSearch = path;
 
-	// 		final checked = [];
+			final checked = [];
 
-	// 		function onSuccess() {
-	// 			// On the first success start working our way 
-	// 			switch checked {
-	// 				case []:
-	// 					callback.success(null);
-	// 				case _:
-	// 					toSearch = toSearch.add(checked.shift());
+			while (true) {
+				try {
+					create(toSearch);
 
-	// 					cpp.asys.Directory.create(
-	// 						ctx,
-	// 						toSearch,
-	// 						mode,
-	// 						onSuccess,
-	// 						msg -> callback.fail(new FsException(msg, path)));
-	// 			}
-	// 		}
+					switch checked {
+						case []:
+							return;
+						case _:
+							toSearch = toSearch.add(checked.shift());
+					}
+				} catch (exn:FsException) {
+					// Each time directory creation fails insert that name into the array.
+					// TODO : Only do this on the error associated with recursive creation.
+					checked.insert(0, toSearch.name());
 
-	// 		function onError(error:AsysError) {
-	// 			// Each time directory creation fails insert that name into the array.
-	// 			// TODO : Only do this on the error associated with recursive creation.
-	// 			checked.insert(0, toSearch.name());
+					toSearch = toSearch.parent();
 
-	// 			toSearch = toSearch.parent();
+					if ('' == toSearch) {
+						throw exn;
+					}
+				}
+			}
+		} else {
+			create(path);
+		}
+	}
 
-	// 			if ('' == toSearch) {
-	// 				callback.fail(new FsException(error, path));
-	// 			} else {
-	// 				cpp.asys.Directory.create(ctx, toSearch, mode, onSuccess, onError);
-	// 			}
-	// 		}
+	/**
+		Create a directory with auto-generated unique name.
+		`prefix` (if provided) is used as the beginning of a generated name.
+		The created directory path is passed to the `callback`.
+		Default `permissions` equals to octal `0777`, which means read+write+execution permissions for everyone.
+		If `recursive` is `true`: create missing directories tree all the way down to the generated path.
+		If `recursive` is `false`: fail if any parent directory of the generated path does not exist.
+	**/
+	@:coroutine static public function uniqueDirectory(parentDirectory:FilePath, prefix:Null<String>, permissions:Null<FilePermissions>, recursive:Null<Bool>):String {
+		if (parentDirectory == null) {
+			throw new ArgumentException("parentDirectory", "parent directory was null");
+		}
 
-	// 		cpp.asys.Directory.create(ctx, toSearch, mode, onSuccess, onError);
+		final rndIntValue = Std.random(2147483647);
+		final finalPrefix = if (prefix == null) Std.string(rndIntValue) else '$prefix$rndIntValue';
+		final finalPath   = FilePath.createPath(parentDirectory, finalPrefix);
 
-	// 	} else {
-	// 		cpp.asys.Directory.create(
-	// 			ctx,
-	// 			path,
-	// 			mode,
-	// 			() -> callback.success(null),
-	// 			msg -> callback.fail(new FsException(msg, path)));
-	// 	}
-	// }
+		createDirectory(finalPath, permissions, recursive);
 
-	// /**
-	// 	Create a directory with auto-generated unique name.
-	// 	`prefix` (if provided) is used as the beginning of a generated name.
-	// 	The created directory path is passed to the `callback`.
-	// 	Default `permissions` equals to octal `0777`, which means read+write+execution
-	// 	permissions for everyone.
-	// 	If `recursive` is `true`: create missing directories tree all the way down to the generated path.
-	// 	If `recursive` is `false`: fail if any parent directory of the generated path does not exist.
-	// 	[cs] `permissions` parameter is ignored when targeting C#
-	// **/
-	// static public function uniqueDirectory(parentDirectory:FilePath, ?prefix:String, ?permissions:FilePermissions, recursive:Bool = false, callback:Callback<String>):Void {
-	// 	if (parentDirectory == null) {
-	// 		callback.fail(new ArgumentException("parentDirectory", "parent directory was null"));
-
-	// 		return;
-	// 	}
-
-	// 	final rndIntValue = Std.random(2147483647);
-	// 	final finalPrefix = if (prefix == null) Std.string(rndIntValue) else '$prefix$rndIntValue';
-	// 	final finalPath   = FilePath.createPath(parentDirectory, finalPrefix);
-
-	// 	createDirectory(finalPath, permissions, recursive, (_, error) -> {
-	// 		if (error != null) {
-	// 			callback.fail(error);
-	// 		}
-	// 		else {
-	// 			callback.success(finalPath);
-	// 		}
-	// 	});
-	// }
+		return finalPath;
+	}
 
 	// /**
 	// 	Move and/or rename the file or directory from `oldPath` to `newPath`.
@@ -383,35 +344,39 @@ class FileSystem {
 	// 	});
 	// }
 
-	// /**
-	// 	Remove a file or symbolic link.
-	// **/
-	// static public function deleteFile(path:FilePath, callback:Callback<NoData>):Void {
-	// 	if (path == null) {
-	// 		callback.fail(new ArgumentException("path", "null path"));
-	// 	} else {
-	// 		cpp.asys.Directory.deleteFile(
-	// 			@:privateAccess Thread.current().context(),
-	// 			path,
-	// 			() -> callback.success(null),
-	// 			msg -> callback.fail(new FsException(msg, path)));
-	// 	}
-	// }
+	/**
+		Remove a file or symbolic link.
+	**/
+	@:coroutine static public function deleteFile(path:FilePath) {
+		if (path == null) {
+			throw new ArgumentException("path", "null path");
+		}
 
-	// /**
-	// 	Remove an empty directory.
-	// **/
-	// static public function deleteDirectory(path:FilePath, callback:Callback<NoData>):Void {
-	// 	if (path == null) {
-	// 		callback.fail(new ArgumentException("path", "path was null"));
-	// 	} else {
-	// 		cpp.asys.Directory.deleteDirectory(
-	// 			@:privateAccess Thread.current().context(),
-	// 			path,
-	// 			() -> callback.success(null),
-	// 			msg -> callback.fail(new FsException(msg, path)));
-	// 	}
-	// }
+		hxcoro.Coro.suspend(cont -> {
+			cpp.asys.Directory.deleteFile(
+				cpp.asys.Context.get(),
+				path,
+				() -> cont.succeedAsync(null),
+				msg -> cont.failAsync(new FsException(msg, path)));
+		});
+	}
+
+	/**
+		Remove an empty directory.
+	**/
+	@:coroutine static public function deleteDirectory(path:FilePath) {
+		if (path == null) {
+			throw new ArgumentException("path", "path was null");
+		}
+
+		hxcoro.Coro.suspend(cont -> {
+			cpp.asys.Directory.deleteDirectory(
+				cpp.asys.Context.get(),
+				path,
+				() -> cont.succeedAsync(null),
+				msg -> cont.failAsync(new FsException(msg, path)));
+		});
+	}
 
 	/**
 		Get file or directory information at the given path.
@@ -433,66 +398,66 @@ class FileSystem {
 		});
 	}
 
-	// /**
-	// 	Check user's access for a path.
-	// 	For example to check if a file is readable and writable:
-	// 	```haxe
-	// 	import asys.native.filesystem.FileAccessMode;
-	// 	FileSystem.check(path, Readable | Writable, (error, result) -> trace(result));
-	// 	```
-	// **/
-	// static public function check(path:FilePath, mode:FileAccessMode, callback:Callback<Bool>):Void {
-	// 	if (path == null) {
-	// 		callback.fail(new ArgumentException("path", "path was null"));
+	/**
+		Check user's access for a path.
+		For example to check if a file is readable and writable:
+		```haxe
+		import asys.native.filesystem.FileAccessMode;
+		FileSystem.check(path, Readable | Writable, (error, result) -> trace(result));
+		```
+	**/
+	@:coroutine static public function check(path:FilePath, mode:FileAccessMode):Bool {
+		if (path == null) {
+			throw new ArgumentException("path", "path was null");
+		}
 
-	// 		return;
-	// 	}
+		return hxcoro.Coro.suspend(cont -> {
+			cpp.asys.Directory.check(
+				cpp.asys.Context.get(),
+				path,
+				cast mode,
+				cont.succeedAsync,
+				msg -> cont.context.get(Scheduler).schedule(0, () -> cont.resume(false, new FsException(msg, path))));
+		});
+	}
 
-	// 	cpp.asys.Directory.check(
-	// 		@:privateAccess Thread.current().context(),
-	// 		path,
-	// 		cast mode,
-	// 		callback.success,
-	// 		msg -> callback.fail(new FsException(msg, path)));
-	// }
+	/**
+		Check if the path is a directory.
+		If `path` is a symbolic links then it will be resolved and checked.
+		Returns `false` if `path` does not exist.
+	**/
+	@:coroutine static public function isDirectory(path:FilePath):Bool {
+		if (path == null) {
+			throw new ArgumentException("path", "path was null");
+		}
 
-	// /**
-	// 	Check if the path is a directory.
-	// 	If `path` is a symbolic links then it will be resolved and checked.
-	// 	Returns `false` if `path` does not exist.
-	// **/
-	// static public function isDirectory(path:FilePath, callback:Callback<Bool>):Void {
-	// 	if (path == null) {
-	// 		callback.fail(new ArgumentException("path", "path was null"));
+		return hxcoro.Coro.suspend(cont -> {
+			cpp.asys.Directory.isDirectory(
+				cpp.asys.Context.get(),
+				path,
+				cont.succeedAsync,
+				msg -> cont.context.get(Scheduler).schedule(0, () -> cont.resume(false, new FsException(msg, path))));
+		});
+	}
 
-	// 		return;
-	// 	}
+	/**
+		Check if the path is a regular file.
+		If `path` is a symbolic links then it will be resolved and checked.
+		Returns `false` if `path` does not exist.
+	**/
+	@:coroutine static public function isFile(path:FilePath):Bool {
+		if (path == null) {
+			throw new ArgumentException("path", "path was null");
+		}
 
-	// 	cpp.asys.Directory.isDirectory(
-	// 		@:privateAccess Thread.current().context(),
-	// 		path,
-	// 		callback.success,
-	// 		msg -> callback.fail(new FsException(msg, path)));
-	// }
-
-	// /**
-	// 	Check if the path is a regular file.
-	// 	If `path` is a symbolic links then it will be resolved and checked.
-	// 	Returns `false` if `path` does not exist.
-	// **/
-	// static public function isFile(path:FilePath, callback:Callback<Bool>):Void {
-	// 	if (path == null) {
-	// 		callback.fail(new ArgumentException("path", "path was null"));
-
-	// 		return;
-	// 	}
-
-	// 	cpp.asys.Directory.isFile(
-	// 		@:privateAccess Thread.current().context(),
-	// 		path,
-	// 		callback.success,
-	// 		msg -> callback.fail(new FsException(msg, path)));
-	// }
+		return hxcoro.Coro.suspend(cont -> {
+			cpp.asys.Directory.isFile(
+				cpp.asys.Context.get(),
+				path,
+				cont.succeedAsync,
+				msg -> cont.context.get(Scheduler).schedule(0, () -> cont.resume(false, new FsException(msg, path))));
+		});
+	}
 
 	// /**
 	// 	Set path permissions.
@@ -562,131 +527,127 @@ class FileSystem {
 	// 	});
 	// }
 
-	// /**
-	// 	Set symbolic link owner and group.
-	// **/
-	// static public function setLinkOwner(path:FilePath, user:SystemUser, group:SystemGroup, callback:Callback<NoData>):Void {
-	// 	if (path == null) {
-	// 		callback.fail(new ArgumentException("path", "path was null"));
+	/**
+		Set symbolic link owner and group.
+	**/
+	@:coroutine static public function setLinkOwner(path:FilePath, user:SystemUser, group:SystemGroup) {
+		if (path == null) {
+			throw new ArgumentException("path", "path was null");
+		}
 
-	// 		return;
-	// 	}
+		hxcoro.Coro.suspend(cont -> {
+			cpp.asys.Directory.setLinkOwner(
+				cpp.asys.Context.get(),
+				path,
+				user,
+				group,
+				() -> cont.succeedAsync(null),
+				msg -> cont.failAsync(new FsException(msg, path)));
+		});
+	}
 
-	// 	cpp.asys.Directory.setLinkOwner(
-	// 		@:privateAccess Thread.current().context(),
-	// 		path,
-	// 		user,
-	// 		group,
-	// 		() -> callback.success(null),
-	// 		msg -> callback.fail(new FsException(msg, path)));
-	// }
+	/**
+		Create a link to `target` at `path`.
+		If `type` is `SymLink` the `target` is expected to be an absolute path or
+		a path relative to `path`, however the existance of `target` is not checked
+		and the link is created even if `target` does not exist.
+		If `type` is `HardLink` the `target` is expected to be an existing path either
+		absolute or relative to the current working directory.
+	**/
+	@:coroutine static public function link(target:FilePath, path:String, type:Null<FileLink>) {
+		if (target == null) {
+			throw new ArgumentException("target", "target was null");
+		}
 
-	// /**
-	// 	Create a link to `target` at `path`.
-	// 	If `type` is `SymLink` the `target` is expected to be an absolute path or
-	// 	a path relative to `path`, however the existance of `target` is not checked
-	// 	and the link is created even if `target` does not exist.
-	// 	If `type` is `HardLink` the `target` is expected to be an existing path either
-	// 	absolute or relative to the current working directory.
-	// **/
-	// static public function link(target:FilePath, path:String, type:FileLink = SymLink, callback:Callback<NoData>):Void {
-	// 	if (target == null) {
-	// 		callback.fail(new ArgumentException("target", "target was null"));
+		if (path == null) {
+			throw new ArgumentException("path", "path was null");
+		}
 
-	// 		return;
-	// 	}
+		hxcoro.Coro.suspend(cont -> {
+			cpp.asys.Directory.link(
+				cpp.asys.Context.get(),
+				target,
+				path,
+				cast (type ?? SymLink),
+				() -> cont.succeedAsync(null),
+				msg -> cont.failAsync(new FsException(msg, path)));
+		});
+	}
 
-	// 	if (path == null) {
-	// 		callback.fail(new ArgumentException("path", "path was null"));
+	/**
+		Check if the path is a symbolic link.
+		Returns `false` if `path` does not exist.
+	**/
+	@:coroutine static public function isLink(path:FilePath):Bool {
+		if (path == null) {
+			throw new ArgumentException("path", "path was null");
+		}
 
-	// 		return;
-	// 	}
+		return hxcoro.Coro.suspend(cont -> {
+			cpp.asys.Directory.isLink(
+				cpp.asys.Context.get(),
+				path,
+				cont.succeedAsync,
+				msg -> cont.context.get(Scheduler).schedule(0, () -> cont.resume(false, new FsException(msg, path))));
+		});
+	}
 
-	// 	cpp.asys.Directory.link(
-	// 		@:privateAccess Thread.current().context(),
-	// 		target,
-	// 		path,
-	// 		cast type,
-	// 		() -> callback.success(null),
-	// 		msg -> callback.fail(new FsException(msg, path)));
-	// }
+	/**
+		Get the value of a symbolic link.
+	**/
+	@:coroutine static public function readLink(path:FilePath):String {
+		if (path == null) {
+			throw new ArgumentException("path", "path was null");
+		}
 
-	// /**
-	// 	Check if the path is a symbolic link.
-	// 	Returns `false` if `path` does not exist.
-	// **/
-	// static public function isLink(path:FilePath, callback:Callback<Bool>):Void {
-	// 	if (path == null) {
-	// 		callback.fail(new ArgumentException("path", "path was null"));
+		return hxcoro.Coro.suspend(cont -> {
+			cpp.asys.Directory.readLink(
+				cpp.asys.Context.get(),
+				path,
+				cont.succeedAsync,
+				msg -> cont.failAsync(new FsException(msg, path)));
+		});
+	}
 
-	// 		return;
-	// 	}
+	/**
+		Get information at the given path without following symbolic links.
+	**/
+	@:coroutine static public function linkInfo(path:FilePath):FileInfo {
+		if (path == null) {
+			throw new ArgumentException("path", "path was null");
+		}
 
-	// 	cpp.asys.Directory.isLink(
-	// 		@:privateAccess Thread.current().context(),
-	// 		path,
-	// 		callback.success,
-	// 		msg -> callback.fail(new FsException(msg, path)));
-	// }
+		return hxcoro.Coro.suspend(cont -> {
+			cpp.asys.Directory.linkInfo(
+				cpp.asys.Context.get(),
+				path,
+				cont.succeedAsync,
+				msg -> cont.failAsync(new FsException(msg, path)));
+		});
+	}
 
-	// /**
-	// 	Get the value of a symbolic link.
-	// **/
-	// static public function readLink(path:FilePath, callback:Callback<String>):Void {
-	// 	if (path == null) {
-	// 		callback.fail(new ArgumentException("path", "path was null"));
+	/**
+		Copy a file from `source` path to `destination` path.
+	**/
+	@:coroutine static public function copyFile(source:FilePath, destination:FilePath, overwrite:Null<Bool>) {
+		if (source == null) {
+			throw new ArgumentException("source", "source was null");
+		}
 
-	// 		return;
-	// 	}
+		if (destination == null) {
+			throw new ArgumentException("destination", "destination was null");
+		}
 
-	// 	cpp.asys.Directory.readLink(
-	// 		@:privateAccess Thread.current().context(),
-	// 		path,
-	// 		callback.success,
-	// 		msg -> callback.fail(new FsException(msg, path)));
-	// }
-
-	// /**
-	// 	Get information at the given path without following symbolic links.
-	// **/
-	// static public function linkInfo(path:FilePath, callback:Callback<FileInfo>):Void {
-	// 	if (path == null) {
-	// 		callback.fail(new ArgumentException("path", "path was null"));
-
-	// 		return;
-	// 	}
-
-	// 	cpp.asys.Directory.linkInfo(
-	// 		@:privateAccess Thread.current().context(),
-	// 		path,
-	// 		callback.success,
-	// 		msg -> callback.fail(new FsException(msg, path)));
-	// }
-
-	// /**
-	// 	Copy a file from `source` path to `destination` path.
-	// **/
-	// static public function copyFile(source:FilePath, destination:FilePath, overwrite:Bool = true, callback:Callback<NoData>):Void {
-	// 	if (source == null) {
-	// 		callback.fail(new ArgumentException("source", "source was null"));
-
-	// 		return;
-	// 	}
-
-	// 	if (destination == null) {
-	// 		callback.fail(new ArgumentException("destination", "destination was null"));
-
-	// 		return;
-	// 	}
-
-	// 	cpp.asys.Directory.copyFile(
-	// 		@:privateAccess Thread.current().context(),
-	// 		source,
-	// 		destination,
-	// 		overwrite,
-	// 		() -> callback.success(null),
-	// 		msg -> callback.fail(new FsException(msg, source)));
-	// }
+		hxcoro.Coro.suspend(cont -> {
+			cpp.asys.Directory.copyFile(
+				cpp.asys.Context.get(),
+				source,
+				destination,
+				overwrite ?? true,
+				() -> cont.succeedAsync(null),
+				msg -> cont.failAsync(new FsException(msg, source)));
+		});
+	}
 
 	// /**
 	// 	Shrink or expand a file specified by `path` to `newSize` bytes.
@@ -776,22 +737,22 @@ class FileSystem {
 	// 	});
 	// }
 
-	// /**
-	// 	Get a canonical absolute path. The path must exist.
-	// 	Resolves intermediate `.`, `..`, excessive slashes.
-	// 	Resolves symbolic links on all targets except C#.
-	// **/
-	// static public function realPath(path:FilePath, callback:Callback<String>):Void {
-	// 	if (path == null) {
-	// 		callback.fail(new ArgumentException("path"));
+	/**
+		Get a canonical absolute path. The path must exist.
+		Resolves intermediate `.`, `..`, excessive slashes.
+		Resolves symbolic links on all targets except C#.
+	**/
+	@:coroutine static public function realPath(path:FilePath):String {
+		if (path == null) {
+			throw new ArgumentException("path");
+		}
 
-	// 		return;
-	// 	}
-
-	// 	cpp.asys.Directory.realPath(
-	// 		@:privateAccess Thread.current().context(),
-	// 		path,
-	// 		callback.success,
-	// 		msg -> callback.fail(new FsException(msg, path)));
-	// }
+		return hxcoro.Coro.suspend(cont -> {
+			cpp.asys.Directory.realPath(
+				cpp.asys.Context.get(),
+				path,
+				cont.succeedAsync,
+				msg -> cont.failAsync(new FsException(msg, path)));
+		});
+	}
 }

@@ -10,8 +10,4 @@ extern class Context {
 
     @:native('::hx::asys::Context_obj::get')
     static function get() : Context;
-
-    // function close() : Void;
-
-    // function loop() : Bool;
 }

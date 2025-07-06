@@ -24,22 +24,7 @@ class FileSystem {
 		- `asys.native.filesystem.FileAppend` for writing to the end of file only;
 		@see asys.native.filesystem.FileOpenFlag for more details.
 	**/
-    // @:coroutine @:coroutine.debug static public function openFile<T>(path:FilePath, flag:FileOpenFlag<T>):T {
-	// 	if (path == null) {
-	// 		throw new ArgumentException("path", "path was null");
-	// 	}
-
-	// 	return hxcoro.Coro.suspend(cont -> {
-	// 		cpp.asys.File.open(
-	// 			cpp.asys.Context.get(),
-	// 			path,
-	// 			cast flag,
-	// 			file -> cont.succeedAsync(cast @:privateAccess new File(file)),
-	// 			msg -> cont.failAsync(new FsException(msg, path)));
-	// 	});
-    // }
-
-	@:coroutine static public function openWrite(path:FilePath):FileWrite {
+    @:coroutine static public function openFile<T>(path:FilePath, flag:FileOpenFlag<T>):T {
 		if (path == null) {
 			throw new ArgumentException("path", "path was null");
 		}
@@ -48,48 +33,35 @@ class FileSystem {
 			cpp.asys.File.open(
 				cpp.asys.Context.get(),
 				path,
-				cast FileOpenFlag.Write,
+				cast flag,
 				file -> cont.succeedAsync(cast @:privateAccess new File(file)),
 				msg -> cont.failAsync(new FsException(msg, path)));
 		});
     }
 
-	@:coroutine static public function openRead(path:FilePath):FileRead {
-		if (path == null) {
-			throw new ArgumentException("path", "path was null");
-		}
-
+	/**
+		Create and open a unique temporary file for writing and reading.
+		The file will be automatically deleted when it is closed.
+		Depending on a target platform the file may be automatically deleted upon
+		application shutdown, but in general deletion is not guaranteed if the `close`
+		method is not called.
+		Depending on a target platform the directory entry for the file may be deleted
+		immediately after the file is created or even not created at all.
+	**/
+	@:coroutine static public function tempFile():File {
 		return hxcoro.Coro.suspend(cont -> {
-			cpp.asys.File.open(
+			cpp.asys.File.temp(
 				cpp.asys.Context.get(),
-				path,
-				cast FileOpenFlag.Read,
 				file -> cont.succeedAsync(cast @:privateAccess new File(file)),
-				msg -> cont.failAsync(new FsException(msg, path)));
+				msg -> cont.failAsync(new FsException(msg, '')));
 		});
-    }
-
-	// /**
-	// 	Create and open a unique temporary file for writing and reading.
-	// 	The file will be automatically deleted when it is closed.
-	// 	Depending on a target platform the file may be automatically deleted upon
-	// 	application shutdown, but in general deletion is not guaranteed if the `close`
-	// 	method is not called.
-	// 	Depending on a target platform the directory entry for the file may be deleted
-	// 	immediately after the file is created or even not created at all.
-	// **/
-	// static public function tempFile(callback:Callback<File>):Void {
-	// 	cpp.asys.File.temp(
-	// 		@:privateAccess Thread.current().context(),
-	// 		file -> callback.success(cast @:privateAccess new File(file)),
-	// 		msg -> callback.fail(new FsException(msg, '')));
-	// }
+	}
 
 	/**
 		Read the contents of a file specified by `path`.
 	**/
 	@:coroutine static public function readBytes(path:FilePath):Bytes {
-		final file = FileSystem.openRead(path);
+		final file = FileSystem.openFile(path, Read);
 
 		try {
 			final stat   = file.info();
@@ -441,25 +413,25 @@ class FileSystem {
 	// 	}
 	// }
 
-	// /**
-	// 	Get file or directory information at the given path.
-	// 	If `path` is a symbolic link then the link is followed.
-	// 	@see `asys.native.filesystem.FileSystem.linkInfo` to get information of the
-	// 	link itself.
-	// **/
-	// static public function info(path:FilePath, callback:Callback<FileInfo>):Void {
-	// 	if (path == null) {
-	// 		callback.fail(new ArgumentException("path", "path was null"));
+	/**
+		Get file or directory information at the given path.
+		If `path` is a symbolic link then the link is followed.
+		@see `asys.native.filesystem.FileSystem.linkInfo` to get information of the
+		link itself.
+	**/
+	@:coroutine static public function info(path:FilePath):FileInfo {
+		if (path == null) {
+			throw new ArgumentException("path", "path was null");
+		}
 
-	// 		return;
-	// 	}
-
-	// 	cpp.asys.File.info(
-	// 		@:privateAccess Thread.current().context(),
-	// 		path,
-	// 		info -> callback.success(info),
-	// 		msg -> callback.fail(new FsException(msg, path)));
-	// }
+		return hxcoro.Coro.suspend(cont -> {
+			cpp.asys.File.info(
+				cpp.asys.Context.get(),
+				path,
+				info -> cont.succeedAsync(info),
+				msg -> cont.failAsync(new FsException(msg, path)));
+		});
+	}
 
 	// /**
 	// 	Check user's access for a path.

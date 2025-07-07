@@ -96,7 +96,7 @@ class FileSystem {
 		By default the file truncated if it exists and created if it does not exist.
 		@see asys.native.filesystem.FileOpenFlag for more details.
 	**/
-	@:coroutine static public function writeBytes(path:FilePath, data:Bytes) {
+	@:coroutine @:coroutine.debug static public function writeBytes(path:FilePath, data:Bytes, flag:FileOpenFlag<Dynamic>) {
 		if (path == null) {
 			throw new ArgumentException("path", "path was null");
 		}
@@ -105,7 +105,7 @@ class FileSystem {
 			throw new ArgumentException("data", "data was null");
 		}
 
-		final file = openFile(path, Write);
+		final file = openFile(path, flag);
 		try {
 			file.write(0, data, 0, data.length);
 			file.close();
@@ -122,8 +122,8 @@ class FileSystem {
 		By default the file is truncated if it exists and is created if it does not exist.
 		@see asys.native.filesystem.FileOpenFlag for more details.
 	**/
-	@:coroutine static public function writeString(path:FilePath, text:String) {
-		writeBytes(path, Bytes.ofString(text));
+	@:coroutine static public function writeString(path:FilePath, text:String, flag:FileOpenFlag<Dynamic>) {
+		writeBytes(path, Bytes.ofString(text), flag);
 	}
 
 	/**

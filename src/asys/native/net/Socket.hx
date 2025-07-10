@@ -11,30 +11,33 @@ import haxe.Callback;
 import haxe.Exception;
 import haxe.io.Bytes;
 import haxe.exceptions.NotImplementedException;
+import haxe.coro.schedulers.Scheduler;
 
-class IpcSocketSpecialisation extends Socket {
-	final native : cpp.asys.IpcSocket;
+using hxcoro.util.Convenience;
 
-	public function new(native : cpp.asys.IpcSocket) {
-		super(native.reader, native.writer);
+// class IpcSocketSpecialisation extends Socket {
+// 	final native : cpp.asys.IpcSocket;
 
-		this.native = native;
-	}
+// 	public function new(native : cpp.asys.IpcSocket) {
+// 		super(native.reader, native.writer);
 
-	override function get_localAddress():SocketAddress {
-		return SocketAddress.Ipc(native.socketName);
-	}
+// 		this.native = native;
+// 	}
 
-	override function get_remoteAddress():Null<SocketAddress> {
-		return SocketAddress.Ipc(native.peerName);
-	}
+// 	override function get_localAddress():SocketAddress {
+// 		return SocketAddress.Ipc(native.socketName);
+// 	}
 
-	override function close(callback:Callback<NoData, Exception>) {
-		native.close(
-			() -> callback.success(null),
-			msg -> callback.fail(new IoException(msg)));
-	}
-}
+// 	override function get_remoteAddress():Null<SocketAddress> {
+// 		return SocketAddress.Ipc(native.peerName);
+// 	}
+
+// 	override function close(callback:Callback<NoData, Exception>) {
+// 		native.close(
+// 			() -> callback.success(null),
+// 			msg -> callback.fail(new IoException(msg)));
+// 	}
+// }
 
 class TcpSocketSpecialisation extends Socket {
 	final native : cpp.asys.TcpSocket;
@@ -54,58 +57,60 @@ class TcpSocketSpecialisation extends Socket {
 	}
 
 	override function getOption<T>(option:SocketOptionKind<T>, callback:Callback<T, Exception>) {
-		if (callback == null) {
-			throw new ArgumentException("callback");
-		}
+		// if (callback == null) {
+		// 	throw new ArgumentException("callback");
+		// }
 
-		switch option {
-			case KeepAlive:
-				native.getKeepAlive(
-					callback.success,
-					msg -> callback.fail(new IoException(msg)));
-			case SendBuffer:
-				native.getSendBufferSize(
-					callback.success,
-					msg -> callback.fail(new IoException(msg)));
-			case ReceiveBuffer:
-				native.getRecvBufferSize(
-					callback.success,
-					msg -> callback.fail(new IoException(msg)));
-			case _:
-				callback.fail(new NotImplementedException());
-		}
+		// switch option {
+		// 	case KeepAlive:
+		// 		native.getKeepAlive(
+		// 			callback.success,
+		// 			msg -> callback.fail(new IoException(msg)));
+		// 	case SendBuffer:
+		// 		native.getSendBufferSize(
+		// 			callback.success,
+		// 			msg -> callback.fail(new IoException(msg)));
+		// 	case ReceiveBuffer:
+		// 		native.getRecvBufferSize(
+		// 			callback.success,
+		// 			msg -> callback.fail(new IoException(msg)));
+		// 	case _:
+		// 		callback.fail(new NotImplementedException());
+		// }
 	}
 
 	override function setOption<T>(option:SocketOptionKind<T>, value:T, callback:Callback<NoData, Exception>) {
-		if (callback == null) {
-			throw new ArgumentException("callback");
-		}
+		// if (callback == null) {
+		// 	throw new ArgumentException("callback");
+		// }
 
-		switch option {
-			case KeepAlive:
-				native.setKeepAlive(
-					value,
-					() -> callback.success(null),
-					msg -> callback.fail(new IoException(msg)));
-			case SendBuffer:
-				native.setSendBufferSize(
-					value,
-					() -> callback.success(null),
-					msg -> callback.fail(new IoException(msg)));
-			case ReceiveBuffer:
-				native.setRecvBufferSize(
-					value,
-					() -> callback.success(null),
-					msg -> callback.fail(new IoException(msg)));
-			case _:
-				callback.fail(new NotImplementedException());
-		}
+		// switch option {
+		// 	case KeepAlive:
+		// 		native.setKeepAlive(
+		// 			value,
+		// 			() -> callback.success(null),
+		// 			msg -> callback.fail(new IoException(msg)));
+		// 	case SendBuffer:
+		// 		native.setSendBufferSize(
+		// 			value,
+		// 			() -> callback.success(null),
+		// 			msg -> callback.fail(new IoException(msg)));
+		// 	case ReceiveBuffer:
+		// 		native.setRecvBufferSize(
+		// 			value,
+		// 			() -> callback.success(null),
+		// 			msg -> callback.fail(new IoException(msg)));
+		// 	case _:
+		// 		callback.fail(new NotImplementedException());
+		// }
 	}
 
-	override function close(callback:Callback<NoData, Exception>) {
-		native.close(
-			() -> callback.success(null),
-			msg -> callback.fail(new IoException(msg)));
+	@:coroutine override function close() {
+		hxcoro.Coro.suspend(cont -> {
+			native.close(
+				() -> cont.succeedAsync(null),
+				msg -> cont.failAsync(new IoException(msg)));
+		});
 	}
 }
 
@@ -138,48 +143,44 @@ class Socket implements IDuplex {
 	/**
 		Establish a connection to `address`.
 	**/
-	static public function connect(address:SocketAddress, ?options:SocketOptions, callback:Callback<Socket>) {
-		if (callback == null) {
-			throw new ArgumentException("callback", "callback was null");
-		}
-
+	@:coroutine static public function connect(address:SocketAddress, ?options:SocketOptions):Socket {
 		if (address == null) {
-			callback.fail(new ArgumentException("address", "address was null"));
-
-			return;
+			throw new ArgumentException("address", "address was null");
 		}
 
 		switch address {
 			case Net(host, port):
-				try {
-					switch IpTools.parseIp(host) {
-						case Ipv4(_):
+				switch IpTools.parseIp(host) {
+					case Ipv4(_):
+						return hxcoro.Coro.suspend(cont -> {
 							cpp.asys.TcpSocket.connect_ipv4(
-								@:privateAccess Thread.current().context(),
+								cpp.asys.Context.get(),
 								host,
 								port,
 								options,
-								socket -> callback.success(new TcpSocketSpecialisation(socket)),
-								msg -> callback.fail(new IoException(msg)));
-						case Ipv6(_):
+								socket -> cont.succeedAsync(new TcpSocketSpecialisation(socket)),
+								msg -> cont.failAsync(new IoException(msg)));
+						});
+					case Ipv6(_):
+						return hxcoro.Coro.suspend(cont -> {
 							cpp.asys.TcpSocket.connect_ipv6(
-								@:privateAccess Thread.current().context(),
+								cpp.asys.Context.get(),
 								host,
 								port,
 								options,
-								socket -> callback.success(new TcpSocketSpecialisation(socket)),
-								msg -> callback.fail(new IoException(msg)));
-					}
-				}
-				catch (exn) {
-					callback.fail(exn);
+								socket -> cont.succeedAsync(new TcpSocketSpecialisation(socket)),
+								msg -> cont.failAsync(new IoException(msg)));
+						});
 				}
 			case Ipc(path):
-				cpp.asys.IpcSocket.connect(
-					@:privateAccess Thread.current().context(),
-					path,
-					socket -> callback.success(new IpcSocketSpecialisation(socket)),
-					msg -> callback.fail(new IoException(msg)));
+				throw new haxe.exceptions.NotImplementedException();
+				// return hxcoro.Coro.suspend(cont -> {
+				// 	cpp.asys.IpcSocket.connect(
+				// 		cpp.asys.Context.get(),
+				// 		path,
+				// 		socket -> cont.succeedAsync(new IpcSocketSpecialisation(socket)),
+				// 		msg -> cont.failAsync(new IoException(msg)));
+				// });
 		}
 	}
 
@@ -187,103 +188,82 @@ class Socket implements IDuplex {
 		Read up to `length` bytes and write them into `buffer` starting from `offset`
 		position in `buffer`, then invoke `callback` with the amount of bytes read.
 	**/
-	public function read(buffer:Bytes, offset:Int, length:Int, callback:Callback<Int>) {
-		if (callback == null) {
-			throw new ArgumentException("callback", "callback was null");
-		}
-
+	@:coroutine public function read(buffer:Bytes, offset:Int, length:Int):Int {
 		if (buffer == null) {
-			callback.fail(new ArgumentException("buffer", "buffer was null"));
-
-			return;
+			throw new ArgumentException("buffer", "buffer was null");
 		}
 
 		if (offset < 0) {
-			callback.fail(new ArgumentException("offset", "offset was less than zero"));
-
-			return;
+			throw new ArgumentException("offset", "offset was less than zero");
 		}
 
 		if (offset > buffer.length) {
-			callback.fail(new ArgumentException("offset", "offset was greater than the buffer length"));
-
-			return;
+			throw new ArgumentException("offset", "offset was greater than the buffer length");
 		}
 
 		if (length < 0) {
-			callback.fail(new ArgumentException("length", "length was less than zero"));
-
-			return;
+			throw new ArgumentException("length", "length was less than zero");
 		}
 
 		if (offset + length > buffer.length) {
-			callback.fail(new Exception("invalid buffer range"));
-
-			return;
+			throw new Exception("invalid buffer range");
 		}
 
-		reader.read(
-			buffer.getData(),
-			offset,
-			length,
-			len -> callback.success(len),
-			msg -> callback.fail(new IoException(msg)));
+		throw new NotImplementedException();
+
+		// reader.read(
+		// 	buffer.getData(),
+		// 	offset,
+		// 	length,
+		// 	len -> callback.success(len),
+		// 	msg -> callback.fail(new IoException(msg)));
 	}
 
 	/**
 		Write up to `length` bytes from `buffer` (starting from buffer `offset`),
 		then invoke `callback` with the amount of bytes written.
 	**/
-	public function write(buffer:Bytes, offset:Int, length:Int, callback:Callback<Int>) {
-		if (callback == null) {
-			throw new ArgumentException("callback", "callback was null");
-		}
-
+	@:coroutine public function write(buffer:Bytes, offset:Int, length:Int):Int {
 		if (buffer == null) {
-			callback.fail(new ArgumentException("buffer", "buffer was null"));
-
-			return;
+			throw new ArgumentException("buffer", "buffer was null");
 		}
 
 		if (offset < 0) {
-			callback.fail(new ArgumentException("offset", "offset was less than zero"));
-
-			return;
+			throw new ArgumentException("offset", "offset was less than zero");
 		}
 
 		if (offset > buffer.length) {
-			callback.fail(new ArgumentException("offset", "offset was greater than the buffer length"));
-
-			return;
+			throw new ArgumentException("offset", "offset was greater than the buffer length");
 		}
 
 		if (length < 0) {
-			callback.fail(new ArgumentException("length", "length was less than zero"));
-
-			return;
+			throw new ArgumentException("length", "length was less than zero");
 		}
 
 		if (offset + length > buffer.length) {
-			callback.fail(new Exception("invalid buffer range"));
-
-			return;
+			throw new Exception("invalid buffer range");
 		}
 
-		writer.write(
-			buffer.getData(),
-			offset,
-			length,
-			count -> callback.success(count),
-			msg -> callback.fail(new IoException(msg)));
+		return
+			hxcoro.Coro.suspend(cont -> {
+				writer.write(
+					buffer.getData(),
+					offset,
+					length,
+					cont.succeedAsync,
+					msg -> cont.context.get(Scheduler).schedule(0,() -> cont.resume(0, new IoException(msg))));
+			});
 	}
 
 	/**
 		Force all buffered data to be committed.
 	**/
-	public function flush(callback:Callback<NoData>):Void {
-		writer.flush(
-			() -> callback.success(null),
-			msg -> callback.fail(new IoException(msg)));
+	@:coroutine public function flush() {
+		hxcoro.Coro.suspend(cont -> {
+			writer.flush(
+				() -> cont.succeedAsync(null),
+				msg -> cont.failAsync(new IoException(msg)));
+		});
 	}
 
 	/**
@@ -303,7 +283,7 @@ class Socket implements IDuplex {
 	/**
 		Close the connection.
 	**/
-	public function close(callback:Callback<NoData>) {
-		callback.fail(new NotImplementedException());
+	@:coroutine public function close() {
+		//
 	}
 }

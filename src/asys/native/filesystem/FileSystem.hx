@@ -96,7 +96,7 @@ class FileSystem {
 		By default the file truncated if it exists and created if it does not exist.
 		@see asys.native.filesystem.FileOpenFlag for more details.
 	**/
-	@:coroutine @:coroutine.debug static public function writeBytes(path:FilePath, data:Bytes, flag:FileOpenFlag<Dynamic>) {
+	@:coroutine static public function writeBytes(path:FilePath, data:Bytes, flag:FileOpenFlag<Dynamic>) {
 		if (path == null) {
 			throw new ArgumentException("path", "path was null");
 		}

@@ -12,10 +12,10 @@ interface IReadable {
 		Read up to `length` bytes and write them into `buffer` starting from `offset`
 		position in `buffer`, then invoke `callback` with the amount of bytes read.
 	**/
-	function read(buffer:Bytes, offset:Int, length:Int, callback:Callback<Int>):Void;
+	@:coroutine function read(buffer:Bytes, offset:Int, length:Int):Int;
 
 	/**
 		Close this stream.
 	**/
-	function close(callback:Callback<NoData>):Void;
+	@:coroutine function close():Void;
 }

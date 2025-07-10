@@ -12,15 +12,15 @@ interface IWritable {
 		Write up to `length` bytes from `buffer` (starting from buffer `offset`),
 		then invoke `callback` with the amount of bytes written.
 	**/
-	function write(buffer:Bytes, offset:Int, length:Int, callback:Callback<Int>):Void;
+	@:coroutine function write(buffer:Bytes, offset:Int, length:Int):Int;
 
 	/**
 		Force all buffered data to be committed.
 	**/
-	function flush(callback:Callback<NoData>):Void;
+	@:coroutine function flush():Void;
 
 	/**
 		Close this stream.
 	**/
-	function close(callback:Callback<NoData>):Void;
+	@:coroutine function close():Void;
 }

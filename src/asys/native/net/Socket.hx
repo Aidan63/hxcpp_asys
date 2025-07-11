@@ -209,14 +209,15 @@ class Socket implements IDuplex {
 			throw new Exception("invalid buffer range");
 		}
 
-		throw new NotImplementedException();
-
-		// reader.read(
-		// 	buffer.getData(),
-		// 	offset,
-		// 	length,
-		// 	len -> callback.success(len),
-		// 	msg -> callback.fail(new IoException(msg)));
+		return
+			hxcoro.Coro.suspend(cont -> {
+				reader.read(
+					buffer.getData(),
+					offset,
+					length,
+					cont.succeedAsync,
+					msg -> cont.context.get(Scheduler).schedule(0,() -> cont.resume(0, new IoException(msg))));
+			});
 	}
 
 	/**

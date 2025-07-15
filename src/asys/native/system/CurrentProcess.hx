@@ -2,13 +2,13 @@ package asys.native.system;
 
 import haxe.exceptions.ArgumentException;
 import haxe.Exception;
-import sys.thread.Thread;
 import cpp.asys.Writable;
 import cpp.asys.Readable;
 import haxe.io.Bytes;
 import haxe.ds.ReadOnlyArray;
-import haxe.NoData;
-import haxe.Callback;
+import haxe.coro.schedulers.Scheduler;
+
+using hxcoro.util.Convenience;
 
 private class Reader implements IReadable {
 	final native : Readable;
@@ -17,17 +17,36 @@ private class Reader implements IReadable {
 		this.native = native;
 	}
 
-	public function read(buffer:Bytes, offset:Int, length:Int, callback:Callback<Int>) {
-		native.read(
-			buffer.getData(),
-			offset,
-			length,
-			callback.success,
-			error -> callback.fail(new IoException(error.toIoErrorType())));
+	@:coroutine public function read(buffer:Bytes, offset:Int, length:Int):Int {
+		if (offset < 0) {
+			throw new ArgumentException("offset", "offset was less than zero");
+		}
+
+		if (offset > buffer.length) {
+			throw new ArgumentException("offset", "offset was greater than the buffer length");
+		}
+
+		if (length < 0) {
+			throw new ArgumentException("length", "length was less than zero");
+		}
+
+		if (offset + length > buffer.length) {
+			throw new Exception("invalid buffer range");
+		}
+
+		return
+			hxcoro.Coro.suspend(cont -> {
+				native.read(
+					buffer.getData(),
+					offset,
+					length,
+					cont.succeedAsync,
+					msg -> cont.context.get(Scheduler).schedule(0,() -> cont.resume(0, new IoException(msg))));
+			});
 	}
 
-	public function close(callback:Callback<NoData>) {
-		callback.success(null);
+	@:coroutine public function close() {
+		return;
 	}
 }
 
@@ -38,57 +57,48 @@ private class Writer implements IWritable {
 		this.native = native;
 	}
 
-	public function write(buffer:Bytes, offset:Int, length:Int, callback:Callback<Int>) {
-		if (callback == null) {
-			throw new ArgumentException("callback", "Callback was null.");
-		}
-
+	@:coroutine public function write(buffer:Bytes, offset:Int, length:Int):Int {
 		if (buffer == null) {
-			callback.fail(new ArgumentException("buffer", "Buffer was null."));
-
-			return;
+			throw new ArgumentException("buffer", "buffer was null");
 		}
 
 		if (offset < 0) {
-			callback.fail(new ArgumentException("offset", "Buffer offset less than zero."));
-
-			return;
-		}
-
-		if (length < 0) {
-			callback.fail(new ArgumentException("length", "Buffer length less than zero."));
-
-			return;
+			throw new ArgumentException("offset", "offset was less than zero");
 		}
 
 		if (offset > buffer.length) {
-			callback.fail(new ArgumentException("offset", "Buffer offset greater than the buffer length."));
+			throw new ArgumentException("offset", "offset was greater than the buffer length");
+		}
 
-			return;
+		if (length < 0) {
+			throw new ArgumentException("length", "length was less than zero");
 		}
 
 		if (offset + length > buffer.length) {
-			callback.fail(new ArgumentException("length", "Buffer range exceeds the maximum buffer length."));
-
-			return;
+			throw new Exception("invalid buffer range");
 		}
 
-		native.write(
-			buffer.getData(),
-			offset,
-			length,
-			callback.success,
-			error -> callback.fail(new IoException(error.toIoErrorType())));
+		return
+			hxcoro.Coro.suspend(cont -> {
+				native.write(
+					buffer.getData(),
+					offset,
+					length,
+					cont.succeedAsync,
+					msg -> cont.context.get(Scheduler).schedule(0,() -> cont.resume(0, new IoException(msg))));
+			});
 	}
 
-	public function flush(callback:Callback<NoData>) {
-		native.flush(
-			() -> callback.success(null),
-			error -> callback.fail(new IoException(error.toIoErrorType())));
+	@:coroutine public function flush() {
+		hxcoro.Coro.suspend(cont -> {
+			native.flush(
+				() -> cont.succeedAsync(null),
+				msg -> cont.failAsync(new IoException(msg)));
+		});
 	}
 
-	public function close(callback:Callback<NoData>) {
-		callback.success(null);
+	@:coroutine public function close() {
+		return;
 	}
 }
 
@@ -103,60 +113,60 @@ class CurrentProcess extends Process {
 		super(_native.pid());
 		
 		native = _native;
+		stdin  = new Reader(cpp.asys.Context.get().process.stdio_in);
+		stdout = new Writer(cpp.asys.Context.get().process.stdio_out);
+		stderr = new Writer(cpp.asys.Context.get().process.stdio_err);
 	}
 
 	/**
 		A stream used by the process as standard input.
 	**/
-	public var stdin(get,never):IReadable;
-	function get_stdin():IReadable return new Reader(@:privateAccess Thread.current().context().process.stdio_in);
+	public var stdin(default,null):IReadable;
 
 	/**
 		A stream used by the process as standard output.
 	**/
-	public var stdout(get,never):IWritable;
-	function get_stdout():IWritable return new Writer(@:privateAccess Thread.current().context().process.stdio_out);
+	public var stdout(default,null):IWritable;
 
 	/**
 		A stream used by the process as standard error output.
 	**/
-	public var stderr(get,never):IWritable;
-	function get_stderr():IWritable return new Writer(@:privateAccess Thread.current().context().process.stdio_err);
+	public var stderr(default,null):IWritable;
 
-	/**
-		Set the action taken by the process on receipt of a `signal`.
-		Possible `action` values:
-		- `Ignore` - ignore the signal;
-		- `Default` - restore default action;
-		- `Handle(handler:() -> Void)` - execute `handler` on `signal` receipt.
-		Actions for `Kill` and `Stop` signals cannot be changed.
-	**/
-	public function setSignalAction(signal:Signal, action:SignalAction):Void {
-		if (signal == null) {
-			throw new ArgumentException("signal", "signal was null");
-		}
+	// /**
+	// 	Set the action taken by the process on receipt of a `signal`.
+	// 	Possible `action` values:
+	// 	- `Ignore` - ignore the signal;
+	// 	- `Default` - restore default action;
+	// 	- `Handle(handler:() -> Void)` - execute `handler` on `signal` receipt.
+	// 	Actions for `Kill` and `Stop` signals cannot be changed.
+	// **/
+	// public function setSignalAction(signal:Signal, action:SignalAction):Void {
+	// 	if (signal == null) {
+	// 		throw new ArgumentException("signal", "signal was null");
+	// 	}
 
-		if (action == null) {
-			throw new ArgumentException("action", "action was null");
-		}
+	// 	if (action == null) {
+	// 		throw new ArgumentException("action", "action was null");
+	// 	}
 
-		native.setSignalAction(cast signal, cast action);
-	}
+	// 	native.setSignalAction(cast signal, cast action);
+	// }
 
-	override function sendSignal(signal:Signal, callback:Callback<NoData>) {
-		if (signal == null) {
-			throw new ArgumentException("signal", "signal was null");
-		}
+	// override function sendSignal(signal:Signal, callback:Callback<NoData>) {
+	// 	if (signal == null) {
+	// 		throw new ArgumentException("signal", "signal was null");
+	// 	}
 
-		if (callback == null) {
-			throw new ArgumentException("callback", "callback was null");
-		}
+	// 	if (callback == null) {
+	// 		throw new ArgumentException("callback", "callback was null");
+	// 	}
 
-		native.sendSignal(
-			cast signal,
-			() -> callback.success(null),
-			msg -> callback.fail(new IoException(msg)));
-	}
+	// 	native.sendSignal(
+	// 		cast signal,
+	// 		() -> callback.success(null),
+	// 		msg -> callback.fail(new IoException(msg)));
+	// }
 
 	override function get_stdio():ReadOnlyArray<Stream> {
 		return [

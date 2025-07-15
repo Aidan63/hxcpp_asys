@@ -14,7 +14,7 @@ class Process {
 		Can be used to communicate with the parent process and for self-signalling.
 	**/
 	static public var current(get,never):CurrentProcess;
-	static function get_current():CurrentProcess return @:privateAccess new CurrentProcess(Thread.current().context().process);
+	static function get_current():CurrentProcess return @:privateAccess new CurrentProcess(cpp.asys.Context.get().process);
 
     public final pid:Int;
 
@@ -36,83 +36,83 @@ class Process {
         this.pid = pid;
     }
 
-    static public function execute(command:String, ?options:ProcessOptions, callback:Callback<{?stdout:Bytes, ?stderr:Bytes, exitCode:Int}>) {
-		throw new NotImplementedException();
-	}
+    // static public function execute(command:String, ?options:ProcessOptions, callback:Callback<{?stdout:Bytes, ?stderr:Bytes, exitCode:Int}>) {
+	// 	throw new NotImplementedException();
+	// }
 
-    static public function open(command:String, ?options:ProcessOptions, callback:Callback<ChildProcess>) {
-        if (callback == null) {
-            throw new ArgumentException("callback", "callback was null");
-        }
+    // static public function open(command:String, ?options:ProcessOptions, callback:Callback<ChildProcess>) {
+    //     if (callback == null) {
+    //         throw new ArgumentException("callback", "callback was null");
+    //     }
 
-        if (command == null) {
-            callback.fail(new ArgumentException("command", "command was null"));
+    //     if (command == null) {
+    //         callback.fail(new ArgumentException("command", "command was null"));
 
-            return;
-        }
+    //         return;
+    //     }
 
-		cpp.asys.Process.open(
-            @:privateAccess Thread.current().context(),
-            command,
-            toSensibleOptions(options),
-            proc -> callback.success(@:privateAccess new ChildProcess(proc)),
-            msg -> callback.fail(new IoException(msg)));
-	}
+	// 	cpp.asys.Process.open(
+    //         @:privateAccess Thread.current().context(),
+    //         command,
+    //         toSensibleOptions(options),
+    //         proc -> callback.success(@:privateAccess new ChildProcess(proc)),
+    //         msg -> callback.fail(new IoException(msg)));
+	// }
 
-    public function sendSignal(signal:Signal, callback:Callback<NoData>) {
-		throw new NotImplementedException();
-	}
+    // public function sendSignal(signal:Signal, callback:Callback<NoData>) {
+	// 	throw new NotImplementedException();
+	// }
 
-    private static function toSensibleOptions(input:ProcessOptions) {
-        if (input == null) {
-            return null;
-        }
+    // private static function toSensibleOptions(input:ProcessOptions) {
+    //     if (input == null) {
+    //         return null;
+    //     }
 
-        return {
-            args : input.args,
-            cwd : input.cwd,
-            env : input.env,
-            user : input.user,
-            group : input.group,
-            detached : input.detached,
-            stdio : {
-                stdin : makeStdin(input.stdio),
-                stdout : makeStdout(input.stdio),
-                stderr : makeStderr(input.stdio),
-                extra : makeExtra(input.stdio)
-            }
-        }
-    }
+    //     return {
+    //         args : input.args,
+    //         cwd : input.cwd,
+    //         env : input.env,
+    //         user : input.user,
+    //         group : input.group,
+    //         detached : input.detached,
+    //         stdio : {
+    //             stdin : makeStdin(input.stdio),
+    //             stdout : makeStdout(input.stdio),
+    //             stderr : makeStderr(input.stdio),
+    //             extra : makeExtra(input.stdio)
+    //         }
+    //     }
+    // }
 
-    static function makeExtra(arg:Null<Array<StdioConfig>>) {
-        if (arg == null || arg.length < 4) {
-            return [];
-        }
+    // static function makeExtra(arg:Null<Array<StdioConfig>>) {
+    //     if (arg == null || arg.length < 4) {
+    //         return [];
+    //     }
 
-        return [ for (i in 3...arg.length - 1) arg[i] ];
-    }
+    //     return [ for (i in 3...arg.length - 1) arg[i] ];
+    // }
 
-    static function makeStderr(arg:Null<Array<StdioConfig>>) {
-        if (arg == null || arg.length < 3 || arg[2] == null) {
-            return StdioConfig.PipeWrite;
-        }
+    // static function makeStderr(arg:Null<Array<StdioConfig>>) {
+    //     if (arg == null || arg.length < 3 || arg[2] == null) {
+    //         return StdioConfig.PipeWrite;
+    //     }
 
-        return arg[2];
-    }
+    //     return arg[2];
+    // }
 
-    static function makeStdout(arg:Null<Array<StdioConfig>>) {
-        if (arg == null || arg.length < 2 || arg[1] == null) {
-            return StdioConfig.PipeWrite;
-        }
+    // static function makeStdout(arg:Null<Array<StdioConfig>>) {
+    //     if (arg == null || arg.length < 2 || arg[1] == null) {
+    //         return StdioConfig.PipeWrite;
+    //     }
 
-        return arg[1];
-    }
+    //     return arg[1];
+    // }
 
-    static function makeStdin(arg:Null<Array<StdioConfig>>) {
-        if (arg == null || arg.length < 1 || arg[0] == null) {
-            return StdioConfig.PipeRead;
-        }
+    // static function makeStdin(arg:Null<Array<StdioConfig>>) {
+    //     if (arg == null || arg.length < 1 || arg[0] == null) {
+    //         return StdioConfig.PipeRead;
+    //     }
 
-        return arg[0];
-    }
+    //     return arg[0];
+    // }
 }

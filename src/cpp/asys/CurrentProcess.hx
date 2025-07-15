@@ -6,5 +6,5 @@ extern class CurrentProcess extends Process {
     final stdio_out : Writable;
     final stdio_err : Writable;
 
-    function setSignalAction(signal:cpp.EnumBase, action:cpp.EnumBase):Void;
+    // function setSignalAction(signal:cpp.EnumBase, action:cpp.EnumBase):Void;
 }

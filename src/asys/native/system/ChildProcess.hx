@@ -151,16 +151,18 @@ class ChildProcess extends Process {
 	// 		msg -> callback.fail(new IoException(msg)));
 	// }
 
-	// /**
-	// 	Wait the process to shutdown and get the exit code.
-	// 	If the process is already dead at the moment of this call, then `callback`
-	// 	may be invoked with the exit code immediately.
-	// **/
-	// public function exitCode(callback:Callback<Int>) {
-	// 	native.exitCode(
-	// 		callback.success,
-	// 		msg -> callback.fail(new IoException(msg)));
-	// }
+	/**
+		Wait the process to shutdown and get the exit code.
+		If the process is already dead at the moment of this call, then `callback`
+		may be invoked with the exit code immediately.
+	**/
+	@:coroutine public function exitCode():Int {
+		return hxcoro.Coro.suspend(cont -> {
+			native.exitCode(
+				code -> cont.succeedAsync(code),
+				err -> cont.context.get(Scheduler).schedule(0, () -> cont.resume(0, new IoException(err))));
+		});
+	}
 
 	// /**
 	// 	Close the process handle and release associated resources.

@@ -1,6 +1,6 @@
 package cpp.asys;
 
-@:native('::hx::asys::net::TcpSocket')
+@:cpp.ManagedType({ namespace : [ "hx", "asys" ], flags : [ StandardNaming ] })
 extern class TcpSocket {
     final localAddress : { host : String, port : Int };
 
@@ -10,10 +10,7 @@ extern class TcpSocket {
 
     final writer : Writable;
 
-    @:native('::hx::asys::net::TcpSocket_obj::connect_ipv4')
     static function connect_ipv4(ctx : Context, host : String, port : Int, options : Dynamic, onSuccess : TcpSocket->Void, onFailure : AsysError->Void) : Void;
-
-    @:native('::hx::asys::net::TcpSocket_obj::connect_ipv6')
     static function connect_ipv6(ctx : Context, host : String, port : Int, options : Dynamic, onSuccess : TcpSocket->Void, onFailure : AsysError->Void) : Void;
 
     function getKeepAlive(cbSuccess : Bool->Void, cbFailure : AsysError->Void) : Void;

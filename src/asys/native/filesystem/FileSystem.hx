@@ -1,14 +1,9 @@
 package asys.native.filesystem;
 
-import cpp.asys.AsysError;
-import haxe.exceptions.ArgumentException;
-import sys.thread.Thread;
-import haxe.NoData;
-import haxe.Callback;
 import haxe.io.Bytes;
+import haxe.exceptions.ArgumentException;
 import asys.native.system.SystemUser;
 import asys.native.system.SystemGroup;
-import haxe.coro.schedulers.Scheduler;
 
 using hxcoro.util.Convenience;
 
@@ -30,7 +25,7 @@ class FileSystem {
 
 		return hxcoro.Coro.suspend(cont -> {
 			cpp.asys.File.open(
-				cpp.asys.Context.get(),
+				cont.context.get(Asys).ctx,
 				path,
 				cast flag,
 				file -> cont.succeedAsync(cast @:privateAccess new File(file)),
@@ -50,7 +45,7 @@ class FileSystem {
 	@:coroutine static public function tempFile():File {
 		return hxcoro.Coro.suspend(cont -> {
 			cpp.asys.File.temp(
-				cpp.asys.Context.get(),
+				cont.context.get(Asys).ctx,
 				file -> cont.succeedAsync(cast @:privateAccess new File(file)),
 				msg -> cont.failAsync(new FsException(msg, '')));
 		});
@@ -96,7 +91,7 @@ class FileSystem {
 		By default the file truncated if it exists and created if it does not exist.
 		@see asys.native.filesystem.FileOpenFlag for more details.
 	**/
-	@:coroutine static public function writeBytes(path:FilePath, data:Bytes, flag:FileOpenFlag<Dynamic>) {
+	@:coroutine static public function writeBytes(path:FilePath, data:Bytes) {
 		if (path == null) {
 			throw new ArgumentException("path", "path was null");
 		}
@@ -105,7 +100,7 @@ class FileSystem {
 			throw new ArgumentException("data", "data was null");
 		}
 
-		final file = openFile(path, flag);
+		final file = openFile(path, Write);
 		try {
 			file.write(0, data, 0, data.length);
 			file.close();
@@ -122,8 +117,8 @@ class FileSystem {
 		By default the file is truncated if it exists and is created if it does not exist.
 		@see asys.native.filesystem.FileOpenFlag for more details.
 	**/
-	@:coroutine static public function writeString(path:FilePath, text:String, flag:FileOpenFlag<Dynamic>) {
-		writeBytes(path, Bytes.ofString(text), flag);
+	@:coroutine static public function writeString(path:FilePath, text:String) {
+		writeBytes(path, Bytes.ofString(text));
 	}
 
 	/**
@@ -144,7 +139,7 @@ class FileSystem {
 
 		return hxcoro.Coro.suspend(cont -> {
 			cpp.asys.Directory.open(
-				cpp.asys.Context.get(),
+				cont.context.get(Asys).ctx,
 				path,
 				dir -> cont.succeedAsync(@:privateAccess new Directory(dir, maxBatchSize)),
 				msg -> cont.failAsync(new FsException(msg, path)));
@@ -284,7 +279,7 @@ class FileSystem {
 		if (isDirectory(oldPath)) {
 			hxcoro.Coro.suspend(cont -> {
 				cpp.asys.Directory.rename(
-					cpp.asys.Context.get(),
+					cont.context.get(Asys).ctx,
 					oldPath,
 					newPath,
 					() -> cont.succeedAsync(null),
@@ -306,7 +301,7 @@ class FileSystem {
 
 		hxcoro.Coro.suspend(cont -> {
 			cpp.asys.Directory.deleteFile(
-				cpp.asys.Context.get(),
+				cont.context.get(Asys).ctx,
 				path,
 				() -> cont.succeedAsync(null),
 				msg -> cont.failAsync(new FsException(msg, path)));
@@ -323,7 +318,7 @@ class FileSystem {
 
 		hxcoro.Coro.suspend(cont -> {
 			cpp.asys.Directory.deleteDirectory(
-				cpp.asys.Context.get(),
+				cont.context.get(Asys).ctx,
 				path,
 				() -> cont.succeedAsync(null),
 				msg -> cont.failAsync(new FsException(msg, path)));
@@ -343,7 +338,7 @@ class FileSystem {
 
 		return hxcoro.Coro.suspend(cont -> {
 			cpp.asys.File.info(
-				cpp.asys.Context.get(),
+				cont.context.get(Asys).ctx,
 				path,
 				info -> cont.succeedAsync(info),
 				msg -> cont.failAsync(new FsException(msg, path)));
@@ -365,11 +360,11 @@ class FileSystem {
 
 		return hxcoro.Coro.suspend(cont -> {
 			cpp.asys.Directory.check(
-				cpp.asys.Context.get(),
+				cont.context.get(Asys).ctx,
 				path,
 				cast mode,
 				cont.succeedAsync,
-				msg -> cont.context.get(Scheduler).schedule(0, () -> cont.resume(false, new FsException(msg, path))));
+				msg -> cont.context.scheduleFunction(0, () -> cont.resume(false, new FsException(msg, path))));
 		});
 	}
 
@@ -385,10 +380,10 @@ class FileSystem {
 
 		return hxcoro.Coro.suspend(cont -> {
 			cpp.asys.Directory.isDirectory(
-				cpp.asys.Context.get(),
+				cont.context.get(Asys).ctx,
 				path,
 				cont.succeedAsync,
-				msg -> cont.context.get(Scheduler).schedule(0, () -> cont.resume(false, new FsException(msg, path))));
+				msg -> cont.context.scheduleFunction(0, () -> cont.resume(false, new FsException(msg, path))));
 		});
 	}
 
@@ -404,10 +399,10 @@ class FileSystem {
 
 		return hxcoro.Coro.suspend(cont -> {
 			cpp.asys.Directory.isFile(
-				cpp.asys.Context.get(),
+				cont.context.get(Asys).ctx,
 				path,
 				cont.succeedAsync,
-				msg -> cont.context.get(Scheduler).schedule(0, () -> cont.resume(false, new FsException(msg, path))));
+				msg -> cont.context.scheduleFunction(0, () -> cont.resume(false, new FsException(msg, path))));
 		});
 	}
 
@@ -453,7 +448,7 @@ class FileSystem {
 
 		hxcoro.Coro.suspend(cont -> {
 			cpp.asys.Directory.setLinkOwner(
-				cpp.asys.Context.get(),
+				cont.context.get(Asys).ctx,
 				path,
 				user,
 				group,
@@ -481,7 +476,7 @@ class FileSystem {
 
 		hxcoro.Coro.suspend(cont -> {
 			cpp.asys.Directory.link(
-				cpp.asys.Context.get(),
+				cont.context.get(Asys).ctx,
 				target,
 				path,
 				cast (type ?? SymLink),
@@ -501,10 +496,10 @@ class FileSystem {
 
 		return hxcoro.Coro.suspend(cont -> {
 			cpp.asys.Directory.isLink(
-				cpp.asys.Context.get(),
+				cont.context.get(Asys).ctx,
 				path,
 				cont.succeedAsync,
-				msg -> cont.context.get(Scheduler).schedule(0, () -> cont.resume(false, new FsException(msg, path))));
+				msg -> cont.context.scheduleFunction(0, () -> cont.resume(false, new FsException(msg, path))));
 		});
 	}
 
@@ -518,7 +513,7 @@ class FileSystem {
 
 		return hxcoro.Coro.suspend(cont -> {
 			cpp.asys.Directory.readLink(
-				cpp.asys.Context.get(),
+				cont.context.get(Asys).ctx,
 				path,
 				cont.succeedAsync,
 				msg -> cont.failAsync(new FsException(msg, path)));
@@ -535,7 +530,7 @@ class FileSystem {
 
 		return hxcoro.Coro.suspend(cont -> {
 			cpp.asys.Directory.linkInfo(
-				cpp.asys.Context.get(),
+				cont.context.get(Asys).ctx,
 				path,
 				cont.succeedAsync,
 				msg -> cont.failAsync(new FsException(msg, path)));
@@ -556,7 +551,7 @@ class FileSystem {
 
 		hxcoro.Coro.suspend(cont -> {
 			cpp.asys.Directory.copyFile(
-				cpp.asys.Context.get(),
+				cont.context.get(Asys).ctx,
 				source,
 				destination,
 				overwrite ?? true,
@@ -611,7 +606,7 @@ class FileSystem {
 
 		return hxcoro.Coro.suspend(cont -> {
 			cpp.asys.Directory.realPath(
-				cpp.asys.Context.get(),
+				cont.context.get(Asys).ctx,
 				path,
 				cont.succeedAsync,
 				msg -> cont.failAsync(new FsException(msg, path)));

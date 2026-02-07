@@ -1,11 +1,8 @@
 package cpp.asys;
 
-@:native('::hx::asys::net::TcpServer')
+@:cpp.ManagedType({ namespace : [ "hx", "asys" ], flags : [ StandardNaming ] })
 extern class TcpServer {
-    @:native('::hx::asys::net::TcpServer_obj::open_ipv4')
     static function open_ipv4(ctx : Context, host : String, port : Int, options : Dynamic, onSuccess : TcpServer->Void, onFailure : AsysError->Void) : Void;
-
-    @:native('::hx::asys::net::TcpServer_obj::open_ipv6')
     static function open_ipv6(ctx : Context, host : String, port : Int, options : Dynamic, onSuccess : TcpServer->Void, onFailure : AsysError->Void) : Void;
 
     // @:native('::hx::asys::net::TcpServer_obj::open_ipc')

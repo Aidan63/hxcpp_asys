@@ -7,7 +7,7 @@ import haxe.Int64;
 import haxe.NoData;
 import haxe.Callback;
 import haxe.io.Bytes;
-import haxe.coro.schedulers.Scheduler;
+import haxe.coro.dispatchers.Dispatcher;
 
 using hxcoro.util.Convenience;
 
@@ -61,7 +61,7 @@ class File {
 					offset,
 					actualLength,
 					count -> cont.succeedAsync(count),
-					err -> cont.context.get(Scheduler).schedule(0, () -> cont.resume(0, new FsException(err, path))));
+					err -> cont.context.scheduleFunction(0, () -> cont.resume(0, new FsException(err, path))));
 			});
 	}
 
@@ -101,7 +101,7 @@ class File {
 					offset,
 					actualLength,
 					count -> cont.succeedAsync(count),
-					err -> cont.context.get(Scheduler).schedule(0, () -> cont.resume(0, new FsException(err, path))));
+					err -> cont.context.scheduleFunction(0, () -> cont.resume(0, new FsException(err, path))));
 			});
 	}
 

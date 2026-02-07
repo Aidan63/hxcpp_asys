@@ -1,6 +1,6 @@
 package cpp.asys;
 
-@:native('::hx::asys::system::ChildProcess')
+@:cpp.ManagedType({ namespace : [ "hx", "asys" ], flags : [ StandardNaming ] })
 extern class ChildProcess extends Process {
     final stdio_in : Writable;
     final stdio_out : Readable;

@@ -8,7 +8,7 @@ import asys.native.IWritable;
 import asys.native.IoException;
 import cpp.asys.AsysError;
 
-@:native('::hx::asys::Writable')
+@:cpp.ManagedType({ namespace : [ "hx", "asys" ], flags : [ StandardNaming ] })
 extern class Writable {
     function write(output:BytesData, offset:Int, length:Int, cbSuccess:Int->Void, cbFailure:AsysError->Void):Void;
     function flush(cbSuccess:Void->Void, cbFailure:AsysError->Void):Void;

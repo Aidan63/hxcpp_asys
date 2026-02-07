@@ -2,7 +2,7 @@ package cpp.asys;
 
 import haxe.io.BytesData;
 
-@:native('::hx::asys::Duplex')
+@:cpp.ManagedType({ namespace : [ "hx", "asys" ], flags : [ StandardNaming ] })
 extern class Duplex {
     function write(input : BytesData, offset : Int, length : Int, cbSuccess : Void->Void, cbFailure : AsysError->Void) : Void;
 

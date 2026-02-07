@@ -1,6 +1,6 @@
 package cpp.asys;
 
-@:native('::hx::asys::system::CurrentProcess')
+@:cpp.ManagedType({ namespace : [ "hx", "asys" ], flags : [ StandardNaming ] })
 extern class CurrentProcess extends Process {
     final stdio_in : Readable;
     final stdio_out : Writable;

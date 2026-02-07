@@ -7,6 +7,7 @@ import haxe.NoData;
 import haxe.io.Bytes;
 import haxe.Callback;
 import haxe.exceptions.NotImplementedException;
+import haxe.io.BytesBuffer;
 
 using hxcoro.util.Convenience;
 
@@ -38,9 +39,52 @@ class Process {
         this.pid = pid;
     }
 
-    // static public function execute(command:String, ?options:ProcessOptions, callback:Callback<{?stdout:Bytes, ?stderr:Bytes, exitCode:Int}>) {
-	// 	throw new NotImplementedException();
-	// }
+    @:coroutine static public function execute(command:String, ?options:ProcessOptions):{?stdout:Bytes, ?stderr:Bytes, exitCode:Int} {
+		return hxcoro.Coro.scope(node -> {
+            final options = options ?? {};
+            options.stdio = [ Ignore, PipeRead, PipeRead ];
+
+            final process = Process.open(command, options);
+
+            final stdoutReader = node.async(_ -> {
+                final buffer = Bytes.alloc(1024);
+                final acc    = new BytesBuffer();
+                try {
+                    while (true) {
+                        final count = process.stdout.read(buffer, 0, buffer.length);
+                        if (count == 0) {
+                            continue;
+                        }
+                        acc.addBytes(buffer, 0, count);
+                    }
+                } catch (_) {
+                    //
+                }
+
+                return if (acc.length == 0) null else acc.getBytes();
+		    });
+
+            final stderrReader = node.async(_ -> {
+                final buffer = Bytes.alloc(1024);
+                final acc    = new BytesBuffer();
+                try {
+                    while (true) {
+                        final count = process.stderr.read(buffer, 0, buffer.length);
+                        if (count == 0) {
+                            continue;
+                        }
+                        acc.addBytes(buffer, 0, count);
+                    }
+                } catch (_) {
+                    //
+                }
+
+                return if (acc.length == 0) null else acc.getBytes();
+            });
+
+            return { exitCode : process.exitCode(), stdout : stdoutReader.await(), stderr : stderrReader.await() }
+        });
+	}
 
     @:coroutine static public function open(command:String, ?options:ProcessOptions):ChildProcess {
         if (command == null) {

@@ -3,7 +3,7 @@ package cpp.asys;
 import haxe.io.BytesData;
 import cpp.asys.AsysError;
 
-@:native('::hx::asys::filesystem::File')
+@:cpp.ManagedType({ namespace : [ "hx", "asys", "filesystem" ], flags : [ StandardNaming ] })
 extern class File {
 	final path : String;
 
@@ -17,12 +17,7 @@ extern class File {
 	function flush(cbSuccess : Void->Void, cbFailure : AsysError->Void) : Void;
     function close(cbSuccess : Void->Void, cbFailure : AsysError->Void) : Void;
 
-    @:native('::hx::asys::filesystem::File_obj::open')
     static function open(ctx : Context, path : String, flags : Int, onSuccess : File->Void, onFailure : AsysError->Void) : Void;
-
-	@:native('::hx::asys::filesystem::File_obj::temp')
     static function temp(ctx : Context, onSuccess : File->Void, onFailure : AsysError->Void) : Void;
-
-    @:native('::hx::asys::filesystem::File_obj::info')
     static function info(ctx : Context, path : String, onSuccess : NativeInfo->Void, onFailure : AsysError->Void) : Void;
 }

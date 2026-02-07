@@ -1,13 +1,10 @@
 package cpp.asys;
 
-@:native('::hx::asys::Context')
+@:cpp.ManagedType({ namespace : [ "hx", "asys" ], flags : [ StandardNaming ] })
 @:buildXml("<include name='${HXCPP}/src/hx/libs/asys/libuv/Build.xml'/>")
 extern class Context {
     final process : CurrentProcess;
 
-    @:native('::hx::asys::Context_obj::boot')
     static function boot() : Context;
-
-    @:native('::hx::asys::Context_obj::get')
     static function get() : Context;
 }

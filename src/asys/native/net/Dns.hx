@@ -23,7 +23,7 @@ class Dns {
 
 		final ips = hxcoro.Coro.suspend(cont -> {
 			cpp.asys.Net.resolve(
-				cpp.asys.Context.get(),
+				cont.context.get(Asys).ctx,
 				host,
 				ips -> cont.succeedAsync(ips),
 				msg -> cont.failAsync(new IoException(msg.toIoErrorType())));
@@ -43,7 +43,7 @@ class Dns {
 				return
 					hxcoro.Coro.suspend(cont -> {
 						cpp.asys.Net.reverse(
-							cpp.asys.Context.get(),
+							cont.context.get(Asys).ctx,
 							raw,
 							host -> cont.succeedAsync([ host ]),
 							msg -> cont.failAsync(new IoException(msg.toIoErrorType())));
@@ -52,7 +52,7 @@ class Dns {
 				return
 					hxcoro.Coro.suspend(cont -> {
 						cpp.asys.Net.reverse(
-							cpp.asys.Context.get(),
+							cont.context.get(Asys).ctx,
 							raw.getData(),
 							host -> cont.succeedAsync([ host ]),
 							msg -> cont.failAsync(new IoException(msg.toIoErrorType())));

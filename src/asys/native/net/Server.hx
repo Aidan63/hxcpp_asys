@@ -122,7 +122,7 @@ class Server {
 					case Ipv4(_):
 						return hxcoro.Coro.suspend(cont -> {
 							cpp.asys.TcpServer.open_ipv4(
-								cpp.asys.Context.get(),
+								cont.context.get(Asys).ctx,
 								host,
 								port,
 								options,

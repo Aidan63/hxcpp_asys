@@ -1,6 +1,6 @@
 package cpp.asys;
 
-@:cpp.ManagedType({ namespace : [ "hx", "asys" ], flags : [ StandardNaming ] })
+@:cpp.ManagedType({ namespace : [ "hx", "asys", "system" ], flags : [ StandardNaming ] })
 extern class Process {
     static function open(ctx : Context, command : String, options : Any, onSuccess : ChildProcess->Void, onFailure : AsysError->Void) : Void;
     static function current(ctx : Context) : CurrentProcess;

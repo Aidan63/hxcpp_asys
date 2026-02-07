@@ -7,7 +7,6 @@ import haxe.io.Bytes;
 import haxe.ds.ReadOnlyArray;
 import haxe.NoData;
 import haxe.Callback;
-import haxe.coro.schedulers.Scheduler;
 import haxe.exceptions.ArgumentException;
 
 using hxcoro.util.Convenience;
@@ -43,7 +42,7 @@ private class Reader implements IReadable {
 					offset,
 					length,
 					cont.succeedAsync,
-					msg -> cont.context.get(Scheduler).schedule(0,() -> cont.resume(0, new IoException(msg))));
+					msg -> cont.context.scheduleFunction(0,() -> cont.resume(0, new IoException(msg))));
 			});
 	}
 
@@ -87,7 +86,7 @@ private class Writer implements IWritable {
 					offset,
 					length,
 					cont.succeedAsync,
-					msg -> cont.context.get(Scheduler).schedule(0,() -> cont.resume(0, new IoException(msg))));
+					msg -> cont.context.scheduleFunction(0,() -> cont.resume(0, new IoException(msg))));
 			});
 	}
 
@@ -160,7 +159,7 @@ class ChildProcess extends Process {
 		return hxcoro.Coro.suspend(cont -> {
 			native.exitCode(
 				code -> cont.succeedAsync(code),
-				err -> cont.context.get(Scheduler).schedule(0, () -> cont.resume(0, new IoException(err))));
+				err -> cont.context.scheduleFunction(0, () -> cont.resume(0, new IoException(err))));
 		});
 	}
 

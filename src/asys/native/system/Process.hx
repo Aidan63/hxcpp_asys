@@ -17,7 +17,7 @@ class Process {
 		Can be used to communicate with the parent process and for self-signalling.
 	**/
 	static public var current(get,never):CurrentProcess;
-	static function get_current():CurrentProcess return @:privateAccess new CurrentProcess(cpp.asys.Context.get().process);
+	static function get_current():CurrentProcess return @:privateAccess new CurrentProcess();
 
     public final pid:Int;
 
@@ -93,7 +93,7 @@ class Process {
 
         return hxcoro.Coro.suspend(cont -> {
             cpp.asys.Process.open(
-                cpp.asys.Context.get(),
+                cont.context.get(Asys).ctx,
                 command,
                 toSensibleOptions(options),
                 proc -> cont.succeedAsync(@:privateAccess new ChildProcess(proc)),

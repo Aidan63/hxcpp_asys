@@ -6,16 +6,11 @@ import cpp.asys.Writable;
 import cpp.asys.Readable;
 import haxe.io.Bytes;
 import haxe.ds.ReadOnlyArray;
-import haxe.coro.schedulers.Scheduler;
 
 using hxcoro.util.Convenience;
 
 private class Reader implements IReadable {
-	final native : Readable;
-
-	public function new(native:Readable) {
-		this.native = native;
-	}
+	public function new() {}
 
 	@:coroutine public function read(buffer:Bytes, offset:Int, length:Int):Int {
 		if (offset < 0) {
@@ -36,12 +31,17 @@ private class Reader implements IReadable {
 
 		return
 			hxcoro.Coro.suspend(cont -> {
-				native.read(
-					buffer.getData(),
-					offset,
-					length,
-					cont.succeedAsync,
-					msg -> cont.context.get(Scheduler).schedule(0,() -> cont.resume(0, new IoException(msg))));
+				cont.context
+					.get(Asys)
+					.ctx
+					.process
+					.stdio_in
+					.read(
+						buffer.getData(),
+						offset,
+						length,
+						cont.succeedAsync,
+						msg -> cont.context.scheduleFunction(0, () -> cont.resume(0, new IoException(msg))));
 			});
 	}
 
@@ -51,10 +51,10 @@ private class Reader implements IReadable {
 }
 
 private class Writer implements IWritable {
-	final native : Writable;
+	final selector : (cpp.asys.CurrentProcess)->Writable;
 
-	public function new(native:Writable) {
-		this.native = native;
+	public function new(selector:(cpp.asys.CurrentProcess)->Writable) {
+		this.selector = selector;
 	}
 
 	@:coroutine public function write(buffer:Bytes, offset:Int, length:Int):Int {
@@ -80,18 +80,18 @@ private class Writer implements IWritable {
 
 		return
 			hxcoro.Coro.suspend(cont -> {
-				native.write(
+				selector(cont.context.get(Asys).ctx.process).write(
 					buffer.getData(),
 					offset,
 					length,
 					cont.succeedAsync,
-					msg -> cont.context.get(Scheduler).schedule(0,() -> cont.resume(0, new IoException(msg))));
+					msg -> cont.context.scheduleFunction(0, () -> cont.resume(0, new IoException(msg))));
 			});
 	}
 
 	@:coroutine public function flush() {
 		hxcoro.Coro.suspend(cont -> {
-			native.flush(
+			selector(cont.context.get(Asys).ctx.process).flush(
 				() -> cont.succeedAsync(null),
 				msg -> cont.failAsync(new IoException(msg)));
 		});
@@ -107,15 +107,12 @@ private class Writer implements IWritable {
 	@see asys.native.system.Process.current
 **/
 class CurrentProcess extends Process {
-	final native : cpp.asys.CurrentProcess;
-
-	function new(_native : cpp.asys.CurrentProcess) {
-		super(_native.pid());
+	function new() {
+		super(0);
 		
-		native = _native;
-		stdin  = new Reader(cpp.asys.Context.get().process.stdio_in);
-		stdout = new Writer(cpp.asys.Context.get().process.stdio_out);
-		stderr = new Writer(cpp.asys.Context.get().process.stdio_err);
+		stdin  = new Reader();
+		stdout = new Writer(ctx -> ctx.stdio_out);
+		stderr = new Writer(ctx -> ctx.stdio_err);
 	}
 
 	/**

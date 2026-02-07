@@ -188,14 +188,13 @@ class FileSystem {
 			throw new ArgumentException("path", "path was null");
 		}
 
-		final ctx    = cpp.asys.Context.get();
 		final mode   = permissions ?? FilePermissions.octal(0, 7, 7, 7);
 		final manual = recursive ?? false;
 
 		@:coroutine inline function create(path:FilePath) {
 			return hxcoro.Coro.suspend(cont -> {
 				cpp.asys.Directory.create(
-					ctx,
+					cont.context.get(Asys).ctx,
 					path,
 					mode,
 					() -> cont.succeedAsync(null),

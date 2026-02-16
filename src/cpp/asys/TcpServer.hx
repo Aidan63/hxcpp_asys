@@ -1,6 +1,6 @@
 package cpp.asys;
 
-@:cpp.ManagedType({ namespace : [ "hx", "asys" ], flags : [ StandardNaming ] })
+@:cpp.ManagedType({ namespace : [ "hx", "asys", "net" ], flags : [ StandardNaming ] })
 extern class TcpServer {
     static function open_ipv4(ctx : Context, host : String, port : Int, options : Dynamic, onSuccess : TcpServer->Void, onFailure : AsysError->Void) : Void;
     static function open_ipv6(ctx : Context, host : String, port : Int, options : Dynamic, onSuccess : TcpServer->Void, onFailure : AsysError->Void) : Void;

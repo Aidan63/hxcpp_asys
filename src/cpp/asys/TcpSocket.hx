@@ -1,6 +1,6 @@
 package cpp.asys;
 
-@:cpp.ManagedType({ namespace : [ "hx", "asys" ], flags : [ StandardNaming ] })
+@:cpp.ManagedType({ namespace : [ "hx", "asys", "net" ], flags : [ StandardNaming ] })
 extern class TcpSocket {
     final localAddress : { host : String, port : Int };
 

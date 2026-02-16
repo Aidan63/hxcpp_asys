@@ -11,7 +11,7 @@ import haxe.Callback;
 import haxe.Exception;
 import haxe.io.Bytes;
 import haxe.exceptions.NotImplementedException;
-import haxe.coro.schedulers.Scheduler;
+import haxe.coro.dispatchers.Dispatcher;
 
 using hxcoro.util.Convenience;
 
@@ -154,7 +154,7 @@ class Socket implements IDuplex {
 					case Ipv4(_):
 						return hxcoro.Coro.suspend(cont -> {
 							cpp.asys.TcpSocket.connect_ipv4(
-								cpp.asys.Context.get(),
+								cont.context.get(Asys).ctx,
 								host,
 								port,
 								options,
@@ -164,7 +164,7 @@ class Socket implements IDuplex {
 					case Ipv6(_):
 						return hxcoro.Coro.suspend(cont -> {
 							cpp.asys.TcpSocket.connect_ipv6(
-								cpp.asys.Context.get(),
+								cont.context.get(Asys).ctx,
 								host,
 								port,
 								options,
@@ -216,7 +216,7 @@ class Socket implements IDuplex {
 					offset,
 					length,
 					cont.succeedAsync,
-					msg -> cont.context.get(Scheduler).schedule(0,() -> cont.resume(0, new IoException(msg))));
+					msg -> cont.context.scheduleFunction(0,() -> cont.resume(0, new IoException(msg))));
 			});
 	}
 
@@ -252,7 +252,7 @@ class Socket implements IDuplex {
 					offset,
 					length,
 					cont.succeedAsync,
-					msg -> cont.context.get(Scheduler).schedule(0,() -> cont.resume(0, new IoException(msg))));
+					msg -> cont.context.scheduleFunction(0,() -> cont.resume(0, new IoException(msg))));
 			});
 	}
 
